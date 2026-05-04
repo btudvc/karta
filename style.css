@@ -281,12 +281,12 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .bp-title    { font-size: 13.5px; font-weight: 600; color: var(--text); }
 .bp-subtitle { font-size: 12px; color: var(--muted); margin-top: -4px; }
 .bp-last     { font-size: 12px; color: var(--muted); }
-.bp-actions  { display: flex; flex-wrap: wrap; gap: 6px; }
+.bp-actions  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .bp-actions .btn-primary,
 .bp-actions .btn-ghost {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px; font-size: 12.5px;
-  flex: 1; justify-content: center;
+  padding: 9px 12px; font-size: 12.5px;
+  justify-content: center;
 }
 .bp-hint {
   font-size: 11.5px; color: var(--muted-2);
@@ -294,7 +294,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
   padding-top: 9px; line-height: 1.55;
 }
 
-/* Connected line */
+/* Connected card (legacy class kept for back-compat) */
 .bp-connected {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -308,8 +308,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .bp-provider-ico {
   display: inline-flex; align-items: center; justify-content: center;
   width: 32px; height: 32px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--surface);
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
@@ -320,6 +319,86 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-top: 1px;
+}
+
+/* ── New connected popover (account + meta + actions) ── */
+.bp-account {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+.bp-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center;
+}
+.bp-avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bp-avatar-fallback {
+  font-size: 15px; font-weight: 700; color: var(--accent);
+}
+.bp-account-info { flex: 1; min-width: 0; }
+.bp-account-name {
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  letter-spacing: -.005em;
+  line-height: 1.25;
+}
+.bp-account-email {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.bp-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .15s var(--ease);
+}
+.bp-icon-btn:hover {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border-2);
+}
+.bp-signout-btn:hover { color: var(--red); border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.08); }
+
+.bp-meta {
+  padding: 4px 4px 0;
+}
+.bp-meta-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.bp-meta-row:last-child { border-bottom: none; }
+.bp-meta-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  min-width: 76px;
+}
+.bp-meta-value {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bp-last-sync {
+  font-family: inherit;
+  color: var(--accent);
+  font-weight: 500;
 }
 .bp-status-dot { display: none; }
 

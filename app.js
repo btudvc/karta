@@ -1982,7 +1982,8 @@ window.deleteAttachment = async function(type, id, filename) {
 const DriveAPI = (() => {
   const CLIENT_ID = '733970458049-nh53ksvtjaavj0p5up5bs89jd78t9rf9.apps.googleusercontent.com';
   // drive.file = only files this app creates/opens. User's other Drive content is hidden from us.
-  const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  // email + profile = needed to display the connected account
+  const SCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
   let tokenClient = null;
   let accessToken = null;
@@ -2019,10 +2020,11 @@ const DriveAPI = (() => {
   async function trySilentSignIn() {
     if (!await waitForLibrary()) return false;
     return new Promise(resolve => {
-      const tc = makeTokenClient(resp => {
+      const tc = makeTokenClient(async resp => {
         if (resp.error) { resolve(false); return; }
         accessToken = resp.access_token;
         tokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+        try { await fetchUserInfo(); } catch {}
         resolve(true);
       });
       try { tc.requestAccessToken({ prompt: 'none' }); } catch { resolve(false); }
@@ -2252,26 +2254,38 @@ const BackupManager = (() => {
     if (DriveAPI.isSignedIn()) {
       const u = DriveAPI.getUserInfo() || {};
       const lastTxt = lastSyncText();
+      const initial = (u.name || u.email || '?').trim().charAt(0).toUpperCase();
+      const avatar = u.picture
+        ? `<img class="bp-avatar-img" src="${escapeAttr(u.picture)}" alt="" referrerpolicy="no-referrer">`
+        : `<span class="bp-avatar-fallback">${initial}</span>`;
       pop.innerHTML = `
         <div class="bp-title">${t('bp.title')}</div>
-        <div class="bp-connected">
-          <div class="bp-provider-line">
-            <span class="bp-provider-ico">${GDRIVE_ICON}</span>
-            <div class="bp-provider-info">
-              <div class="bp-provider-name">Google Drive</div>
-              <div class="bp-provider-folder" title="${escapeAttr(u.email || '')}">${u.email || ''}</div>
-            </div>
+
+        <div class="bp-account">
+          <div class="bp-avatar">${avatar}</div>
+          <div class="bp-account-info">
+            <div class="bp-account-name">Google Drive</div>
+            <div class="bp-account-email" title="${escapeAttr(u.email || '')}">${u.email || ''}</div>
           </div>
-          <div class="bp-info-row">
-            <span class="bp-info-label">${t('bp.filename')}</span>
-            <span class="bp-info-value">${filename}</span>
-            <button class="bp-mini-btn" data-act="rename">${t('bp.rename')}</button>
+          <button class="bp-icon-btn bp-signout-btn" data-act="signout" title="${escapeAttr(t('bp.sign_out'))}" aria-label="${escapeAttr(t('bp.sign_out'))}">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+          </button>
+        </div>
+
+        <div class="bp-meta">
+          <div class="bp-meta-row">
+            <span class="bp-meta-label">${t('bp.filename')}</span>
+            <span class="bp-meta-value" title="${escapeAttr(filename)}">${filename}</span>
+            <button class="bp-icon-btn" data-act="rename" title="${escapeAttr(t('bp.rename'))}" aria-label="${escapeAttr(t('bp.rename'))}">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+            </button>
           </div>
-          <div class="bp-info-row">
-            <span class="bp-info-label">${t('bp.last_sync')}</span>
-            <span class="bp-info-value">${lastTxt}</span>
+          <div class="bp-meta-row">
+            <span class="bp-meta-label">${t('bp.last_sync')}</span>
+            <span class="bp-meta-value bp-last-sync">${lastTxt}</span>
           </div>
         </div>
+
         <div class="bp-actions">
           <button class="btn-ghost" data-act="backup-now">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -2282,7 +2296,6 @@ const BackupManager = (() => {
             <span>${t('bp.restore')}</span>
           </button>
         </div>
-        <button class="bp-disconnect" data-act="signout">${t('bp.sign_out')}</button>
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-warn');
