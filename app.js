@@ -586,8 +586,10 @@ function renderRobotDetail() {
   const content = document.getElementById('robot-content');
   const robot = getCurrentContainer();
   const isDaily = getMode() === 'daily';
+  const robotsSection = document.getElementById('robots');
 
   if (!robot) {
+    if (robotsSection) robotsSection.removeAttribute('data-detail-open');
     const emptyMsg = (isDaily ? t('empty.select_list') : t('empty.select_project')).replace(/\n/g, '<br>');
     content.innerHTML = `
       <div class="empty-state">
@@ -596,6 +598,7 @@ function renderRobotDetail() {
       </div>`;
     return;
   }
+  if (robotsSection) robotsSection.setAttribute('data-detail-open', 'true');
 
   const activeTasks  = robot.tasks.filter(t => t.status === 'active');
   const pendingTasks = robot.tasks.filter(t => t.status === 'pending');
@@ -614,6 +617,9 @@ function renderRobotDetail() {
 
   content.innerHTML = `
     <div class="robot-detail-header">
+      <button class="robot-detail-back" onclick="clearRobotSelection()" aria-label="Back">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
       <div>
         <div class="robot-detail-name">${robot.name}</div>
         ${robot.description ? `<div class="robot-detail-desc">${robot.description}</div>` : ''}
@@ -969,6 +975,14 @@ window.deleteRobot = function(id) {
   if (!confirm(getMode() === 'daily' ? t('conf.delete_list') : t('conf.delete_project'))) return;
   state.robots = state.robots.filter(r => r.id !== id);
   if (state.currentRobotId === id) state.currentRobotId = null;
+  save();
+  renderRobotList();
+  renderRobotDetail();
+};
+
+// Mobile master-detail: clear the active project so the list takes over the screen again.
+window.clearRobotSelection = function() {
+  state.currentRobotId = null;
   save();
   renderRobotList();
   renderRobotDetail();

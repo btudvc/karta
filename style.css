@@ -1948,6 +1948,9 @@ main { flex: 1; overflow: hidden; }
 /* ─── BOTTOM NAV (mobile) ──────────────────────────────── */
 .bottom-nav { display: none; }
 
+/* Master-detail back button — hidden on desktop, re-shown inside the mobile @media block */
+.robot-detail-back { display: none; }
+
 /* ─── "MORE" PAGE ──────────────────────────────────────── */
 .more-page {
   width: 100%;
@@ -2063,6 +2066,35 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 
   /* "More" section stays scrollable above the bottom nav */
   #more.section.active { display: block; overflow-y: auto; }
+
+  /* Bug fix: an earlier mobile rule (`.tab span:not(.job-label):not(.daily-label) { display:none }`)
+     was hiding our bottom-nav text labels for Calendar/Visits/More because they have no mode class.
+     Re-enable label spans inside the bottom nav. */
+  .bnav-btn span:not(.job-label):not(.daily-label) { display: inline; }
+
+  /* Bug fix: the desktop `.cal-body { grid-template-columns: 1fr 320px }` at line 1690
+     of the file is later than the original mobile override at line 1447, so source-order
+     wins on desktop's behalf even on mobile. Re-assert single column from this late block. */
+  .cal-body      { grid-template-columns: 1fr; }
+  .cal-day-panel { max-height: 50vh; }
+
+  /* Mobile master-detail: when a project is selected, hide the project list and
+     give the detail content the full screen. Re-show via the in-detail "back" button. */
+  #robots.section[data-detail-open="true"] .sidebar       { display: none; }
+  #robots.section[data-detail-open="true"] .content       { padding: 14px 14px 18px; }
+  .robot-detail-back {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    margin-right: 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .robot-detail-back:hover { background: var(--surface-2); color: var(--text); }
 }
 
 /* ─── "blessed by batu" — bottom-right credit ───────────── */
