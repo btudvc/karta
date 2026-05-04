@@ -1,7 +1,7 @@
 // ── i18n ───────────────────────────────────────────────
 const I18N = {
   en: {
-    'mode.job': 'Job', 'mode.daily': 'Daily',
+    'mode.job': 'Job', 'mode.daily': 'Personal',
     'tab.projects': 'Projects', 'tab.lists': 'Lists', 'tab.tasks': 'Tasks',
     'tab.today': 'Today', 'tab.calendar': 'Calendar', 'tab.journal': 'Journal',
     'tab.meetings': 'Meetings', 'tab.visits': 'Visits', 'tab.releases': 'Releases',
@@ -161,7 +161,7 @@ const I18N = {
     'status.testing': 'Testing', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Deprecated',
   },
   tr: {
-    'mode.job': 'İş', 'mode.daily': 'Günlük',
+    'mode.job': 'İş', 'mode.daily': 'Kişisel',
     'tab.projects': 'Projeler', 'tab.lists': 'Listeler', 'tab.tasks': 'Görevler',
     'tab.today': 'Bugün', 'tab.calendar': 'Takvim', 'tab.journal': 'Günlük',
     'tab.meetings': 'Toplantılar', 'tab.visits': 'Ziyaretler', 'tab.releases': 'Sürümler',
@@ -464,7 +464,8 @@ function renderRobotList() {
   if (!list) return;
   const projects = projectsByMode();
   if (!projects.length) {
-    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No projects yet</div>`;
+    const emptyKey = getMode() === 'daily' ? 'empty.no_lists' : 'empty.no_projects';
+    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">${t(emptyKey)}</div>`;
     refreshCategoryDatalist();
     return;
   }
@@ -1302,14 +1303,16 @@ document.getElementById('save-issue').addEventListener('click', () => {
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 function renderVisits() {
+  // Visits are global (mode-agnostic) — people travel for work and for life
+  // intentionally NOT using visitsByMode here
   const list = document.getElementById('visits-list');
-  const sorted = visitsByMode().sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = (state.fieldVisits || []).slice().sort((a, b) => a.date.localeCompare(b.date));
 
   if (!sorted.length) {
     list.innerHTML = `
       <div class="empty-visits">
         <div class="empty-icon">${ICO.plane}</div>
-        <p>No field visits planned yet.</p>
+        <p>${t('empty.no_visits')}</p>
       </div>`;
     return;
   }
@@ -1322,13 +1325,13 @@ function renderVisits() {
     const diff = Math.round((d - today) / 86400000);
 
     let badge = '';
-    if (diff < 0)       badge = `<span class="days-badge past">${Math.abs(diff)} days ago</span>`;
-    else if (diff === 0) badge = `<span class="days-badge today">Today!</span>`;
-    else if (diff <= 14) badge = `<span class="days-badge soon">${diff} days away</span>`;
-    else                 badge = `<span class="days-badge future">${diff} days away</span>`;
+    if (diff < 0)       badge = `<span class="days-badge past">${t('days.past', { n: Math.abs(diff) })}</span>`;
+    else if (diff === 0) badge = `<span class="days-badge today">${t('days.today')}</span>`;
+    else if (diff <= 14) badge = `<span class="days-badge soon">${t('days.future', { n: diff })}</span>`;
+    else                 badge = `<span class="days-badge future">${t('days.future', { n: diff })}</span>`;
 
     return `
-      <div class="visit-card">
+      <div class="visit-card" id="visit-${visit.id}">
         <div class="visit-date-block">
           <div class="visit-day">${d.getDate()}</div>
           <div class="visit-month">${MONTHS[d.getMonth()]}</div>
@@ -2390,6 +2393,13 @@ function renderCalendar() {
       renderCalDayPanel();
     });
   });
+  // Pills inside cells: jump straight to the entity, don't just select the day
+  grid.querySelectorAll('[data-go-meeting]').forEach(pill => {
+    pill.addEventListener('click', e => { e.stopPropagation(); goToMeeting(pill.dataset.goMeeting); });
+  });
+  grid.querySelectorAll('[data-go-visit]').forEach(pill => {
+    pill.addEventListener('click', e => { e.stopPropagation(); goToVisit(pill.dataset.goVisit); });
+  });
 
   if (calSelected) renderCalDayPanel();
 }
@@ -2401,9 +2411,12 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
   if (otherMonth)         classes.push('other-mo');
   if (dStr === todayStr)  classes.push('today');
   if (dStr === calSelected) classes.push('selected');
-  const eventsHtml = events.slice(0, 3).map(ev => `
-    <div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}">${ev.label}</div>
-  `).join('');
+  const eventsHtml = events.slice(0, 3).map(ev => {
+    const goAttr = ev.kind === 'meeting' ? `data-go-meeting="${ev.id}"`
+                  : ev.kind === 'visit'   ? `data-go-visit="${ev.id}"`
+                  : '';
+    return `<div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}" ${goAttr}>${ev.label}</div>`;
+  }).join('');
   const more = events.length > 3 ? `<div class="cal-day-event">+${events.length - 3}</div>` : '';
   return `
     <div class="${classes.join(' ')}" data-date="${dStr}">
@@ -2412,11 +2425,33 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
     </div>`;
 }
 
+window.goToMeeting = function(id) {
+  state.currentMeetingId = id;
+  const tab = document.querySelector('.tab[data-tab="meetings"]');
+  if (tab) tab.click();
+  if (typeof renderMeetingList === 'function')   renderMeetingList();
+  if (typeof renderMeetingDetail === 'function') renderMeetingDetail();
+};
+
+window.goToVisit = function(id) {
+  const tab = document.querySelector('.tab[data-tab="field-visits"]');
+  if (tab) tab.click();
+  // renderVisits has run via the tab click; scroll to the card
+  setTimeout(() => {
+    const el = document.getElementById('visit-' + id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 1400);
+    }
+  }, 50);
+};
+
 function renderCalDayPanel() {
   const panel = document.getElementById('cal-day-panel');
   if (!panel) return;
   if (!calSelected) {
-    panel.innerHTML = '<div class="cal-day-empty">Bir gün seç</div>';
+    panel.innerHTML = `<div class="cal-day-empty">${t('empty.select_day')}</div>`;
     return;
   }
   const d = new Date(calSelected + 'T00:00:00');
@@ -2430,19 +2465,25 @@ function renderCalDayPanel() {
     <div class="cal-day-title">${dateStr}</div>
     ${meetings.length ? `
       <div>
-        <div class="cal-day-section-label">Meetings</div>
-        ${meetings.map(m => `<div class="cal-day-item"><strong>${m.title}</strong>${m.location ? ' · ' + m.location : ''}</div>`).join('')}
+        <div class="cal-day-section-label">${t('cal.meetings')}</div>
+        ${meetings.map(m => `<div class="cal-day-item clickable" data-go-meeting="${m.id}"><strong>${m.title}</strong>${m.location ? ' · ' + m.location : ''}</div>`).join('')}
       </div>` : ''}
     ${visits.length ? `
       <div>
-        <div class="cal-day-section-label">Visits</div>
-        ${visits.map(v => `<div class="cal-day-item"><strong>${v.location}</strong>${v.robot ? ' · ' + v.robot : ''}</div>`).join('')}
+        <div class="cal-day-section-label">${t('cal.visits')}</div>
+        ${visits.map(v => `<div class="cal-day-item clickable" data-go-visit="${v.id}"><strong>${v.location}</strong>${v.robot ? ' · ' + v.robot : ''}</div>`).join('')}
       </div>` : ''}
     <div>
-      <div class="cal-day-section-label">Notes</div>
-      <textarea class="cal-notes" id="cal-notes-area" placeholder="Bu güne dair not ekle...">${notes}</textarea>
+      <div class="cal-day-section-label">${t('cal.notes')}</div>
+      <textarea class="cal-notes" id="cal-notes-area" placeholder="${t('cal.notes_placeholder')}">${notes}</textarea>
     </div>
   `;
+  panel.querySelectorAll('[data-go-meeting]').forEach(el => {
+    el.addEventListener('click', () => goToMeeting(el.dataset.goMeeting));
+  });
+  panel.querySelectorAll('[data-go-visit]').forEach(el => {
+    el.addEventListener('click', () => goToVisit(el.dataset.goVisit));
+  });
 
   const ta = document.getElementById('cal-notes-area');
   if (ta) {
@@ -2624,7 +2665,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 function inMode(item) { return (item.mode || 'job') === getMode(); }
 function projectsByMode()  { return (state.robots || []).filter(inMode); }
 function meetingsByMode()  { return (state.meetings || []).filter(inMode); }
-function visitsByMode()    { return (state.fieldVisits || []).filter(inMode); }
 
 // ── PWA: register service worker (web only — Electron uses file:// and skips) ──
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

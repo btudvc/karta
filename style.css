@@ -1926,3 +1926,37 @@ main { flex: 1; overflow: hidden; }
 }
 .jrn-area:focus { outline: none; border-color: var(--accent); }
 .jrn-area::placeholder { color: var(--muted-2); }
+
+/* ─── Calendar pill click affordance + flash highlight ──── */
+.cal-day-event[data-go-meeting],
+.cal-day-event[data-go-visit]   { cursor: pointer; }
+.cal-day-event[data-go-meeting]:hover,
+.cal-day-event[data-go-visit]:hover { filter: brightness(1.25); }
+.cal-day-item.clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background .15s var(--ease);
+}
+.cal-day-item.clickable:hover { background: var(--surface-2); }
+@keyframes karta-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,.55); }
+  50%  { box-shadow: 0 0 0 6px rgba(99,102,241,.15); }
+  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+}
+.visit-card.flash { animation: karta-flash 1.4s ease-out; }
+
+/* ─── "blessed by batu" — bottom-right credit ───────────── */
+.blessed-tag {
+  position: fixed;
+  right: 10px;
+  bottom: 6px;
+  font-size: 10.5px;
+  letter-spacing: .4px;
+  color: var(--muted-2);
+  opacity: .55;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.blessed-tag:hover { opacity: .85; }
