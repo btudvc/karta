@@ -1,0 +1,2867 @@
+// ── i18n ───────────────────────────────────────────────
+const I18N = {
+  en: {
+    'mode.job': 'Job', 'mode.daily': 'Daily',
+    'tab.projects': 'Projects', 'tab.lists': 'Lists', 'tab.tasks': 'Tasks',
+    'tab.today': 'Today', 'tab.calendar': 'Calendar', 'tab.journal': 'Journal',
+    'tab.meetings': 'Meetings', 'tab.visits': 'Visits', 'tab.releases': 'Releases',
+    'sidebar.projects': 'Projects', 'sidebar.lists': 'Lists',
+    'sidebar.meetings': 'Meetings', 'sidebar.releases': 'Releases',
+    'sidebar.entries': 'Entries',
+    'btn.add': '+ Add', 'btn.cancel': 'Cancel', 'btn.save_changes': 'Save Changes',
+    'btn.edit': 'Edit', 'btn.delete': 'Delete',
+    'btn.delete_project': 'Delete Project', 'btn.delete_list': 'Delete List',
+    'btn.today': 'Today',
+    'btn.add_project': 'Add Project', 'btn.add_list': 'Add List',
+    'btn.add_task': 'Add Task', 'btn.add_visit': 'Add Visit',
+    'btn.add_release': 'Add Release', 'btn.add_version': 'Add Version',
+    'btn.add_issue': 'Add Issue', 'btn.add_meeting': 'Add Meeting',
+    'modal.add_new_project': 'Add New Project', 'modal.add_new_list': 'Add New List',
+    'modal.edit_project': 'Edit Project', 'modal.edit_list': 'Edit List',
+    'modal.add_task': 'Add Task', 'modal.edit_task': 'Edit Task',
+    'modal.add_visit': 'Add Visit', 'modal.edit_visit': 'Edit Visit',
+    'modal.add_release': 'Add Release', 'modal.edit_release': 'Edit Release',
+    'modal.add_version': 'Add Version', 'modal.edit_version': 'Edit Version',
+    'modal.add_issue': 'Add Known Issue', 'modal.edit_issue': 'Edit Issue',
+    'modal.add_meeting': 'Add Meeting', 'modal.edit_meeting': 'Edit Meeting',
+    'label.project_name': 'Project Name *', 'label.list_name': 'List Name *',
+    'label.task_title': 'Task Title *', 'label.priority': 'Priority',
+    'label.status': 'Status', 'label.severity': 'Severity',
+    'label.description': 'Description', 'label.category': 'Category',
+    'label.location': 'Location *', 'label.date': 'Date *',
+    'label.reference': 'Reference', 'label.notes': 'Notes',
+    'label.changes': 'Changes', 'label.release_code': 'Release Code *',
+    'label.name': 'Name', 'label.project_platform': 'Project / Platform',
+    'label.version': 'Version *', 'label.issue_title': 'Issue Title *',
+    'label.title': 'Title *', 'label.location_platform': 'Location / Platform',
+    'label.attendees': 'Attendees', 'label.related': 'Related Project',
+    'label.filename': 'File name',
+    'ph.project_name': 'e.g. Customer onboarding, Q4 launch...',
+    'ph.list_name': 'e.g. Shopping, To read, Movies...',
+    'ph.category': 'e.g. Work, Personal, Clients...',
+    'ph.description': 'Scope, deliverables, stakeholders...',
+    'ph.task_title': 'What needs to be done?',
+    'ph.location': 'e.g. Korea, Seoul — Samsung HQ',
+    'ph.reference': 'Project, customer, asset...',
+    'ph.visit_notes': 'Purpose, agenda, team members...',
+    'ph.release_code': 'REL-2024-001 / A33-200007-R001',
+    'ph.short_name': 'Short name, e.g. Walker Motor Controller',
+    'ph.fw_desc': 'Purpose, platform, details...',
+    'ph.platform': 'e.g. Mobile app, Walker, Atlas...',
+    'ph.version': 'A33-200007-R001-V002',
+    'ph.changes_lines': '- Balance algorithm updated\n- Motor driver bug fixed\n- New sensor support added',
+    'ph.cl_notes': 'Test notes, known issues...',
+    'ph.issue_title': 'Briefly describe the issue...',
+    'ph.meeting_title': 'Meeting topic...',
+    'ph.meeting_loc': 'e.g. Teams, Office, Samsung HQ...',
+    'ph.attendees': 'e.g. Batu, Ali, Mehmet...',
+    'ph.related_project': 'e.g. Walker, KUKA...',
+    'ph.note': 'Write a note... (Ctrl+Enter to save)',
+    'ph.action_item': 'New action item... (Enter to add)',
+    'ph.brainstorm_notes': 'Meeting notes, decisions, topics discussed...',
+    'empty.select_project': 'Select a project from the sidebar\nor add a new one to get started.',
+    'empty.select_list': 'Select a list from the sidebar\nor add a new one to get started.',
+    'empty.select_release': 'Select a release or add a new one.',
+    'empty.select_meeting': 'Select a meeting or add a new one.',
+    'empty.no_projects': 'No projects yet',
+    'empty.no_lists': 'No lists yet',
+    'empty.no_releases': 'No releases yet',
+    'empty.no_meetings': 'No meetings yet',
+    'empty.no_visits': 'No visits planned yet.',
+    'empty.no_versions': 'No versions yet.',
+    'empty.no_tasks_open': 'No tasks open.',
+    'empty.no_tasks_today': 'No tasks for today.',
+    'empty.no_tasks_yet': 'No tasks yet.',
+    'empty.no_tasks_add': 'No tasks yet. Add your first task!',
+    'empty.no_issues': 'No issues recorded.',
+    'empty.no_notes': 'No notes yet.',
+    'empty.no_journal': 'No entries yet. Start with today.',
+    'empty.select_day': 'Select a day',
+    'filter.open': 'Open', 'filter.today': 'Today', 'filter.all': 'All',
+    'cal.meetings': 'Meetings', 'cal.visits': 'Visits', 'cal.notes': 'Notes',
+    'cal.notes_placeholder': 'Add a note for this day...',
+    'jrn.entries': 'Entries',
+    'jrn.placeholder': 'Write about today... thoughts, what happened, plans...',
+    'jrn.saved': 'Saved',
+    'bp.title': 'Cloud Backup',
+    'bp.subtitle_detected': 'Drive detected — connect in one click',
+    'bp.connect_button': 'Connect to Google Drive',
+    'bp.no_drive_title': 'Google Drive not found.',
+    'bp.no_drive_desc': 'For automatic sync, install Google Drive Desktop.',
+    'bp.install_drive': 'Install Google Drive',
+    'bp.install_link': 'google.com/drive/download',
+    'bp.manual_folder': 'Choose folder manually',
+    'bp.or_manual_folder': 'Or choose folder manually',
+    'bp.hint_drive': 'Files are written to a "Karta" folder in Drive and synced automatically.',
+    'bp.hint_install': 'After installing Drive and signing in, reopen the app — it will auto-detect.',
+    'bp.last_sync': 'Last sync',
+    'bp.never': 'Never',
+    'bp.just_now': 'Just now',
+    'bp.min_ago': '{n} min ago',
+    'bp.backup_now': 'Backup Now',
+    'bp.restore': 'Restore',
+    'bp.disconnect': 'Disconnect',
+    'bp.disconnect_confirm': 'Disconnect? Data stays local, sync stops.',
+    'bp.no_backup_found': 'No backup file found in folder.',
+    'bp.connect_failed': 'Could not connect: {msg}',
+    'bp.restore_overwrite': 'Backup found ({date}, {n} project(s)).\n\nOverwrite existing data?',
+    'bp.restore_load': 'Backup found ({date}, {n} project(s)).\n\nLoad data?',
+    'bp.open_folder': 'Open folder',
+    'att.section': 'Attachments',
+    'att.add': 'Attach file',
+    'att.empty': 'No attachments',
+    'att.too_big': '"{name}" is too large (max 25 MB)',
+    'att.confirm_delete': 'Delete this attachment?',
+    'att.desktop_only': 'Attachments work in the desktop app only.',
+    'att.signin_required': 'Sign in to Google Drive to attach files.',
+    'att.failed': 'Could not save: {msg}',
+    'bp.sign_in': 'Sign in with Google',
+    'bp.sign_out': 'Sign out',
+    'bp.signed_in_as': 'Signed in as',
+    'bp.web_subtitle': 'Sign in to back up to your Google Drive.',
+    'bp.web_hint': 'Files are stored in your Drive under a private "Karta" folder. Same files are visible when you open Karta on desktop.',
+    'bp.signing_in': 'Signing in…',
+    'bp.sign_in_failed': 'Sign-in failed: {msg}',
+    'bp.desktop_only': 'Only works in desktop app.',
+    'bp.filename': 'File',
+    'bp.rename': 'Rename',
+    'bp.rename_prompt': 'New backup file name (existing file will be renamed):',
+    'bp.custom_folder': 'Custom folder',
+    'bp.set_up': 'Set up backup',
+    'conf.delete_project': 'Delete this project and all its data?',
+    'conf.delete_list': 'Delete this list and all its data?',
+    'conf.delete_task': 'Delete this task?',
+    'conf.delete_release': 'Delete this release?',
+    'conf.delete_meeting': 'Delete this meeting?',
+    'conf.delete_visit': 'Delete this field visit?',
+    'conf.delete_issue': 'Delete this issue?',
+    'count.tasks_one': '1 active task',
+    'count.tasks_other': '{n} active tasks',
+    'count.tasks_zero': 'No active tasks',
+    'count.actions_short': '{open} action(s)',
+    'count.versions_one': '1 version',
+    'count.versions_other': '{n} versions',
+    'count.open': '{n} open',
+    'task.tasks_label': 'Tasks',
+    'task.issues_label': 'Known Issues',
+    'task.actions_label': 'Action Items',
+    'task.notes_label': 'Notes',
+    'task.changelog_label': 'Changelog',
+    'btn.done': 'Done', 'btn.reopen': 'Reopen', 'btn.pending': 'Pending',
+    'btn.activate': 'Activate', 'btn.investigating': 'Investigating',
+    'btn.resolved': 'Resolved',
+    'visits.title': 'Visits', 'visits.subtitle': 'Planned visits and trips',
+    'all_tasks.title': 'All Tasks',
+    'all_tasks.subtitle': 'Everything across your projects',
+    'note.add': '+ Add', 'note.empty': 'No notes yet.',
+    'days.future': '{n} days away', 'days.past': '{n} days ago', 'days.today': 'Today!',
+    'priority.normal': 'Normal', 'priority.high': 'High', 'priority.critical': 'Critical', 'priority.low': 'Low', 'priority.medium': 'Medium',
+    'status.active': 'Active', 'status.pending': 'Pending', 'status.done': 'Done',
+    'status.open': 'Open', 'status.investigating': 'Investigating', 'status.resolved': 'Resolved',
+    'status.testing': 'Testing', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Deprecated',
+  },
+  tr: {
+    'mode.job': 'İş', 'mode.daily': 'Günlük',
+    'tab.projects': 'Projeler', 'tab.lists': 'Listeler', 'tab.tasks': 'Görevler',
+    'tab.today': 'Bugün', 'tab.calendar': 'Takvim', 'tab.journal': 'Günlük',
+    'tab.meetings': 'Toplantılar', 'tab.visits': 'Ziyaretler', 'tab.releases': 'Sürümler',
+    'sidebar.projects': 'Projeler', 'sidebar.lists': 'Listeler',
+    'sidebar.meetings': 'Toplantılar', 'sidebar.releases': 'Sürümler',
+    'sidebar.entries': 'Girdiler',
+    'btn.add': '+ Ekle', 'btn.cancel': 'İptal', 'btn.save_changes': 'Kaydet',
+    'btn.edit': 'Düzenle', 'btn.delete': 'Sil',
+    'btn.delete_project': 'Projeyi Sil', 'btn.delete_list': 'Listeyi Sil',
+    'btn.today': 'Bugün',
+    'btn.add_project': 'Proje Ekle', 'btn.add_list': 'Liste Ekle',
+    'btn.add_task': 'Görev Ekle', 'btn.add_visit': 'Ziyaret Ekle',
+    'btn.add_release': 'Sürüm Ekle', 'btn.add_version': 'Versiyon Ekle',
+    'btn.add_issue': 'Sorun Ekle', 'btn.add_meeting': 'Toplantı Ekle',
+    'modal.add_new_project': 'Yeni Proje', 'modal.add_new_list': 'Yeni Liste',
+    'modal.edit_project': 'Projeyi Düzenle', 'modal.edit_list': 'Listeyi Düzenle',
+    'modal.add_task': 'Görev Ekle', 'modal.edit_task': 'Görevi Düzenle',
+    'modal.add_visit': 'Ziyaret Ekle', 'modal.edit_visit': 'Ziyareti Düzenle',
+    'modal.add_release': 'Sürüm Ekle', 'modal.edit_release': 'Sürümü Düzenle',
+    'modal.add_version': 'Versiyon Ekle', 'modal.edit_version': 'Versiyonu Düzenle',
+    'modal.add_issue': 'Sorun Ekle', 'modal.edit_issue': 'Sorunu Düzenle',
+    'modal.add_meeting': 'Toplantı Ekle', 'modal.edit_meeting': 'Toplantıyı Düzenle',
+    'label.project_name': 'Proje Adı *', 'label.list_name': 'Liste Adı *',
+    'label.task_title': 'Görev *', 'label.priority': 'Öncelik',
+    'label.status': 'Durum', 'label.severity': 'Önem',
+    'label.description': 'Açıklama', 'label.category': 'Kategori',
+    'label.location': 'Konum *', 'label.date': 'Tarih *',
+    'label.reference': 'Referans', 'label.notes': 'Notlar',
+    'label.changes': 'Değişiklikler', 'label.release_code': 'Sürüm Kodu *',
+    'label.name': 'İsim', 'label.project_platform': 'Proje / Platform',
+    'label.version': 'Versiyon *', 'label.issue_title': 'Sorun Başlığı *',
+    'label.title': 'Başlık *', 'label.location_platform': 'Yer / Platform',
+    'label.attendees': 'Katılımcılar', 'label.related': 'İlgili Proje',
+    'label.filename': 'Dosya adı',
+    'ph.project_name': 'Örn. Müşteri onboarding, Q4 launch...',
+    'ph.list_name': 'Örn. Alışveriş, Okunacaklar, Filmler...',
+    'ph.category': 'Örn. İş, Kişisel, Müşteriler...',
+    'ph.description': 'Kapsam, çıktılar, paydaşlar...',
+    'ph.task_title': 'Ne yapılacak?',
+    'ph.location': 'Örn. Kore, Seul — Samsung HQ',
+    'ph.reference': 'Proje, müşteri, varlık...',
+    'ph.visit_notes': 'Amaç, gündem, ekip...',
+    'ph.release_code': 'REL-2024-001 / A33-200007-R001',
+    'ph.short_name': 'Kısa ad, örn. Walker Motor Controller',
+    'ph.fw_desc': 'Amaç, platform, detay...',
+    'ph.platform': 'Örn. Mobil uygulama, Walker, Atlas...',
+    'ph.version': 'A33-200007-R001-V002',
+    'ph.changes_lines': '- Denge algoritması güncellendi\n- Motor sürücü hatası düzeltildi\n- Yeni sensör desteği eklendi',
+    'ph.cl_notes': 'Test notları, bilinen sorunlar...',
+    'ph.issue_title': 'Sorunu kısaca tanımla...',
+    'ph.meeting_title': 'Toplantı konusu...',
+    'ph.meeting_loc': 'Örn. Teams, Ofis, Samsung HQ...',
+    'ph.attendees': 'Örn. Batu, Ali, Mehmet...',
+    'ph.related_project': 'Örn. Walker, KUKA...',
+    'ph.note': 'Not yaz... (Ctrl+Enter ile kaydet)',
+    'ph.action_item': 'Yeni aksiyon... (Enter ile ekle)',
+    'ph.brainstorm_notes': 'Toplantı notları, kararlar, konuşulanlar...',
+    'empty.select_project': 'Sol taraftan bir proje seç\nveya yeni bir proje ekle.',
+    'empty.select_list': 'Sol taraftan bir liste seç\nveya yeni bir liste ekle.',
+    'empty.select_release': 'Bir sürüm seç veya yeni ekle.',
+    'empty.select_meeting': 'Bir toplantı seç veya yeni ekle.',
+    'empty.no_projects': 'Henüz proje yok',
+    'empty.no_lists': 'Henüz liste yok',
+    'empty.no_releases': 'Henüz sürüm yok',
+    'empty.no_meetings': 'Henüz toplantı yok',
+    'empty.no_visits': 'Henüz planlanmış ziyaret yok.',
+    'empty.no_versions': 'Henüz versiyon yok.',
+    'empty.no_tasks_open': 'Açık görev yok.',
+    'empty.no_tasks_today': 'Bugün için görev yok.',
+    'empty.no_tasks_yet': 'Henüz görev yok.',
+    'empty.no_tasks_add': 'Henüz görev yok. İlk görevini ekle!',
+    'empty.no_issues': 'Kayıtlı sorun yok.',
+    'empty.no_notes': 'Henüz not yok.',
+    'empty.no_journal': 'Henüz girdi yok. Bugünden başla.',
+    'empty.select_day': 'Bir gün seç',
+    'filter.open': 'Açık', 'filter.today': 'Bugün', 'filter.all': 'Hepsi',
+    'cal.meetings': 'Toplantılar', 'cal.visits': 'Ziyaretler', 'cal.notes': 'Notlar',
+    'cal.notes_placeholder': 'Bu güne ait not...',
+    'jrn.entries': 'Girdiler',
+    'jrn.placeholder': 'Bu günü yaz... düşüncelerin, neler oldu, plan...',
+    'jrn.saved': 'Kaydedildi',
+    'bp.title': 'Bulut Yedekleme',
+    'bp.subtitle_detected': 'Drive bulundu — tek tıkla bağlan',
+    'bp.connect_button': 'Google Drive\'a Bağlan',
+    'bp.no_drive_title': 'Google Drive bulunamadı.',
+    'bp.no_drive_desc': 'Otomatik sync için Google Drive Desktop kurman lazım.',
+    'bp.install_drive': 'Google Drive\'ı indir',
+    'bp.install_link': 'google.com/drive/download',
+    'bp.manual_folder': 'Manuel klasör seç',
+    'bp.or_manual_folder': 'Veya manuel klasör seç',
+    'bp.hint_drive': 'Veriler Drive\'da "Karta" klasörüne yazılır, otomatik senkronize olur.',
+    'bp.hint_install': 'Drive\'ı kurup, oturum açıp sync klasörü oluştuktan sonra uygulamayı yeniden aç.',
+    'bp.last_sync': 'Son yedek',
+    'bp.never': 'Henüz yok',
+    'bp.just_now': 'Az önce',
+    'bp.min_ago': '{n} dk önce',
+    'bp.backup_now': 'Yedekle',
+    'bp.restore': 'Geri Yükle',
+    'bp.disconnect': 'Bağlantıyı Kes',
+    'bp.disconnect_confirm': 'Bağlantıyı kes? Veriler local kalır, sync durur.',
+    'bp.no_backup_found': 'Klasörde yedek dosyası bulunamadı.',
+    'bp.connect_failed': 'Bağlanamadı: {msg}',
+    'bp.restore_overwrite': 'Yedek bulundu ({date}, {n} proje).\n\nMevcut verilerin üzerine yazılsın mı?',
+    'bp.restore_load': 'Yedek bulundu ({date}, {n} proje).\n\nVeriler yüklensin mi?',
+    'bp.open_folder': 'Klasörü aç',
+    'att.section': 'Ekler',
+    'att.add': 'Dosya ekle',
+    'att.empty': 'Ek yok',
+    'att.too_big': '"{name}" çok büyük (max 25 MB)',
+    'att.confirm_delete': 'Bu eki sil?',
+    'att.desktop_only': 'Ekler sadece masaüstü uygulamada çalışır.',
+    'att.signin_required': 'Dosya eklemek için Google Drive\'a giriş yap.',
+    'att.failed': 'Kaydedilemedi: {msg}',
+    'bp.sign_in': 'Google ile giriş yap',
+    'bp.sign_out': 'Çıkış yap',
+    'bp.signed_in_as': 'Bağlı hesap',
+    'bp.web_subtitle': 'Google Drive\'ına yedek almak için giriş yap.',
+    'bp.web_hint': 'Veriler Drive\'ında özel bir "Karta" klasörüne yazılır. Masaüstü uygulamayı açtığında aynı dosyaları görürsün.',
+    'bp.signing_in': 'Giriş yapılıyor…',
+    'bp.sign_in_failed': 'Giriş başarısız: {msg}',
+    'bp.desktop_only': 'Sadece masaüstü uygulamada çalışır.',
+    'bp.filename': 'Dosya',
+    'bp.rename': 'Yeniden adlandır',
+    'bp.rename_prompt': 'Yeni yedek dosyası adı (mevcut dosya da yeniden adlandırılır):',
+    'bp.custom_folder': 'Özel klasör',
+    'bp.set_up': 'Yedek kur',
+    'conf.delete_project': 'Bu projeyi ve tüm verilerini sil?',
+    'conf.delete_list': 'Bu listeyi ve tüm verilerini sil?',
+    'conf.delete_task': 'Bu görevi sil?',
+    'conf.delete_release': 'Bu sürümü sil?',
+    'conf.delete_meeting': 'Bu toplantıyı sil?',
+    'conf.delete_visit': 'Bu ziyareti sil?',
+    'conf.delete_issue': 'Bu sorunu sil?',
+    'count.tasks_one': '1 aktif görev',
+    'count.tasks_other': '{n} aktif görev',
+    'count.tasks_zero': 'Aktif görev yok',
+    'count.actions_short': '{open} aksiyon',
+    'count.versions_one': '1 versiyon',
+    'count.versions_other': '{n} versiyon',
+    'count.open': '{n} açık',
+    'task.tasks_label': 'Görevler',
+    'task.issues_label': 'Bilinen Sorunlar',
+    'task.actions_label': 'Aksiyon Maddeleri',
+    'task.notes_label': 'Notlar',
+    'task.changelog_label': 'Değişiklik Geçmişi',
+    'btn.done': 'Tamam', 'btn.reopen': 'Yeniden Aç', 'btn.pending': 'Beklemede',
+    'btn.activate': 'Aktifleştir', 'btn.investigating': 'İnceleniyor',
+    'btn.resolved': 'Çözüldü',
+    'visits.title': 'Ziyaretler', 'visits.subtitle': 'Planlanan ziyaretler ve seyahatler',
+    'all_tasks.title': 'Tüm Görevler',
+    'all_tasks.subtitle': 'Tüm projelerden görevler',
+    'note.add': '+ Ekle', 'note.empty': 'Henüz not yok.',
+    'days.future': '{n} gün sonra', 'days.past': '{n} gün önce', 'days.today': 'Bugün!',
+    'priority.normal': 'Normal', 'priority.high': 'Yüksek', 'priority.critical': 'Kritik', 'priority.low': 'Düşük', 'priority.medium': 'Orta',
+    'status.active': 'Aktif', 'status.pending': 'Beklemede', 'status.done': 'Tamam',
+    'status.open': 'Açık', 'status.investigating': 'İnceleniyor', 'status.resolved': 'Çözüldü',
+    'status.testing': 'Test', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Eski',
+  },
+};
+
+let currentLang = localStorage.getItem('karta-lang') ||
+  (typeof navigator !== 'undefined' && navigator.language && navigator.language.startsWith('tr') ? 'tr' : 'en');
+
+function t(key, params) {
+  let s = (I18N[currentLang] && I18N[currentLang][key]) ?? I18N.en[key] ?? key;
+  if (params) {
+    for (const k in params) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+  }
+  return s;
+}
+
+function applyI18n() {
+  document.documentElement.setAttribute('lang', currentLang);
+  document.body.setAttribute('data-lang', currentLang);
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  if (typeof renderAll === 'function') renderAll();
+  if (typeof BackupManager !== 'undefined' && BackupManager.refresh) BackupManager.refresh();
+}
+
+function setLang(l) {
+  currentLang = l;
+  localStorage.setItem('karta-lang', l);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+  applyI18n();
+}
+
+// ── ICONS (Lucide-style) ───────────────────────────────
+const ICO = {
+  bot:        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  botLg:      '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  clipboard:  '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+  plane:      '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
+  chip:       '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>',
+  users:      '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  usersAvatar:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  pin:        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-7-7-13a7 7 0 1 1 14 0c0 6-7 13-7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  calendar:   '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  group:      '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  close:      '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  check:      '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  checkSm:    '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  chevron:    '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  search:     '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  undo:       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>',
+  pause:      '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+  play:       '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 20 12 6 20Z"/></svg>',
+  folder:     '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+};
+
+// ── STATE ──────────────────────────────────────────────
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], currentRobotId: null, currentTopicId: null, currentFwId: null, currentMeetingId: null };
+let robotTab = 'tasks'; // 'tasks' | 'issues'
+let topicTab = 'tasks';
+let activeSection    = 'robots'; // 'robots' | 'topics'
+let addingEntityType = 'robot';  // 'robot' | 'topic'
+let editingVisitId     = null;
+let editingRobotId     = null;
+let editingTaskId      = null;
+let editingIssueId     = null;
+let editingFirmwareId  = null;
+let editingChangelogId = null;
+let editingMeetingId   = null;
+
+const STORAGE_KEY = 'karta';
+const LEGACY_STORAGE_KEY = 'ais-planner';
+
+function load() {
+  try {
+    // Prefer new key, migrate from legacy if only old exists
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        raw = legacy;
+      }
+    }
+    if (raw) state = JSON.parse(raw) || state;
+  } catch(e) {}
+  migrateLegacyTopics();
+}
+
+// Merge old `state.topics` (Areas tab) into `state.robots` with category="Notes"
+// One-shot: idempotent because state.topics ends up empty
+function migrateLegacyTopics() {
+  if (!state.topics || state.topics.length === 0) return;
+  state.topics.forEach(topic => {
+    state.robots.push({
+      ...topic,
+      id: topic.id || uid(),
+      category: topic.category || 'Notes',
+      tasks:  topic.tasks  || [],
+      issues: topic.issues || [],
+    });
+  });
+  state.topics = [];
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (typeof BackupManager !== 'undefined') BackupManager.onDataChange();
+}
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+// ── TABS ───────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    const sec = document.getElementById(tab.dataset.tab);
+    if (sec) sec.classList.add('active');
+    if (tab.dataset.tab === 'robots' || tab.dataset.tab === 'topics') {
+      activeSection = tab.dataset.tab;
+    }
+    if (tab.dataset.tab === 'calendar')   renderCalendar();
+    if (tab.dataset.tab === 'all-tasks')  renderAllTasks();
+  });
+});
+
+// ── HELPERS ────────────────────────────────────────────
+function getCurrentContainer() {
+  if (activeSection === 'topics') {
+    return (state.topics || []).find(t => t.id === state.currentTopicId);
+  }
+  return state.robots.find(r => r.id === state.currentRobotId);
+}
+function renderCurrentDetail() {
+  if (activeSection === 'topics') renderTopicDetail();
+  else renderRobotDetail();
+}
+
+// ── PROJECT LIST (grouped by category, filtered by mode) ─
+function renderRobotList() {
+  const list = document.getElementById('robot-list');
+  if (!list) return;
+  const projects = projectsByMode();
+  if (!projects.length) {
+    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No projects yet</div>`;
+    refreshCategoryDatalist();
+    return;
+  }
+
+  // Group projects by category
+  const groups = {};
+  projects.forEach(robot => {
+    const cat = (robot.category || '').trim() || 'Uncategorized';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(robot);
+  });
+
+  // Sort: alphabetical, "Uncategorized" last
+  const cats = Object.keys(groups).sort((a, b) => {
+    if (a === 'Uncategorized') return 1;
+    if (b === 'Uncategorized') return -1;
+    return a.localeCompare(b, 'tr');
+  });
+
+  state.collapsedCategories = state.collapsedCategories || {};
+
+  list.innerHTML = cats.map(cat => {
+    const collapsed = !!state.collapsedCategories[cat];
+    const items = groups[cat];
+    const itemsHtml = items.map(robot => {
+      const active = robot.tasks.filter(t => t.status !== 'done').length;
+      const isSelected = robot.id === state.currentRobotId;
+      return `
+        <div class="robot-item ${isSelected ? 'active' : ''}" data-id="${robot.id}">
+          <div class="robot-avatar">${robot.name[0].toUpperCase()}</div>
+          <div class="robot-item-info">
+            <div class="robot-item-name">${robot.name}</div>
+            <div class="robot-item-count">${active === 0 ? t('count.tasks_zero') : (active === 1 ? t('count.tasks_one') : t('count.tasks_other', {n: active}))}</div>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="cat-group ${collapsed ? 'collapsed' : ''}" data-cat="${escapeAttr(cat)}">
+        <div class="cat-header">
+          <span class="cat-chev">${ICO.chevron}</span>
+          <span class="cat-name">${cat}</span>
+          <span class="cat-count">${items.length}</span>
+        </div>
+        <div class="cat-items">${itemsHtml}</div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.cat-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const cat = h.parentElement.dataset.cat;
+      state.collapsedCategories[cat] = !state.collapsedCategories[cat];
+      save();
+      renderRobotList();
+    });
+  });
+
+  list.querySelectorAll('.robot-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.currentRobotId = item.dataset.id;
+      renderRobotList();
+      renderRobotDetail();
+    });
+  });
+
+  refreshCategoryDatalist();
+}
+
+// HTML attribute escape (for data-cat)
+function escapeAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+// Populate the modal's category datalist with existing categories (current mode only)
+function refreshCategoryDatalist() {
+  const dl = document.getElementById('categories-datalist');
+  if (!dl) return;
+  const cats = new Set();
+  projectsByMode().forEach(r => { if (r.category && r.category.trim()) cats.add(r.category.trim()); });
+  dl.innerHTML = Array.from(cats).sort((a,b)=>a.localeCompare(b,'tr')).map(c => `<option value="${escapeAttr(c)}"></option>`).join('');
+}
+
+// ── ROBOT DETAIL ───────────────────────────────────────
+function renderRobotDetail() {
+  const content = document.getElementById('robot-content');
+  const robot = getCurrentContainer();
+
+  if (!robot) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${ICO.botLg}</div>
+        <p>Select a project from the sidebar<br>or add a new one to get started.</p>
+      </div>`;
+    return;
+  }
+
+  const activeTasks  = robot.tasks.filter(t => t.status === 'active');
+  const pendingTasks = robot.tasks.filter(t => t.status === 'pending');
+  const doneTasks    = robot.tasks.filter(t => t.status === 'done');
+  const orderedTasks = [...activeTasks, ...pendingTasks, ...doneTasks];
+
+  const issues = robot.issues || [];
+  const openIssues = issues.filter(i => i.status !== 'resolved');
+
+  content.innerHTML = `
+    <div class="robot-detail-header">
+      <div>
+        <div class="robot-detail-name">${robot.name}</div>
+        ${robot.description ? `<div class="robot-detail-desc">${robot.description}</div>` : ''}
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" onclick="editRobot('${robot.id}')">Edit</button>
+        <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">Delete Project</button>
+      </div>
+    </div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab ${robotTab==='tasks'?'active':''}" onclick="switchRobotTab('tasks')">
+        Tasks <span class="count-pill">${activeTasks.length + pendingTasks.length}</span>
+      </button>
+      <button class="inner-tab ${robotTab==='issues'?'active':''}" onclick="switchRobotTab('issues')">
+        Known Issues <span class="count-pill issues-pill">${openIssues.length}</span>
+      </button>
+    </div>
+
+    <div id="inner-tab-content">
+      ${robotTab === 'tasks' ? renderTabTasks(orderedTasks, activeTasks, pendingTasks) : ''}
+      ${robotTab === 'issues' ? renderTabIssues(issues) : ''}
+    </div>
+  `;
+}
+
+window.switchRobotTab = function(tab) {
+  if (tab === 'brainstorm') tab = 'tasks';
+  robotTab = tab;
+  renderRobotDetail();
+};
+
+function renderTabTasks(ordered, activeTasks, pendingTasks) {
+  return `
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">Tasks <span class="count-pill">${activeTasks.length + pendingTasks.length} open</span></div>
+        <button class="btn-add" onclick="openTaskModal()">+ Add Task</button>
+      </div>
+      <div id="task-list">
+        ${ordered.length === 0
+          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">No tasks yet. Add your first task!</div>`
+          : ordered.map(t => renderTask(t)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTabBrainstorm(robot) {
+  return `
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">Brainstorm</div>
+      </div>
+      <div class="brainstorm-wrap">
+        <textarea class="brainstorm-area" id="brainstorm-area"
+          placeholder="Ideas, notes, questions, hypotheses... write freely here."
+        >${robot.brainstorm || ''}</textarea>
+        <div class="save-indicator" id="save-indicator">Saved</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── ISSUES ─────────────────────────────────────────────
+function renderTabIssues(issues) {
+  const open       = issues.filter(i => i.status === 'open');
+  const invest     = issues.filter(i => i.status === 'investigating');
+  const resolved   = issues.filter(i => i.status === 'resolved');
+  const ordered    = [...open, ...invest, ...resolved];
+
+  return `
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">Known Issues <span class="count-pill issues-pill">${open.length + invest.length} open</span></div>
+        <button class="btn-add" onclick="openIssueModal()">+ Add Issue</button>
+      </div>
+      <div id="issue-list">
+        ${ordered.length === 0
+          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">Kayıtlı hata yok.</div>`
+          : ordered.map(i => renderIssue(i)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderIssue(issue) {
+  const severityLabel = { low:'Low', medium:'Medium', high:'High', critical:'Critical' };
+  const statusLabel   = { open:'Open', investigating:'Investigating', resolved:'Resolved' };
+  return `
+    <div class="task-item ${issue.status} ${issue.expanded ? 'expanded' : ''}" id="issue-${issue.id}">
+      <div class="task-header" onclick="toggleIssue('${issue.id}')">
+        <div class="issue-dot ${issue.status}"></div>
+        <div class="task-title-text">${issue.title}</div>
+        <span class="severity-tag ${issue.severity}">${severityLabel[issue.severity]}</span>
+        <span class="issue-status-tag ${issue.status}">${statusLabel[issue.status]}</span>
+        ${(issue.notebook||[]).length > 0 ? `<span class="nb-count">${issue.notebook.length}</span>` : ''}
+        <span class="expand-chevron">${ICO.chevron}</span>
+      </div>
+      <div class="task-body">
+        <div class="task-body-inner">
+          ${renderIssueNotebook(issue)}
+          ${renderAttachments('issue', issue.id, issue.attachments)}
+          <div class="task-actions">
+            ${issue.status === 'open'          ? `<button class="btn-sm" onclick="setIssueStatus('${issue.id}','investigating')">${ICO.search}<span>Investigating</span></button>` : ''}
+            ${issue.status === 'investigating' ? `<button class="btn-sm" onclick="setIssueStatus('${issue.id}','open')">${ICO.undo}<span>Reopen</span></button>` : ''}
+            ${issue.status !== 'resolved'      ? `<button class="btn-sm success" onclick="setIssueStatus('${issue.id}','resolved')">${ICO.check}<span>Resolved</span></button>` : ''}
+            ${issue.status === 'resolved'      ? `<button class="btn-sm" onclick="setIssueStatus('${issue.id}','open')">${ICO.undo}<span>Reopen</span></button>` : ''}
+            <button class="btn-sm" onclick="editIssue('${issue.id}')">Edit</button>
+            <button class="btn-sm danger" onclick="deleteIssue('${issue.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIssueNotebook(issue) {
+  const entries = issue.notebook || [];
+  const entriesHtml = entries.length === 0
+    ? `<div class="nb-empty">${t('empty.no_notes')}</div>`
+    : entries.map(e => `
+        <div class="nb-entry" id="nbentry-${e.id}">
+          <div class="nb-entry-meta">
+            <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
+            <button class="nb-delete-btn" onclick="deleteIssueNoteEntry('${issue.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+          </div>
+          <div class="nb-entry-text">${e.text.replace(/\n/g, '<br>')}</div>
+        </div>
+      `).join('');
+  return `
+    <div class="notebook" id="issue-notebook-${issue.id}">
+      <div class="nb-entries">${entriesHtml}</div>
+      <div class="nb-input-row">
+        <textarea class="nb-input" id="issue-nb-input-${issue.id}"
+          placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
+          onkeydown="issueNbKeydown(event,'${issue.id}')"
+          rows="2"
+        ></textarea>
+        <button class="nb-add-btn" onclick="addIssueNoteEntry('${issue.id}')">+ Ekle</button>
+      </div>
+    </div>
+  `;
+}
+
+window.toggleIssue = function(id) {
+  const robot = getCurrentContainer();
+  const issue = (robot.issues||[]).find(i => i.id === id);
+  issue.expanded = !issue.expanded;
+  save();
+  const el = document.getElementById('issue-' + id);
+  el.classList.toggle('expanded', issue.expanded);
+};
+
+window.setIssueStatus = function(id, status) {
+  const robot = getCurrentContainer();
+  const issue = (robot.issues||[]).find(i => i.id === id);
+  issue.status = status;
+  save();
+  renderCurrentDetail();
+};
+
+window.deleteIssue = function(id) {
+  if (!confirm(t('conf.delete_issue'))) return;
+  const robot = getCurrentContainer();
+  robot.issues = (robot.issues||[]).filter(i => i.id !== id);
+  save();
+  renderCurrentDetail();
+};
+
+window.addIssueNoteEntry = function(issueId) {
+  const robot = getCurrentContainer();
+  const issue = (robot.issues||[]).find(i => i.id === issueId);
+  const input = document.getElementById('issue-nb-input-' + issueId);
+  const text = input.value.trim();
+  if (!text) { input.focus(); return; }
+  if (!issue.notebook) issue.notebook = [];
+  issue.notebook.push({ id: uid(), text, createdAt: Date.now() });
+  save();
+  const nb = document.getElementById('issue-notebook-' + issueId);
+  if (nb) nb.outerHTML = renderIssueNotebook(issue);
+  const countEl = document.querySelector(`#issue-${issueId} .nb-count`);
+  const chevron = document.querySelector(`#issue-${issueId} .expand-chevron`);
+  if (issue.notebook.length > 0) {
+    if (countEl) countEl.textContent = issue.notebook.length;
+    else if (chevron) {
+      const badge = document.createElement('span');
+      badge.className = 'nb-count';
+      badge.textContent = issue.notebook.length;
+      chevron.before(badge);
+    }
+  }
+};
+
+window.issueNbKeydown = function(e, issueId) {
+  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); addIssueNoteEntry(issueId); }
+};
+
+window.deleteIssueNoteEntry = function(issueId, entryId) {
+  const robot = getCurrentContainer();
+  const issue = (robot.issues||[]).find(i => i.id === issueId);
+  issue.notebook = (issue.notebook||[]).filter(e => e.id !== entryId);
+  save();
+  const nb = document.getElementById('issue-notebook-' + issueId);
+  if (nb) nb.outerHTML = renderIssueNotebook(issue);
+  const countEl = document.querySelector(`#issue-${issueId} .nb-count`);
+  if (countEl) {
+    if (issue.notebook.length === 0) countEl.remove();
+    else countEl.textContent = issue.notebook.length;
+  }
+};
+
+function formatNoteTime(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]} ${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderNotebook(task) {
+  const entries = task.notebook || [];
+  const entriesHtml = entries.length === 0
+    ? `<div class="nb-empty">${t('empty.no_notes')}</div>`
+    : entries.map(e => `
+        <div class="nb-entry" id="nbentry-${e.id}">
+          <div class="nb-entry-meta">
+            <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
+            <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+          </div>
+          <div class="nb-entry-text">${e.text.replace(/\n/g, '<br>')}</div>
+        </div>
+      `).join('');
+
+  return `
+    <div class="notebook" id="notebook-${task.id}">
+      <div class="nb-entries">${entriesHtml}</div>
+      <div class="nb-input-row">
+        <textarea class="nb-input" id="nb-input-${task.id}"
+          placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
+          onkeydown="nbKeydown(event,'${task.id}')"
+          rows="2"
+        ></textarea>
+        <button class="nb-add-btn" onclick="addNoteEntry('${task.id}')">+ Ekle</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderTask(task) {
+  return `
+    <div class="task-item ${task.status} ${task.expanded ? 'expanded' : ''}" id="task-${task.id}">
+      <div class="task-header" onclick="toggleTask('${task.id}')">
+        <div class="task-dot ${task.status}"></div>
+        <div class="task-title-text">${task.title}</div>
+        ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
+        <span class="status-tag ${task.status}">${task.status}</span>
+        ${(task.notebook||[]).length > 0 ? `<span class="nb-count">${task.notebook.length}</span>` : ''}
+        <span class="expand-chevron">${ICO.chevron}</span>
+      </div>
+      <div class="task-body">
+        <div class="task-body-inner">
+          ${renderNotebook(task)}
+          ${renderAttachments('task', task.id, task.attachments)}
+          <div class="task-actions">
+            ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
+            ${task.status === 'done'    ? `<button class="btn-sm" onclick="setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
+            ${task.status === 'active'  ? `<button class="btn-sm" onclick="setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
+            ${task.status === 'pending' ? `<button class="btn-sm" onclick="setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
+            <button class="btn-sm" onclick="editTask('${task.id}')">Edit</button>
+            <button class="btn-sm danger" onclick="deleteTask('${task.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Task expand/collapse
+window.toggleTask = function(id) {
+  const robot = getCurrentContainer();
+  const task = robot.tasks.find(t => t.id === id);
+  task.expanded = !task.expanded;
+  save();
+  // Toggle DOM directly for snappiness
+  const el = document.getElementById('task-' + id);
+  el.classList.toggle('expanded', task.expanded);
+};
+
+window.addNoteEntry = function(taskId) {
+  const robot = getCurrentContainer();
+  const task = robot.tasks.find(t => t.id === taskId);
+  const input = document.getElementById('nb-input-' + taskId);
+  const text = input.value.trim();
+  if (!text) { input.focus(); return; }
+  if (!task.notebook) task.notebook = [];
+  task.notebook.push({ id: uid(), text, createdAt: Date.now() });
+  save();
+  // Re-render only the notebook part for speed
+  const nb = document.getElementById('notebook-' + taskId);
+  if (nb) nb.outerHTML = renderNotebook(task);
+  else renderCurrentDetail();
+  // Re-render the note count badge in the header
+  const countEl = document.querySelector(`#task-${taskId} .nb-count`);
+  const expandChevron = document.querySelector(`#task-${taskId} .expand-chevron`);
+  if (task.notebook.length > 0) {
+    if (countEl) { countEl.textContent = task.notebook.length; }
+    else if (expandChevron) {
+      const badge = document.createElement('span');
+      badge.className = 'nb-count';
+      badge.textContent = task.notebook.length;
+      expandChevron.before(badge);
+    }
+  }
+};
+
+window.nbKeydown = function(e, taskId) {
+  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); addNoteEntry(taskId); }
+};
+
+window.deleteNoteEntry = function(taskId, entryId) {
+  const robot = getCurrentContainer();
+  const task = robot.tasks.find(t => t.id === taskId);
+  task.notebook = (task.notebook || []).filter(e => e.id !== entryId);
+  save();
+  const nb = document.getElementById('notebook-' + taskId);
+  if (nb) nb.outerHTML = renderNotebook(task);
+  // update count badge
+  const countEl = document.querySelector(`#task-${taskId} .nb-count`);
+  if (countEl) {
+    if (task.notebook.length === 0) countEl.remove();
+    else countEl.textContent = task.notebook.length;
+  }
+};
+
+window.setStatus = function(id, status) {
+  const robot = getCurrentContainer();
+  const task = robot.tasks.find(t => t.id === id);
+  task.status = status;
+  save();
+  renderCurrentDetail();
+  if (activeSection === 'topics') renderTopicList(); else renderRobotList();
+};
+
+window.deleteTask = function(id) {
+  if (!confirm(t('conf.delete_task'))) return;
+  const robot = getCurrentContainer();
+  robot.tasks = robot.tasks.filter(t => t.id !== id);
+  save();
+  renderCurrentDetail();
+  if (activeSection === 'topics') renderTopicList(); else renderRobotList();
+};
+
+window.deleteRobot = function(id) {
+  if (!confirm(getMode() === 'daily' ? t('conf.delete_list') : t('conf.delete_project'))) return;
+  state.robots = state.robots.filter(r => r.id !== id);
+  if (state.currentRobotId === id) state.currentRobotId = null;
+  save();
+  renderRobotList();
+  renderRobotDetail();
+};
+
+window.deleteTopic = function(id) {
+  if (!confirm(t('conf.delete_list'))) return;
+  state.topics = (state.topics||[]).filter(t => t.id !== id);
+  if (state.currentTopicId === id) state.currentTopicId = null;
+  save();
+  renderTopicList();
+  renderTopicDetail();
+};
+
+window.editTopic = function(id) {
+  const topic = (state.topics||[]).find(t => t.id === id);
+  if (!topic) return;
+  addingEntityType = 'topic';
+  editingRobotId = id;
+  document.getElementById('robot-name').value = topic.name;
+  document.getElementById('robot-desc').value = topic.description || '';
+  document.querySelector('#modal-robot h3').textContent = 'Edit Area';
+  document.getElementById('save-robot').textContent = 'Save Changes';
+  document.getElementById('robot-name-label').textContent = 'Area Name *';
+  openModal('modal-robot');
+  setTimeout(() => document.getElementById('robot-name').focus(), 50);
+};
+
+window.switchTopicTab = function(tab) {
+  if (tab === 'brainstorm') tab = 'tasks';
+  topicTab = tab;
+  renderTopicDetail();
+};
+
+// ── TOPIC LIST ─────────────────────────────────────────
+function renderTopicList() {
+  const list = document.getElementById('topic-list');
+  if (!list) return;
+  const topics = state.topics || [];
+  if (!topics.length) {
+    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No areas yet</div>`;
+    return;
+  }
+  list.innerHTML = topics.map(topic => {
+    const active = topic.tasks.filter(t => t.status !== 'done').length;
+    const isSelected = topic.id === state.currentTopicId;
+    return `
+      <div class="robot-item ${isSelected ? 'active' : ''}" data-id="${topic.id}">
+        <div class="robot-avatar" style="background:var(--surface-3)">${topic.name[0].toUpperCase()}</div>
+        <div class="robot-item-info">
+          <div class="robot-item-name">${topic.name}</div>
+          <div class="robot-item-count">${active === 0 ? t('count.tasks_zero') : (active === 1 ? t('count.tasks_one') : t('count.tasks_other', {n: active}))}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.robot-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.currentTopicId = item.dataset.id;
+      renderTopicList();
+      renderTopicDetail();
+    });
+  });
+}
+
+// ── TOPIC DETAIL ───────────────────────────────────────
+function renderTopicDetail() {
+  const content = document.getElementById('topic-content');
+  if (!content) return;
+  const topic = (state.topics||[]).find(t => t.id === state.currentTopicId);
+  if (!topic) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${ICO.clipboard}</div>
+        <p>Select an area or add a new one.</p>
+      </div>`;
+    return;
+  }
+  const activeTasks  = topic.tasks.filter(t => t.status === 'active');
+  const pendingTasks = topic.tasks.filter(t => t.status === 'pending');
+  const doneTasks    = topic.tasks.filter(t => t.status === 'done');
+  const orderedTasks = [...activeTasks, ...pendingTasks, ...doneTasks];
+  const issues = topic.issues || [];
+  const openIssues = issues.filter(i => i.status !== 'resolved');
+
+  content.innerHTML = `
+    <div class="robot-detail-header">
+      <div>
+        <div class="robot-detail-name">${topic.name}</div>
+        ${topic.description ? `<div class="robot-detail-desc">${topic.description}</div>` : ''}
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" onclick="editTopic('${topic.id}')">Edit</button>
+        <button class="btn-sm danger" onclick="deleteTopic('${topic.id}')">Delete</button>
+      </div>
+    </div>
+    <div class="inner-tabs">
+      <button class="inner-tab ${topicTab==='tasks'?'active':''}" onclick="switchTopicTab('tasks')">
+        Tasks <span class="count-pill">${activeTasks.length + pendingTasks.length}</span>
+      </button>
+      <button class="inner-tab ${topicTab==='issues'?'active':''}" onclick="switchTopicTab('issues')">
+        Known Issues <span class="count-pill issues-pill">${openIssues.length}</span>
+      </button>
+    </div>
+    <div id="inner-tab-content">
+      ${topicTab === 'tasks'  ? renderTabTasks(orderedTasks, activeTasks, pendingTasks) : ''}
+      ${topicTab === 'issues' ? renderTabIssues(issues) : ''}
+    </div>
+  `;
+}
+
+// ── EDIT FUNCTIONS ─────────────────────────────────────
+window.editRobot = function(id) {
+  const robot = state.robots.find(r => r.id === id);
+  if (!robot) return;
+  addingEntityType = 'robot';
+  editingRobotId = id;
+  document.getElementById('robot-name').value = robot.name;
+  document.getElementById('robot-desc').value = robot.description || '';
+  const catEl = document.getElementById('robot-category');
+  if (catEl) catEl.value = robot.category || '';
+  const isDaily = getMode() === 'daily';
+  document.querySelector('#modal-robot h3').textContent     = isDaily ? t('modal.edit_list')   : t('modal.edit_project');
+  document.getElementById('save-robot').textContent          = t('btn.save_changes');
+  document.getElementById('robot-name-label').textContent    = isDaily ? t('label.list_name')  : t('label.project_name');
+  refreshCategoryDatalist();
+  openModal('modal-robot');
+  setTimeout(() => document.getElementById('robot-name').focus(), 50);
+};
+
+window.editTask = function(id) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === id);
+  if (!task) return;
+  editingTaskId = id;
+  document.getElementById('task-title').value = task.title;
+  resetRadio('task-priority-group', task.priority || 'normal');
+  resetRadio('task-status-group', task.status || 'active');
+  initRadioGroup('task-priority-group');
+  initRadioGroup('task-status-group');
+  document.querySelector('#modal-task h3').textContent = 'Edit Task';
+  document.getElementById('save-task').textContent = 'Save Changes';
+  openModal('modal-task');
+  setTimeout(() => document.getElementById('task-title').focus(), 50);
+};
+
+window.editIssue = function(id) {
+  const robot = getCurrentContainer();
+  const issue = robot && (robot.issues||[]).find(i => i.id === id);
+  if (!issue) return;
+  editingIssueId = id;
+  document.getElementById('issue-title').value = issue.title;
+  resetRadio('issue-severity-group', issue.severity || 'low');
+  resetRadio('issue-status-group', issue.status === 'resolved' ? 'open' : (issue.status || 'open'));
+  initRadioGroup('issue-severity-group');
+  initRadioGroup('issue-status-group');
+  document.querySelector('#modal-issue h3').textContent = 'Edit Issue';
+  document.getElementById('save-issue').textContent = 'Save Changes';
+  openModal('modal-issue');
+  setTimeout(() => document.getElementById('issue-title').focus(), 50);
+};
+
+window.editVisit = function(id) {
+  const visit = state.fieldVisits.find(v => v.id === id);
+  if (!visit) return;
+  editingVisitId = id;
+  document.getElementById('visit-location').value = visit.location;
+  document.getElementById('visit-date').value = visit.date;
+  document.getElementById('visit-robot').value = visit.robot || '';
+  document.getElementById('visit-notes').value = visit.notes || '';
+  document.querySelector('#modal-visit h3').textContent = 'Edit Field Visit';
+  document.getElementById('save-visit').textContent = 'Save Changes';
+  openModal('modal-visit');
+  setTimeout(() => document.getElementById('visit-location').focus(), 50);
+};
+
+window.editFirmware = function(id) {
+  const fw = (state.firmware||[]).find(f => f.id === id);
+  if (!fw) return;
+  editingFirmwareId = id;
+  document.getElementById('fw-code').value = fw.code;
+  document.getElementById('fw-name').value = fw.name || '';
+  document.getElementById('fw-desc').value = fw.description || '';
+  document.getElementById('fw-robot').value = fw.robot || '';
+  document.querySelector('#modal-fw h3').textContent = 'Edit Release';
+  document.getElementById('save-fw').textContent = 'Save Changes';
+  openModal('modal-fw');
+  setTimeout(() => document.getElementById('fw-code').focus(), 50);
+};
+
+window.editChangelogEntry = function(fwId, entryId) {
+  const fw = (state.firmware||[]).find(f => f.id === fwId);
+  const entry = fw && (fw.changelog||[]).find(e => e.id === entryId);
+  if (!entry) return;
+  editingChangelogId = entryId;
+  state.currentFwId = fwId;
+  document.getElementById('cl-version').value = entry.version;
+  document.getElementById('cl-changes').value = entry.changes || '';
+  document.getElementById('cl-notes').value = entry.notes || '';
+  resetRadio('cl-status-group', entry.status || 'rc');
+  initRadioGroup('cl-status-group');
+  document.querySelector('#modal-changelog h3').textContent = 'Edit Version';
+  document.getElementById('save-changelog').textContent = 'Save Changes';
+  openModal('modal-changelog');
+  setTimeout(() => document.getElementById('cl-version').focus(), 50);
+};
+
+// Brainstorm auto-save
+let bsTimer;
+function attachBrainstorm(entityId) {
+  const area = document.getElementById('brainstorm-area');
+  const indicator = document.getElementById('save-indicator');
+  if (!area) return;
+  area.addEventListener('input', () => {
+    clearTimeout(bsTimer);
+    bsTimer = setTimeout(() => {
+      const entity = state.robots.find(r => r.id === entityId) ||
+                     (state.topics||[]).find(t => t.id === entityId);
+      if (entity) { entity.brainstorm = area.value; save(); }
+      indicator.classList.add('show');
+      setTimeout(() => indicator.classList.remove('show'), 1500);
+    }, 600);
+  });
+}
+
+// ── MODAL HELPERS ──────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  // Reset editing state
+  editingVisitId = null; editingRobotId = null; editingTaskId = null;
+  editingIssueId = null; editingFirmwareId = null; editingChangelogId = null;
+  editingMeetingId = null;
+  // Reset modal titles/buttons to "add" mode
+  const resets = {
+    'modal-robot':     ['#modal-robot h3',     getMode() === 'daily' ? t('modal.add_new_list') : t('modal.add_new_project'),
+                        'save-robot',          getMode() === 'daily' ? t('btn.add_list') : t('btn.add_project')],
+    'modal-task':      ['#modal-task h3',       t('modal.add_task'),    'save-task',     t('btn.add_task')],
+    'modal-issue':     ['#modal-issue h3',      t('modal.add_issue'),   'save-issue',    t('btn.add_issue')],
+    'modal-visit':     ['#modal-visit h3',      t('modal.add_visit'),   'save-visit',    t('btn.add_visit')],
+    'modal-fw':        ['#modal-fw h3',         t('modal.add_release'), 'save-fw',       t('btn.add_release')],
+    'modal-changelog': ['#modal-changelog h3',  t('modal.add_version'), 'save-changelog',t('btn.add_version')],
+    'modal-meeting':   ['#modal-meeting h3',    t('modal.add_meeting'), 'save-meeting',  t('btn.add_meeting')],
+  };
+  const r = resets[id];
+  if (r) {
+    document.querySelector(r[0]).textContent = r[1];
+    document.getElementById(r[2]).textContent = r[3];
+  }
+}
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Radio group logic
+function initRadioGroup(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.radio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+function getRadioValue(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return null;
+  const active = group.querySelector('.radio-btn.active');
+  return active ? active.dataset.value : null;
+}
+function resetRadio(groupId, defaultVal) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.radio-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.value === defaultVal);
+  });
+}
+
+// ── ADD ROBOT ──────────────────────────────────────────
+function openEntityModal(type) {
+  addingEntityType = type;
+  document.getElementById('robot-name').value = '';
+  document.getElementById('robot-desc').value = '';
+  const catEl = document.getElementById('robot-category');
+  if (catEl) catEl.value = '';
+  const isDaily = getMode() === 'daily';
+  document.querySelector('#modal-robot h3').textContent     = isDaily ? t('modal.add_new_list')  : t('modal.add_new_project');
+  document.getElementById('save-robot').textContent          = isDaily ? t('btn.add_list')       : t('btn.add_project');
+  document.getElementById('robot-name-label').textContent    = isDaily ? t('label.list_name')    : t('label.project_name');
+  refreshCategoryDatalist();
+  openModal('modal-robot');
+  setTimeout(() => document.getElementById('robot-name').focus(), 50);
+}
+
+document.getElementById('add-robot-btn').addEventListener('click', () => openEntityModal('robot'));
+const _addTopicBtn = document.getElementById('add-topic-btn');
+if (_addTopicBtn) _addTopicBtn.addEventListener('click', () => openEntityModal('robot'));
+
+document.getElementById('robot-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('save-robot').click();
+});
+
+document.getElementById('save-robot').addEventListener('click', () => {
+  const name = document.getElementById('robot-name').value.trim();
+  if (!name) { document.getElementById('robot-name').focus(); return; }
+  const desc    = document.getElementById('robot-desc').value.trim();
+  const catEl   = document.getElementById('robot-category');
+  const category = catEl ? catEl.value.trim() : '';
+  if (editingRobotId) {
+    const robot = state.robots.find(r => r.id === editingRobotId);
+    if (robot) { robot.name = name; robot.description = desc; robot.category = category; }
+  } else {
+    const robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now() };
+    state.robots.push(robot);
+    state.currentRobotId = robot.id;
+  }
+  save();
+  renderRobotList();
+  renderRobotDetail();
+  closeModal('modal-robot');
+});
+
+// ── ADD TASK ───────────────────────────────────────────
+window.openTaskModal = function() {
+  document.getElementById('task-title').value = '';
+  resetRadio('task-priority-group', 'normal');
+  resetRadio('task-status-group', 'active');
+  initRadioGroup('task-priority-group');
+  initRadioGroup('task-status-group');
+  openModal('modal-task');
+  setTimeout(() => document.getElementById('task-title').focus(), 50);
+};
+
+document.getElementById('task-title').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('save-task').click();
+});
+
+document.getElementById('save-task').addEventListener('click', () => {
+  const title = document.getElementById('task-title').value.trim();
+  if (!title) { document.getElementById('task-title').focus(); return; }
+  const priority = getRadioValue('task-priority-group') || 'normal';
+  const status   = getRadioValue('task-status-group')   || 'active';
+  const robot = getCurrentContainer();
+  if (!robot) return;
+  if (editingTaskId) {
+    const task = robot.tasks.find(t => t.id === editingTaskId);
+    if (task) { task.title = title; task.priority = priority; task.status = status; }
+  } else {
+    robot.tasks.push({ id: uid(), title, priority, status, notebook: [], expanded: false, createdAt: Date.now() });
+  }
+  save();
+  renderCurrentDetail();
+  if (activeSection === 'topics') renderTopicList(); else renderRobotList();
+  closeModal('modal-task');
+});
+
+// ── ADD ISSUE ──────────────────────────────────────────
+window.openIssueModal = function() {
+  document.getElementById('issue-title').value = '';
+  resetRadio('issue-severity-group', 'low');
+  resetRadio('issue-status-group', 'open');
+  initRadioGroup('issue-severity-group');
+  initRadioGroup('issue-status-group');
+  openModal('modal-issue');
+  setTimeout(() => document.getElementById('issue-title').focus(), 50);
+};
+
+document.getElementById('issue-title').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('save-issue').click();
+});
+
+document.getElementById('save-issue').addEventListener('click', () => {
+  const title = document.getElementById('issue-title').value.trim();
+  if (!title) { document.getElementById('issue-title').focus(); return; }
+  const severity = getRadioValue('issue-severity-group') || 'low';
+  const status   = getRadioValue('issue-status-group')   || 'open';
+  const robot = getCurrentContainer();
+  if (!robot) return;
+  if (!robot.issues) robot.issues = [];
+  if (editingIssueId) {
+    const issue = robot.issues.find(i => i.id === editingIssueId);
+    if (issue) { issue.title = title; issue.severity = severity; issue.status = status; }
+  } else {
+    robot.issues.push({ id: uid(), title, severity, status, notebook: [], expanded: false, createdAt: Date.now() });
+  }
+  save();
+  if (activeSection === 'topics') topicTab = 'issues'; else robotTab = 'issues';
+  renderCurrentDetail();
+  closeModal('modal-issue');
+});
+
+// ── FIELD VISITS ───────────────────────────────────────
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function renderVisits() {
+  const list = document.getElementById('visits-list');
+  const sorted = visitsByMode().sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!sorted.length) {
+    list.innerHTML = `
+      <div class="empty-visits">
+        <div class="empty-icon">${ICO.plane}</div>
+        <p>No field visits planned yet.</p>
+      </div>`;
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  list.innerHTML = sorted.map(visit => {
+    const d = new Date(visit.date + 'T00:00:00');
+    const diff = Math.round((d - today) / 86400000);
+
+    let badge = '';
+    if (diff < 0)       badge = `<span class="days-badge past">${Math.abs(diff)} days ago</span>`;
+    else if (diff === 0) badge = `<span class="days-badge today">Today!</span>`;
+    else if (diff <= 14) badge = `<span class="days-badge soon">${diff} days away</span>`;
+    else                 badge = `<span class="days-badge future">${diff} days away</span>`;
+
+    return `
+      <div class="visit-card">
+        <div class="visit-date-block">
+          <div class="visit-day">${d.getDate()}</div>
+          <div class="visit-month">${MONTHS[d.getMonth()]}</div>
+          <div class="visit-year">${d.getFullYear()}</div>
+        </div>
+        <div class="visit-info">
+          <div class="visit-location">${ICO.pin} <span>${visit.location}</span></div>
+          <div class="visit-tags">
+            ${visit.robot ? `<span class="visit-robot-tag">${ICO.bot} ${visit.robot}</span>` : ''}
+            ${badge}
+          </div>
+          ${visit.notes ? `<div class="visit-notes-text">${visit.notes}</div>` : ''}
+          ${renderAttachments('visit', visit.id, visit.attachments)}
+        </div>
+        <div class="visit-delete">
+          <button class="btn-sm" onclick="editVisit('${visit.id}')">${t('btn.edit')}</button>
+          <button class="btn-sm danger" onclick="deleteVisit('${visit.id}')">${t('btn.delete')}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.deleteVisit = function(id) {
+  if (!confirm(t('conf.delete_visit'))) return;
+  state.fieldVisits = state.fieldVisits.filter(v => v.id !== id);
+  save();
+  renderVisits();
+};
+
+// Add Visit Modal
+document.getElementById('add-visit-btn').addEventListener('click', () => {
+  document.getElementById('visit-location').value = '';
+  document.getElementById('visit-date').value = '';
+  document.getElementById('visit-robot').value = '';
+  document.getElementById('visit-notes').value = '';
+  openModal('modal-visit');
+  setTimeout(() => document.getElementById('visit-location').focus(), 50);
+});
+
+document.getElementById('save-visit').addEventListener('click', () => {
+  const location = document.getElementById('visit-location').value.trim();
+  const date     = document.getElementById('visit-date').value;
+  if (!location || !date) {
+    if (!location) document.getElementById('visit-location').focus();
+    else document.getElementById('visit-date').focus();
+    return;
+  }
+  const robot = document.getElementById('visit-robot').value.trim();
+  const notes = document.getElementById('visit-notes').value.trim();
+  if (editingVisitId) {
+    const visit = state.fieldVisits.find(v => v.id === editingVisitId);
+    if (visit) { visit.location = location; visit.date = date; visit.robot = robot; visit.notes = notes; }
+  } else {
+    state.fieldVisits.push({ id: uid(), location, date, robot, notes, mode: getMode(), createdAt: Date.now() });
+  }
+  save();
+  renderVisits();
+  closeModal('modal-visit');
+});
+
+// ── FIRMWARE ───────────────────────────────────────────
+function renderFirmwareList() {
+  const list = document.getElementById('fw-list');
+  if (!list) return;
+  const fw = firmwareByMode();
+  if (!fw.length) {
+    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No releases yet</div>`;
+    return;
+  }
+  list.innerHTML = fw.map(f => {
+    const latest = (f.changelog || []).slice().sort((a,b) => b.createdAt - a.createdAt)[0];
+    const isSelected = f.id === state.currentFwId;
+    return `
+      <div class="robot-item ${isSelected ? 'active' : ''}" data-fw-id="${f.id}">
+        <div class="robot-avatar fw-avatar">${f.code.slice(0,2)}</div>
+        <div class="robot-item-info">
+          <div class="robot-item-name">${f.code}</div>
+          <div class="robot-item-count">${latest ? latest.version : 'No versions yet'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.robot-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.currentFwId = item.dataset.fwId;
+      renderFirmwareList();
+      renderFirmwareDetail();
+    });
+  });
+}
+
+function renderFirmwareDetail() {
+  const content = document.getElementById('fw-content');
+  if (!content) return;
+  const fw = (state.firmware || []).find(f => f.id === state.currentFwId);
+  if (!fw) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${ICO.chip}</div>
+        <p>Select a release or add a new one.</p>
+      </div>`;
+    return;
+  }
+
+  const changelog = [...(fw.changelog || [])].sort((a,b) => b.createdAt - a.createdAt);
+
+  content.innerHTML = `
+    <div class="robot-detail-header">
+      <div>
+        <div class="robot-detail-name" style="font-family:monospace;letter-spacing:1px">${fw.code}</div>
+        ${fw.name ? `<div class="robot-detail-desc">${fw.name}</div>` : ''}
+        ${fw.description ? `<div class="robot-detail-desc" style="margin-top:2px">${fw.description}</div>` : ''}
+        ${fw.robot ? `<div style="margin-top:6px"><span class="visit-robot-tag">${ICO.bot} ${fw.robot}</span></div>` : ''}
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" onclick="editFirmware('${fw.id}')">Edit</button>
+        <button class="btn-sm danger" onclick="deleteFirmware('${fw.id}')">Delete</button>
+      </div>
+    </div>
+
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">Changelog <span class="count-pill">${changelog.length} version${changelog.length !== 1 ? 's' : ''}</span></div>
+        <button class="btn-add" onclick="openChangelogModal()">+ Add Version</button>
+      </div>
+      <div id="changelog-list">
+        ${changelog.length === 0
+          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">No versions yet.</div>`
+          : changelog.map(c => renderChangelogEntry(c, fw.id)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderChangelogEntry(entry, fwId) {
+  const statusColors = {
+    stable:     'var(--green)',
+    testing:    'var(--yellow)',
+    deprecated: 'var(--muted)',
+    rc:         'var(--accent)',
+  };
+  const statusLabels = { stable:'Stable', testing:'Testing', deprecated:'Deprecated', rc:'Release Candidate' };
+  const d = new Date(entry.createdAt);
+  const dateStr = `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]} ${d.getFullYear()}`;
+
+  return `
+    <div class="changelog-entry" id="cl-${entry.id}">
+      <div class="cl-left">
+        <div class="cl-line"></div>
+        <div class="cl-dot" style="background:${statusColors[entry.status] || 'var(--accent)'}"></div>
+      </div>
+      <div class="cl-body">
+        <div class="cl-header">
+          <span class="cl-version">${entry.version}</span>
+          <span class="cl-status" style="color:${statusColors[entry.status] || 'var(--accent)'}">${statusLabels[entry.status] || entry.status}</span>
+          <span class="cl-date">${dateStr}</span>
+          <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+            <button class="btn-sm" onclick="editChangelogEntry('${fwId}','${entry.id}')">Edit</button>
+            <button class="nb-delete-btn" style="opacity:1" onclick="deleteChangelogEntry('${fwId}','${entry.id}')" aria-label="Sil">${ICO.close}</button>
+          </div>
+        </div>
+        ${entry.changes ? `<div class="cl-changes">${entry.changes.replace(/\n/g,'<br>')}</div>` : ''}
+        ${entry.notes ? `<div class="cl-notes">${entry.notes}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+window.deleteFirmware = function(id) {
+  if (!confirm(t('conf.delete_release'))) return;
+  state.firmware = (state.firmware||[]).filter(f => f.id !== id);
+  if (state.currentFwId === id) state.currentFwId = null;
+  save();
+  renderFirmwareList();
+  renderFirmwareDetail();
+};
+
+window.deleteChangelogEntry = function(fwId, entryId) {
+  const fw = (state.firmware||[]).find(f => f.id === fwId);
+  fw.changelog = (fw.changelog||[]).filter(e => e.id !== entryId);
+  save();
+  renderFirmwareDetail();
+  renderFirmwareList();
+};
+
+// Add Firmware Modal
+document.getElementById('add-fw-btn').addEventListener('click', () => {
+  document.getElementById('fw-code').value = '';
+  document.getElementById('fw-name').value = '';
+  document.getElementById('fw-desc').value = '';
+  document.getElementById('fw-robot').value = '';
+  openModal('modal-fw');
+  setTimeout(() => document.getElementById('fw-code').focus(), 50);
+});
+
+document.getElementById('fw-code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('save-fw').click();
+});
+
+document.getElementById('save-fw').addEventListener('click', () => {
+  const code = document.getElementById('fw-code').value.trim().toUpperCase();
+  if (!code) { document.getElementById('fw-code').focus(); return; }
+  if (!state.firmware) state.firmware = [];
+  if (editingFirmwareId) {
+    const fw = state.firmware.find(f => f.id === editingFirmwareId);
+    if (fw) {
+      fw.code        = code;
+      fw.name        = document.getElementById('fw-name').value.trim();
+      fw.description = document.getElementById('fw-desc').value.trim();
+      fw.robot       = document.getElementById('fw-robot').value.trim();
+    }
+  } else {
+    const fw = {
+      id: uid(), code,
+      name:        document.getElementById('fw-name').value.trim(),
+      description: document.getElementById('fw-desc').value.trim(),
+      robot:       document.getElementById('fw-robot').value.trim(),
+      mode:        getMode(),
+      changelog:   [],
+      createdAt:   Date.now()
+    };
+    state.firmware.push(fw);
+    state.currentFwId = fw.id;
+  }
+  save();
+  renderFirmwareList();
+  renderFirmwareDetail();
+  closeModal('modal-fw');
+});
+
+// Add Changelog Modal
+window.openChangelogModal = function() {
+  document.getElementById('cl-version').value = '';
+  document.getElementById('cl-changes').value = '';
+  document.getElementById('cl-notes').value = '';
+  resetRadio('cl-status-group', 'testing');
+  initRadioGroup('cl-status-group');
+  // Auto-suggest next version
+  const fw = (state.firmware||[]).find(f => f.id === state.currentFwId);
+  if (fw && fw.changelog.length > 0) {
+    const sorted = [...fw.changelog].sort((a,b) => b.createdAt - a.createdAt);
+    const last = sorted[0].version;
+    const match = last.match(/V(\d+)$/i);
+    if (match) {
+      const next = String(parseInt(match[1]) + 1).padStart(match[1].length, '0');
+      document.getElementById('cl-version').value = last.replace(/V\d+$/i, 'V' + next);
+    }
+  } else if (fw) {
+    document.getElementById('cl-version').value = fw.code + '-V001';
+  }
+  openModal('modal-changelog');
+  setTimeout(() => document.getElementById('cl-version').focus(), 50);
+};
+
+document.getElementById('save-changelog').addEventListener('click', () => {
+  const version = document.getElementById('cl-version').value.trim();
+  if (!version) { document.getElementById('cl-version').focus(); return; }
+  const fw = (state.firmware||[]).find(f => f.id === state.currentFwId);
+  if (!fw) return;
+  if (editingChangelogId) {
+    const entry = fw.changelog.find(e => e.id === editingChangelogId);
+    if (entry) {
+      entry.version = version;
+      entry.status  = getRadioValue('cl-status-group') || 'testing';
+      entry.changes = document.getElementById('cl-changes').value.trim();
+      entry.notes   = document.getElementById('cl-notes').value.trim();
+    }
+  } else {
+    fw.changelog.push({
+      id: uid(), version,
+      status:   getRadioValue('cl-status-group') || 'testing',
+      changes:  document.getElementById('cl-changes').value.trim(),
+      notes:    document.getElementById('cl-notes').value.trim(),
+      createdAt: Date.now()
+    });
+  }
+  save();
+  renderFirmwareDetail();
+  renderFirmwareList();
+  closeModal('modal-changelog');
+});
+
+// ── MEETINGS ───────────────────────────────────────────
+const MTG_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function renderMeetingList() {
+  const list = document.getElementById('meeting-list');
+  if (!list) return;
+  if (!state.meetings) state.meetings = [];
+  const sorted = meetingsByMode().sort((a, b) => b.date.localeCompare(a.date));
+  if (!sorted.length) {
+    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">${t('empty.no_meetings')}</div>`;
+    return;
+  }
+  list.innerHTML = sorted.map(m => {
+    const d = new Date(m.date + 'T00:00:00');
+    const dateStr = `${d.getDate()} ${MTG_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    const openActions = (m.actions || []).filter(a => !a.done).length;
+    const isSelected = m.id === state.currentMeetingId;
+    return `
+      <div class="robot-item ${isSelected ? 'active' : ''}" data-meeting-id="${m.id}">
+        <div class="robot-avatar mtg-avatar">${ICO.usersAvatar}</div>
+        <div class="robot-item-info">
+          <div class="robot-item-name">${m.title}</div>
+          <div class="robot-item-count">${dateStr}${openActions ? ` · ${t('count.actions_short', {open: openActions})}` : ''}</div>
+        </div>
+      </div>`;
+  }).join('');
+  list.querySelectorAll('.robot-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.currentMeetingId = item.dataset.meetingId;
+      renderMeetingList();
+      renderMeetingDetail();
+    });
+  });
+}
+
+function renderMeetingDetail() {
+  const content = document.getElementById('meeting-content');
+  if (!content) return;
+  const meeting = (state.meetings || []).find(m => m.id === state.currentMeetingId);
+  if (!meeting) {
+    content.innerHTML = `<div class="empty-state"><div class="empty-icon">${ICO.users}</div><p>${t('empty.select_meeting')}</p></div>`;
+    return;
+  }
+  const d = new Date(meeting.date + 'T00:00:00');
+  const dateStr = `${d.getDate()} ${MTG_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  const actions = meeting.actions || [];
+  const doneCount = actions.filter(a => a.done).length;
+
+  content.innerHTML = `
+    <div class="robot-detail-header">
+      <div style="flex:1">
+        <div class="robot-detail-name">${meeting.title}</div>
+        <div class="meeting-meta">
+          <span>${ICO.calendar} ${dateStr}</span>
+          ${meeting.location   ? `<span>${ICO.pin} ${meeting.location}</span>`              : ''}
+          ${meeting.attendees  ? `<span>${ICO.group} ${meeting.attendees}</span>`             : ''}
+          ${meeting.robot      ? `<span class="visit-robot-tag">${ICO.bot} ${meeting.robot}</span>` : ''}
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-sm" onclick="editMeeting('${meeting.id}')">Edit</button>
+        <button class="btn-sm danger" onclick="deleteMeeting('${meeting.id}')">Delete</button>
+      </div>
+    </div>
+
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">Notlar</div>
+        <div class="save-indicator" id="mtg-save-ind">Saved</div>
+      </div>
+      <textarea class="brainstorm-area" id="mtg-notes-area"
+        placeholder="Toplantı notları, kararlar, tartışılan konular..."
+      >${meeting.notes || ''}</textarea>
+    </div>
+
+    ${renderAttachments('meeting', meeting.id, meeting.attachments)}
+
+    <div class="dsection">
+      <div class="dsection-header">
+        <div class="dsection-label">${t('task.actions_label')} <span class="count-pill">${doneCount}/${actions.length}</span></div>
+      </div>
+      <div id="mtg-actions-list">
+        ${actions.map(a => `
+          <div class="action-item ${a.done ? 'done' : ''}" id="action-${a.id}">
+            <button class="action-check ${a.done ? 'checked' : ''}" onclick="toggleMeetingAction('${meeting.id}','${a.id}')" aria-label="Tamamlandı">
+              ${a.done ? ICO.checkSm : ''}
+            </button>
+            <span class="action-text">${a.text}</span>
+            <button class="nb-delete-btn" onclick="deleteMeetingAction('${meeting.id}','${a.id}')" aria-label="Sil">${ICO.close}</button>
+          </div>`).join('')}
+      </div>
+      <div class="nb-input-row" style="margin-top:8px">
+        <input type="text" class="nb-input" id="mtg-action-input"
+          placeholder="${t('ph.action_item')}"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMeetingAction('${meeting.id}')}"
+          style="padding:8px 12px;height:auto;font-size:14px" />
+        <button class="nb-add-btn" onclick="addMeetingAction('${meeting.id}')">+ Ekle</button>
+      </div>
+    </div>
+  `;
+  attachMeetingNotes(meeting.id);
+}
+
+let mtgNotesTimer;
+function attachMeetingNotes(meetingId) {
+  const area = document.getElementById('mtg-notes-area');
+  const ind  = document.getElementById('mtg-save-ind');
+  if (!area) return;
+  area.addEventListener('input', () => {
+    clearTimeout(mtgNotesTimer);
+    mtgNotesTimer = setTimeout(() => {
+      const m = (state.meetings || []).find(m => m.id === meetingId);
+      if (m) { m.notes = area.value; save(); }
+      ind.classList.add('show');
+      setTimeout(() => ind.classList.remove('show'), 1500);
+    }, 600);
+  });
+}
+
+window.addMeetingAction = function(meetingId) {
+  const m = (state.meetings || []).find(m => m.id === meetingId);
+  const input = document.getElementById('mtg-action-input');
+  const text = input ? input.value.trim() : '';
+  if (!text || !m) { if (input) input.focus(); return; }
+  if (!m.actions) m.actions = [];
+  m.actions.push({ id: uid(), text, done: false, createdAt: Date.now() });
+  save();
+  renderMeetingDetail();
+};
+
+window.toggleMeetingAction = function(meetingId, actionId) {
+  const m = (state.meetings || []).find(m => m.id === meetingId);
+  const a = m && (m.actions || []).find(a => a.id === actionId);
+  if (!a) return;
+  a.done = !a.done;
+  save();
+  renderMeetingDetail();
+};
+
+window.deleteMeetingAction = function(meetingId, actionId) {
+  const m = (state.meetings || []).find(m => m.id === meetingId);
+  if (!m) return;
+  m.actions = (m.actions || []).filter(a => a.id !== actionId);
+  save();
+  renderMeetingDetail();
+};
+
+window.deleteMeeting = function(id) {
+  if (!confirm(t('conf.delete_meeting'))) return;
+  state.meetings = (state.meetings || []).filter(m => m.id !== id);
+  if (state.currentMeetingId === id) state.currentMeetingId = null;
+  save();
+  renderMeetingList();
+  renderMeetingDetail();
+};
+
+window.editMeeting = function(id) {
+  const m = (state.meetings || []).find(m => m.id === id);
+  if (!m) return;
+  editingMeetingId = id;
+  document.getElementById('meeting-title').value     = m.title;
+  document.getElementById('meeting-date').value      = m.date;
+  document.getElementById('meeting-location').value  = m.location || '';
+  document.getElementById('meeting-attendees').value = m.attendees || '';
+  document.getElementById('meeting-robot').value     = m.robot || '';
+  document.querySelector('#modal-meeting h3').textContent  = t('modal.edit_meeting');
+  document.getElementById('save-meeting').textContent      = t('btn.save_changes');
+  openModal('modal-meeting');
+  setTimeout(() => document.getElementById('meeting-title').focus(), 50);
+};
+
+// Add Meeting button
+document.getElementById('add-meeting-btn').addEventListener('click', () => {
+  document.getElementById('meeting-title').value     = '';
+  document.getElementById('meeting-date').value      = new Date().toISOString().slice(0, 10);
+  document.getElementById('meeting-location').value  = '';
+  document.getElementById('meeting-attendees').value = '';
+  document.getElementById('meeting-robot').value     = '';
+  editingMeetingId = null;
+  openModal('modal-meeting');
+  setTimeout(() => document.getElementById('meeting-title').focus(), 50);
+});
+
+document.getElementById('save-meeting').addEventListener('click', () => {
+  const title = document.getElementById('meeting-title').value.trim();
+  const date  = document.getElementById('meeting-date').value;
+  if (!title) { document.getElementById('meeting-title').focus(); return; }
+  if (!date)  { document.getElementById('meeting-date').focus();  return; }
+  const location  = document.getElementById('meeting-location').value.trim();
+  const attendees = document.getElementById('meeting-attendees').value.trim();
+  const robot     = document.getElementById('meeting-robot').value.trim();
+  if (!state.meetings) state.meetings = [];
+  if (editingMeetingId) {
+    const m = state.meetings.find(m => m.id === editingMeetingId);
+    if (m) { m.title = title; m.date = date; m.location = location; m.attendees = attendees; m.robot = robot; }
+  } else {
+    const m = { id: uid(), title, date, location, attendees, robot, notes: '', actions: [], mode: getMode(), createdAt: Date.now() };
+    state.meetings.push(m);
+    state.currentMeetingId = m.id;
+  }
+  save();
+  renderMeetingList();
+  renderMeetingDetail();
+  closeModal('modal-meeting');
+});
+
+// ── ATTACHMENTS ────────────────────────────────────────
+const ATT_PAPERCLIP = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+const ATT_FILE      = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
+function formatSize(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function findEntity(type, id) {
+  if (type === 'task') {
+    const c = getCurrentContainer();
+    return c && (c.tasks || []).find(x => x.id === id);
+  }
+  if (type === 'issue') {
+    const c = getCurrentContainer();
+    return c && (c.issues || []).find(x => x.id === id);
+  }
+  if (type === 'meeting') return (state.meetings || []).find(x => x.id === id);
+  if (type === 'visit')   return (state.fieldVisits || []).find(x => x.id === id);
+  return null;
+}
+
+function renderAttachments(type, id, attachments) {
+  const list = (attachments || []);
+  const items = list.map(a => `
+    <div class="att-chip" data-filename="${escapeAttr(a.filename)}">
+      <span class="att-ico">${ATT_FILE}</span>
+      <span class="att-name" onclick="openAttachment('${type}','${id}','${escapeAttr(a.filename)}')" title="${escapeAttr(a.originalName)}">${a.originalName}</span>
+      <span class="att-size">${formatSize(a.size)}</span>
+      <button class="att-del" onclick="deleteAttachment('${type}','${id}','${escapeAttr(a.filename)}')" title="${escapeAttr(t('btn.delete'))}">${ICO.close}</button>
+    </div>
+  `).join('');
+  return `
+    <div class="att-section">
+      <div class="att-section-head">
+        <span class="att-label">${ATT_PAPERCLIP} <span>${t('att.section')}${list.length ? ` <span class="count-pill">${list.length}</span>` : ''}</span></span>
+        <button class="att-add-btn" onclick="attachFiles('${type}','${id}')">${t('att.add')}</button>
+      </div>
+      ${items ? `<div class="att-list">${items}</div>` : ''}
+    </div>
+  `;
+}
+
+// Trigger file picker for an entity (PWA — Drive must be connected)
+window.attachFiles = function(type, id) {
+  if (!DriveAPI || !DriveAPI.isSignedIn()) {
+    alert(t('att.signin_required'));
+    return;
+  }
+  let input = document.getElementById('att-file-input');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = 'att-file-input';
+    input.multiple = true;
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('change', handleAttachUpload);
+  }
+  input.dataset.entityType = type;
+  input.dataset.entityId   = id;
+  input.click();
+};
+
+async function handleAttachUpload(e) {
+  const input = e.target;
+  const type  = input.dataset.entityType;
+  const id    = input.dataset.entityId;
+  const files = Array.from(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+
+  for (const file of files) {
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      alert(t('att.too_big', { name: file.name }));
+      continue;
+    }
+    try {
+      const result = await DriveAPI.saveAttachment(id, file.name, file);
+      const entity = findEntity(type, id);
+      if (entity) {
+        if (!entity.attachments) entity.attachments = [];
+        entity.attachments.push({
+          filename:     result.filename,
+          originalName: file.name,
+          size:         result.size,
+          addedAt:      Date.now(),
+        });
+      }
+    } catch (err) {
+      alert(t('att.failed', { msg: err.message || err }));
+    }
+  }
+  save();
+  // Re-render whichever detail view is active
+  if (typeof renderCurrentDetail === 'function') renderCurrentDetail();
+  if (type === 'meeting' && typeof renderMeetingDetail === 'function') renderMeetingDetail();
+  if (type === 'visit'   && typeof renderVisits === 'function') renderVisits();
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+window.openAttachment = async function(type, id, filename) {
+  if (!DriveAPI.isSignedIn()) return;
+  try { await DriveAPI.openAttachment(id, filename); } catch (e) { console.warn(e); }
+};
+
+window.deleteAttachment = async function(type, id, filename) {
+  if (!confirm(t('att.confirm_delete'))) return;
+  if (DriveAPI.isSignedIn()) {
+    try { await DriveAPI.deleteAttachment(id, filename); } catch {}
+  }
+  const entity = findEntity(type, id);
+  if (entity && entity.attachments) {
+    entity.attachments = entity.attachments.filter(a => a.filename !== filename);
+    save();
+    if (typeof renderCurrentDetail === 'function') renderCurrentDetail();
+    if (type === 'meeting' && typeof renderMeetingDetail === 'function') renderMeetingDetail();
+    if (type === 'visit'   && typeof renderVisits === 'function') renderVisits();
+  }
+};
+
+// ── DRIVE API (PWA / browser path) ─────────────────────
+// Uses Google Identity Services + Drive REST API.
+// Same folder structure as Electron path: Drive/Karta/{karta-backup.json, attachments/<id>/<file>}
+const DriveAPI = (() => {
+  const CLIENT_ID = '733970458049-nh53ksvtjaavj0p5up5bs89jd78t9rf9.apps.googleusercontent.com';
+  // drive.file = only files this app creates/opens. User's other Drive content is hidden from us.
+  const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+
+  let tokenClient = null;
+  let accessToken = null;
+  let tokenExpiry = 0;
+  let folderId    = null;
+  let userInfo    = null; // { email, name }
+
+  function isLibraryReady() {
+    return typeof window.google !== 'undefined' && window.google.accounts && window.google.accounts.oauth2;
+  }
+
+  async function waitForLibrary(timeoutMs = 8000) {
+    if (isLibraryReady()) return true;
+    const t0 = Date.now();
+    return new Promise(resolve => {
+      const iv = setInterval(() => {
+        if (isLibraryReady()) { clearInterval(iv); resolve(true); }
+        else if (Date.now() - t0 > timeoutMs) { clearInterval(iv); resolve(false); }
+      }, 80);
+    });
+  }
+
+  function makeTokenClient(callback) {
+    return google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPE,
+      callback,
+    });
+  }
+
+  function isExpired() { return !accessToken || Date.now() >= tokenExpiry - 30_000; }
+
+  // Try silent re-auth (no popup) — works if the user already granted permission
+  async function trySilentSignIn() {
+    if (!await waitForLibrary()) return false;
+    return new Promise(resolve => {
+      const tc = makeTokenClient(resp => {
+        if (resp.error) { resolve(false); return; }
+        accessToken = resp.access_token;
+        tokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+        resolve(true);
+      });
+      try { tc.requestAccessToken({ prompt: 'none' }); } catch { resolve(false); }
+    });
+  }
+
+  // Interactive sign-in (user clicks button)
+  async function signIn() {
+    if (!await waitForLibrary()) throw new Error('Google library failed to load');
+    return new Promise((resolve, reject) => {
+      tokenClient = makeTokenClient(async resp => {
+        if (resp.error) { reject(resp); return; }
+        accessToken = resp.access_token;
+        tokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+        try { await fetchUserInfo(); } catch {}
+        resolve();
+      });
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    });
+  }
+
+  function signOut() {
+    if (accessToken) try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch {}
+    accessToken = null; tokenExpiry = 0; folderId = null; userInfo = null;
+    try { localStorage.removeItem('karta-drive-user'); } catch {}
+  }
+
+  async function fetchUserInfo() {
+    const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken },
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    userInfo = { email: data.email, name: data.name, picture: data.picture };
+    try { localStorage.setItem('karta-drive-user', JSON.stringify(userInfo)); } catch {}
+  }
+
+  async function ensureToken() {
+    if (!isExpired()) return accessToken;
+    const ok = await trySilentSignIn();
+    if (!ok) throw new Error('Token expired and silent reauth failed');
+    return accessToken;
+  }
+
+  async function api(method, url, opts = {}) {
+    await ensureToken();
+    const init = {
+      method,
+      headers: { Authorization: 'Bearer ' + accessToken, ...(opts.headers || {}) },
+    };
+    if (opts.body) init.body = opts.body;
+    const r = await fetch(url, init);
+    if (r.status === 401) {
+      // Force re-auth
+      accessToken = null; tokenExpiry = 0;
+      throw new Error('Unauthorized — please sign in again');
+    }
+    if (!r.ok) {
+      const text = await r.text().catch(() => '');
+      throw new Error(`Drive API ${method} ${r.status}: ${text.slice(0, 200)}`);
+    }
+    return r;
+  }
+
+  // Find or create the "Karta" folder at user's Drive root
+  async function ensureFolder(name = 'Karta', parent = null) {
+    const cacheKey = `${parent || 'root'}/${name}`;
+    if (parent === null && folderId) return folderId;
+    const safeName = name.replace(/'/g, "\\'");
+    const parentClause = parent ? `'${parent}' in parents` : `'root' in parents`;
+    const q = `name='${safeName}' and mimeType='application/vnd.google-apps.folder' and ${parentClause} and trashed=false`;
+    const r = await api('GET', `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`);
+    const data = await r.json();
+    if (data.files && data.files.length > 0) {
+      const id = data.files[0].id;
+      if (parent === null) folderId = id;
+      return id;
+    }
+    const meta = { name, mimeType: 'application/vnd.google-apps.folder' };
+    if (parent) meta.parents = [parent];
+    const cr = await api('POST', 'https://www.googleapis.com/drive/v3/files', {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(meta),
+    });
+    const folder = await cr.json();
+    if (parent === null) folderId = folder.id;
+    return folder.id;
+  }
+
+  async function findFile(name, parentId) {
+    const safe = name.replace(/'/g, "\\'");
+    const q = `name='${safe}' and '${parentId}' in parents and trashed=false`;
+    const r = await api('GET', `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,size)&pageSize=1`);
+    const data = await r.json();
+    return (data.files && data.files[0]) || null;
+  }
+
+  // Multipart upload (creates new or updates existing)
+  async function uploadBlob(name, blob, parentId, existingId, mimeType) {
+    const meta = existingId
+      ? { name }
+      : { name, parents: [parentId] };
+    const boundary = '-------karta-' + Math.random().toString(36).slice(2);
+    const head = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: ${mimeType || blob.type || 'application/octet-stream'}\r\n\r\n`;
+    const tail = `\r\n--${boundary}--\r\n`;
+    const body = new Blob([head, blob, tail], { type: `multipart/related; boundary=${boundary}` });
+    const url = existingId
+      ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart&fields=id,name,size,modifiedTime`
+      : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,size,modifiedTime`;
+    const r = await api(existingId ? 'PATCH' : 'POST', url, {
+      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+      body,
+    });
+    return r.json();
+  }
+
+  async function downloadText(fileId) {
+    const r = await api('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+    return r.text();
+  }
+
+  async function downloadBlob(fileId) {
+    const r = await api('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+    return r.blob();
+  }
+
+  async function deleteFile(fileId) {
+    await api('DELETE', `https://www.googleapis.com/drive/v3/files/${fileId}`);
+  }
+
+  // ── Backup ──
+  async function saveBackup(jsonStr, filename = 'karta-backup.json') {
+    const fid = await ensureFolder();
+    const existing = await findFile(filename, fid);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    return uploadBlob(filename, blob, fid, existing && existing.id, 'application/json');
+  }
+
+  async function readBackup(filename = 'karta-backup.json') {
+    const fid = await ensureFolder();
+    const f = await findFile(filename, fid);
+    if (!f) return null;
+    return downloadText(f.id);
+  }
+
+  // ── Attachments ──
+  async function saveAttachment(entityId, originalName, blob) {
+    const root = await ensureFolder();
+    const attRoot = await ensureFolder('attachments', root);
+    const entityFolder = await ensureFolder(entityId, attRoot);
+    // Avoid name collision
+    let name = originalName;
+    let n = 1;
+    while (await findFile(name, entityFolder)) {
+      const ext = name.includes('.') ? name.slice(name.lastIndexOf('.')) : '';
+      const base = ext ? name.slice(0, -ext.length) : name;
+      name = `${base} (${n})${ext}`;
+      n++;
+    }
+    const meta = await uploadBlob(name, blob, entityFolder, null, blob.type);
+    return { filename: meta.name, size: parseInt(meta.size || blob.size, 10) };
+  }
+
+  async function openAttachment(entityId, filename) {
+    const root = await ensureFolder();
+    const attRoot = await ensureFolder('attachments', root);
+    const entityFolder = await ensureFolder(entityId, attRoot);
+    const f = await findFile(filename, entityFolder);
+    if (!f) return false;
+    // Open in Drive's viewer in a new tab
+    window.open(`https://drive.google.com/file/d/${f.id}/view`, '_blank');
+    return true;
+  }
+
+  async function deleteAttachment(entityId, filename) {
+    const root = await ensureFolder();
+    const attRoot = await ensureFolder('attachments', root);
+    const entityFolder = await ensureFolder(entityId, attRoot);
+    const f = await findFile(filename, entityFolder);
+    if (!f) return false;
+    await deleteFile(f.id);
+    return true;
+  }
+
+  // Restore last user info on init (for header chip without re-auth)
+  try {
+    const cached = localStorage.getItem('karta-drive-user');
+    if (cached) userInfo = JSON.parse(cached);
+  } catch {}
+
+  return {
+    isLibraryReady, waitForLibrary,
+    signIn, signOut, trySilentSignIn,
+    isSignedIn:  () => !isExpired(),
+    getUserInfo: () => userInfo,
+    saveBackup, readBackup,
+    saveAttachment, openAttachment, deleteAttachment,
+  };
+})();
+
+// ── BACKUP MANAGER (PWA, Drive API only) ───────────────
+const BackupManager = (() => {
+  const INTERVAL   = 5 * 60 * 1000;
+  let intervalId   = null;
+  let debounceId   = null;
+  let lastBackup   = null;
+  let filename     = (() => {
+    try { return localStorage.getItem('karta-backup-filename') || 'karta-backup.json'; }
+    catch { return 'karta-backup.json'; }
+  })();
+
+  const GDRIVE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.71 3.5 1.15 15l3.5 6.5L11.21 10z"/><path d="m22.85 15-6.56-11.5h-7l6.57 11.5z"/><path d="M4.65 21.5h13.13l3.5-6.5H8.15z"/></svg>';
+  const ARROW = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+
+  function lastSyncText() {
+    if (!lastBackup) return t('bp.never');
+    const diff = Math.round((Date.now() - lastBackup) / 60000);
+    return diff < 1 ? t('bp.just_now') : t('bp.min_ago', { n: diff });
+  }
+
+  function render() {
+    const pop         = document.getElementById('bp-content');
+    const headerBtn   = document.getElementById('backup-btn');
+    const headerLabel = document.getElementById('backup-label');
+    if (!pop) return;
+
+    if (DriveAPI.isSignedIn()) {
+      const u = DriveAPI.getUserInfo() || {};
+      const lastTxt = lastSyncText();
+      pop.innerHTML = `
+        <div class="bp-title">${t('bp.title')}</div>
+        <div class="bp-connected">
+          <div class="bp-provider-line">
+            <span class="bp-provider-ico">${GDRIVE_ICON}</span>
+            <div class="bp-provider-info">
+              <div class="bp-provider-name">Google Drive</div>
+              <div class="bp-provider-folder" title="${escapeAttr(u.email || '')}">${u.email || ''}</div>
+            </div>
+          </div>
+          <div class="bp-info-row">
+            <span class="bp-info-label">${t('bp.filename')}</span>
+            <span class="bp-info-value">${filename}</span>
+            <button class="bp-mini-btn" data-act="rename">${t('bp.rename')}</button>
+          </div>
+          <div class="bp-info-row">
+            <span class="bp-info-label">${t('bp.last_sync')}</span>
+            <span class="bp-info-value">${lastTxt}</span>
+          </div>
+        </div>
+        <div class="bp-actions">
+          <button class="btn-ghost" data-act="backup-now">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            <span>${t('bp.backup_now')}</span>
+          </button>
+          <button class="btn-ghost" data-act="restore">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            <span>${t('bp.restore')}</span>
+          </button>
+        </div>
+        <button class="bp-disconnect" data-act="signout">${t('bp.sign_out')}</button>
+      `;
+      if (headerBtn && headerLabel) {
+        headerBtn.classList.remove('backup-warn');
+        headerBtn.classList.add('backup-ok');
+        headerLabel.textContent = lastTxt;
+      }
+    } else {
+      pop.innerHTML = `
+        <div class="bp-title">${t('bp.title')}</div>
+        <div class="bp-subtitle">${t('bp.web_subtitle')}</div>
+        <button class="provider-btn" data-act="signin">
+          <span class="provider-ico">${GDRIVE_ICON}</span>
+          <span class="provider-info">
+            <span class="provider-name">${t('bp.sign_in')}</span>
+            <span class="provider-hint">drive.file scope</span>
+          </span>
+          <span class="provider-arrow">${ARROW}</span>
+        </button>
+        <div class="bp-hint">${t('bp.web_hint')}</div>
+      `;
+      if (headerBtn && headerLabel) {
+        headerBtn.classList.remove('backup-ok', 'backup-warn');
+        headerLabel.textContent = t('bp.set_up');
+      }
+    }
+
+    pop.querySelectorAll('[data-act]').forEach(el => {
+      el.addEventListener('click', async e => {
+        e.stopPropagation();
+        const act = el.dataset.act;
+        if (act === 'signin') {
+          try {
+            await DriveAPI.signIn();
+            const restored = await tryRestore();
+            if (!restored) await doBackup();
+            scheduleInterval();
+            render();
+          } catch (e) {
+            alert(t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }));
+          }
+        } else if (act === 'signout') {
+          DriveAPI.signOut();
+          lastBackup = null;
+          clearInterval(intervalId);
+          render();
+        } else if (act === 'backup-now') {
+          await doBackup();
+          render();
+        } else if (act === 'restore') {
+          const ok = await tryRestore();
+          if (!ok) alert(t('bp.no_backup_found'));
+        } else if (act === 'rename') {
+          const next = prompt(t('bp.rename_prompt'), filename);
+          if (!next || !next.trim() || next.trim() === filename) return;
+          let cleaned = next.trim().replace(/[\\/:*?"<>|]/g, '');
+          if (!/\.json$/i.test(cleaned)) cleaned += '.json';
+          filename = cleaned;
+          try { localStorage.setItem('karta-backup-filename', cleaned); } catch {}
+          await doBackup();
+          render();
+        }
+      });
+    });
+  }
+
+  async function doBackup() {
+    if (!DriveAPI.isSignedIn()) return;
+    const json = JSON.stringify({ exportedAt: new Date().toISOString(), data: state }, null, 2);
+    try {
+      await DriveAPI.saveBackup(json, filename);
+      lastBackup = Date.now();
+      render();
+    } catch (e) { console.warn('Backup failed:', e); }
+  }
+
+  async function readBackupFromDrive() {
+    if (!DriveAPI.isSignedIn()) return null;
+    try {
+      const text = await DriveAPI.readBackup(filename);
+      return text ? JSON.parse(text) : null;
+    } catch { return null; }
+  }
+
+  async function tryRestore() {
+    const backup = await readBackupFromDrive();
+    if (!backup || !backup.data) return false;
+    const hasData = (state.robots || []).length > 0 ||
+                    (state.fieldVisits || []).length > 0 ||
+                    (state.firmware || []).length > 0;
+    const backupDate   = new Date(backup.exportedAt).toLocaleString();
+    const projectCount = (backup.data.robots || []).length;
+    const msg = hasData
+      ? t('bp.restore_overwrite', { date: backupDate, n: projectCount })
+      : t('bp.restore_load',      { date: backupDate, n: projectCount });
+    if (!hasData || confirm(msg)) {
+      Object.assign(state, backup.data);
+      save();
+      renderAll();
+      return true;
+    }
+    return false;
+  }
+
+  function scheduleInterval() {
+    clearInterval(intervalId);
+    intervalId = setInterval(doBackup, INTERVAL);
+  }
+
+  function onDataChange() {
+    clearTimeout(debounceId);
+    debounceId = setTimeout(doBackup, 2000);
+  }
+
+  async function init() {
+    const ok = await DriveAPI.trySilentSignIn().catch(() => false);
+    if (ok) {
+      const hasData = (state.robots || []).length > 0 ||
+                      (state.fieldVisits || []).length > 0 ||
+                      (state.firmware || []).length > 0;
+      if (!hasData) await tryRestore();
+      scheduleInterval();
+      doBackup();
+    }
+    render();
+  }
+
+  function initUI() {
+    const btn     = document.getElementById('backup-btn');
+    const popover = document.getElementById('backup-popover');
+    if (!btn || !popover) return;
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      popover.classList.toggle('open');
+    });
+    document.addEventListener('click', e => {
+      if (!popover.contains(e.target) && e.target !== btn && !btn.contains(e.target))
+        popover.classList.remove('open');
+    });
+
+    // Best-effort flush before unload
+    window.addEventListener('beforeunload', () => { if (DriveAPI.isSignedIn()) doBackup(); });
+    setInterval(render, 30000); // refresh "X min ago"
+  }
+
+  return { init, onDataChange, initUI, tryRestore, refresh: render };
+})();
+// ── RENDER ALL ─────────────────────────────────────────
+function renderAll() {
+  if (!state.topics)     state.topics = [];
+  if (!state.workHours)  state.workHours = [];
+  if (!state.meetings)   state.meetings = [];
+  if (state.currentTopicId   === undefined) state.currentTopicId   = null;
+  if (state.currentMeetingId === undefined) state.currentMeetingId = null;
+  renderRobotList();
+  renderRobotDetail();
+  renderTopicList();
+  renderTopicDetail();
+  renderVisits();
+  renderFirmwareList();
+  renderFirmwareDetail();
+  renderWorkHours();
+  renderMeetingList();
+  renderMeetingDetail();
+}
+
+function renderWorkHours() {} // removed
+
+// ── ALL TASKS VIEW ─────────────────────────────────────
+let allTasksFilter = 'open'; // 'open' | 'today' | 'all'
+
+function renderAllTasks() {
+  const list = document.getElementById('all-tasks-list');
+  if (!list) return;
+
+  // Collect tasks across projects (current mode)
+  const items = [];
+  projectsByMode().forEach(p => {
+    (p.tasks || []).forEach(t => items.push({ task: t, project: p }));
+  });
+
+  // Apply filter
+  let filtered = items;
+  if (allTasksFilter === 'open') {
+    filtered = items.filter(it => it.task.status !== 'done');
+  } else if (allTasksFilter === 'today') {
+    const today = new Date(); today.setHours(0,0,0,0);
+    filtered = items.filter(it => {
+      if (it.task.status === 'done') return false;
+      const due = it.task.dueDate ? new Date(it.task.dueDate) : null;
+      return !due || due.toDateString() === today.toDateString();
+    });
+  }
+
+  // Group: active → pending → done
+  const order = { active: 0, pending: 1, done: 2 };
+  filtered.sort((a, b) => {
+    const sa = order[a.task.status] ?? 9;
+    const sb = order[b.task.status] ?? 9;
+    if (sa !== sb) return sa - sb;
+    const pri = { critical: 0, high: 1, normal: 2 };
+    return (pri[a.task.priority] ?? 2) - (pri[b.task.priority] ?? 2);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-visits"><p>No tasks ${allTasksFilter === 'open' ? 'open' : (allTasksFilter === 'today' ? 'for today' : 'yet')}.</p></div>`;
+    return;
+  }
+
+  // Group by project
+  const byProject = {};
+  filtered.forEach(it => {
+    const k = it.project.id;
+    if (!byProject[k]) byProject[k] = { project: it.project, items: [] };
+    byProject[k].items.push(it);
+  });
+
+  list.innerHTML = Object.values(byProject).map(g => `
+    <div class="at-group">
+      <div class="at-group-label">
+        <span>${g.project.name}</span>
+        <span class="count-pill">${g.items.length}</span>
+      </div>
+      ${g.items.map(it => `
+        <div class="at-task ${it.task.status}">
+          <span class="at-task-dot ${it.task.status}"></span>
+          <span class="at-task-title">${it.task.title}</span>
+          ${it.task.priority && it.task.priority !== 'normal' ? `<span class="at-task-prio ${it.task.priority}">${it.task.priority}</span>` : ''}
+          <span class="at-task-project">${g.project.name}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#at-filter .at-filter-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    allTasksFilter = b.dataset.filter;
+    renderAllTasks();
+  });
+});
+
+// ── CALENDAR ───────────────────────────────────────────
+let calMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })();
+let calSelected = null; // 'YYYY-MM-DD'
+const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function ymd(d) {
+  const yr = d.getFullYear(), mo = String(d.getMonth()+1).padStart(2,'0'), da = String(d.getDate()).padStart(2,'0');
+  return `${yr}-${mo}-${da}`;
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const title = document.getElementById('cal-title');
+  if (!grid || !title) return;
+  title.textContent = `${MONTH_NAMES[calMonth.m]} ${calMonth.y}`;
+
+  const first = new Date(calMonth.y, calMonth.m, 1);
+  const startDow = (first.getDay() + 6) % 7; // Mon=0
+  const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
+  const todayStr = ymd(new Date());
+
+  // Pre-index events by date
+  const eventsByDate = {};
+  meetingsByMode().forEach(m => {
+    if (!m.date) return;
+    (eventsByDate[m.date] = eventsByDate[m.date] || []).push({ kind: 'meeting', label: m.title, id: m.id });
+  });
+  visitsByMode().forEach(v => {
+    if (!v.date) return;
+    (eventsByDate[v.date] = eventsByDate[v.date] || []).push({ kind: 'visit', label: v.location || 'Visit', id: v.id });
+  });
+
+  // Build cells: 7 dow headers + leading blanks + days + trailing blanks
+  let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // Previous month tail
+  const prevMonthDays = new Date(calMonth.y, calMonth.m, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    const dn = prevMonthDays - i;
+    const d = new Date(calMonth.y, calMonth.m - 1, dn);
+    html += renderCalDay(d, eventsByDate, todayStr, true);
+  }
+
+  // Current month
+  for (let dn = 1; dn <= daysInMonth; dn++) {
+    const d = new Date(calMonth.y, calMonth.m, dn);
+    html += renderCalDay(d, eventsByDate, todayStr, false);
+  }
+
+  // Trailing blanks (fill to multiple of 7)
+  const total = startDow + daysInMonth;
+  const trailing = (7 - (total % 7)) % 7;
+  for (let i = 1; i <= trailing; i++) {
+    const d = new Date(calMonth.y, calMonth.m + 1, i);
+    html += renderCalDay(d, eventsByDate, todayStr, true);
+  }
+
+  grid.innerHTML = html;
+
+  // Wire clicks
+  grid.querySelectorAll('.cal-day').forEach(cell => {
+    cell.addEventListener('click', () => {
+      calSelected = cell.dataset.date;
+      grid.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      renderCalDayPanel();
+    });
+  });
+
+  if (calSelected) renderCalDayPanel();
+}
+
+function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
+  const dStr = ymd(d);
+  const events = eventsByDate[dStr] || [];
+  const classes = ['cal-day'];
+  if (otherMonth)         classes.push('other-mo');
+  if (dStr === todayStr)  classes.push('today');
+  if (dStr === calSelected) classes.push('selected');
+  const eventsHtml = events.slice(0, 3).map(ev => `
+    <div class="cal-day-event ${ev.kind}">${ev.label}</div>
+  `).join('');
+  const more = events.length > 3 ? `<div class="cal-day-event">+${events.length - 3}</div>` : '';
+  return `
+    <div class="${classes.join(' ')}" data-date="${dStr}">
+      <div class="cal-day-num">${d.getDate()}</div>
+      <div class="cal-day-events">${eventsHtml}${more}</div>
+    </div>`;
+}
+
+function renderCalDayPanel() {
+  const panel = document.getElementById('cal-day-panel');
+  if (!panel) return;
+  if (!calSelected) {
+    panel.innerHTML = '<div class="cal-day-empty">Bir gün seç</div>';
+    return;
+  }
+  const d = new Date(calSelected + 'T00:00:00');
+  const dateStr = `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
+
+  const meetings = meetingsByMode().filter(m => m.date === calSelected);
+  const visits   = visitsByMode().filter(v => v.date === calSelected);
+  const notes    = (state.calendarNotes || {})[calSelected] || '';
+
+  panel.innerHTML = `
+    <div class="cal-day-title">${dateStr}</div>
+    ${meetings.length ? `
+      <div>
+        <div class="cal-day-section-label">Meetings</div>
+        ${meetings.map(m => `<div class="cal-day-item"><strong>${m.title}</strong>${m.location ? ' · ' + m.location : ''}</div>`).join('')}
+      </div>` : ''}
+    ${visits.length ? `
+      <div>
+        <div class="cal-day-section-label">Visits</div>
+        ${visits.map(v => `<div class="cal-day-item"><strong>${v.location}</strong>${v.robot ? ' · ' + v.robot : ''}</div>`).join('')}
+      </div>` : ''}
+    <div>
+      <div class="cal-day-section-label">Notes</div>
+      <textarea class="cal-notes" id="cal-notes-area" placeholder="Bu güne dair not ekle...">${notes}</textarea>
+    </div>
+  `;
+
+  const ta = document.getElementById('cal-notes-area');
+  if (ta) {
+    let t;
+    ta.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        if (!state.calendarNotes) state.calendarNotes = {};
+        if (ta.value) state.calendarNotes[calSelected] = ta.value;
+        else delete state.calendarNotes[calSelected];
+        save();
+      }, 500);
+    });
+  }
+}
+
+// Calendar nav
+(function initCalendarNav() {
+  const prev  = document.getElementById('cal-prev');
+  const next  = document.getElementById('cal-next');
+  const today = document.getElementById('cal-today');
+  if (prev)  prev.addEventListener('click',  () => { calMonth.m--; if (calMonth.m < 0)  { calMonth.m = 11; calMonth.y--; } renderCalendar(); });
+  if (next)  next.addEventListener('click',  () => { calMonth.m++; if (calMonth.m > 11) { calMonth.m = 0;  calMonth.y++; } renderCalendar(); });
+  if (today) today.addEventListener('click', () => {
+    const d = new Date();
+    calMonth = { y: d.getFullYear(), m: d.getMonth() };
+    calSelected = ymd(d);
+    renderCalendar();
+  });
+})();
+
+// ── JOURNAL ────────────────────────────────────────────
+let jrnSelected = ymd(new Date());
+let jrnSaveTimer = null;
+
+function initJournal() {
+  const dateInput = document.getElementById('jrn-date');
+  const area      = document.getElementById('jrn-area');
+  const status    = document.getElementById('jrn-status');
+  const todayBtn  = document.getElementById('jrn-today-btn');
+  if (!dateInput || !area) return;
+
+  dateInput.value = jrnSelected;
+
+  function loadEntry() {
+    const entries = state.journal || {};
+    area.value = entries[jrnSelected] || '';
+    renderJournalList();
+  }
+
+  function saveEntry() {
+    if (!state.journal) state.journal = {};
+    const v = area.value;
+    if (v.trim()) state.journal[jrnSelected] = v;
+    else delete state.journal[jrnSelected];
+    save();
+    if (status) {
+      status.textContent = 'Saved';
+      status.classList.add('show');
+      setTimeout(() => status.classList.remove('show'), 1200);
+    }
+    renderJournalList();
+  }
+
+  dateInput.addEventListener('change', () => {
+    jrnSelected = dateInput.value;
+    loadEntry();
+  });
+
+  area.addEventListener('input', () => {
+    clearTimeout(jrnSaveTimer);
+    jrnSaveTimer = setTimeout(saveEntry, 500);
+  });
+
+  if (todayBtn) {
+    todayBtn.addEventListener('click', () => {
+      jrnSelected = ymd(new Date());
+      dateInput.value = jrnSelected;
+      loadEntry();
+      area.focus();
+    });
+  }
+
+  loadEntry();
+}
+
+function renderJournalList() {
+  const list = document.getElementById('jrn-list');
+  if (!list) return;
+  const entries = state.journal || {};
+  const dates = Object.keys(entries).sort().reverse();
+  if (dates.length === 0) {
+    list.innerHTML = `<div class="jrn-empty">Henüz girdi yok. Bugünden başla.</div>`;
+    return;
+  }
+  const fmt = (d) => {
+    const dt = new Date(d + 'T00:00:00');
+    return `${dt.getDate()} ${MONTH_NAMES[dt.getMonth()].slice(0,3)} ${dt.getFullYear()}`;
+  };
+  list.innerHTML = dates.map(d => {
+    const text = entries[d] || '';
+    const preview = text.replace(/\n/g, ' ').slice(0, 80);
+    const active = d === jrnSelected ? 'active' : '';
+    return `
+      <div class="jrn-entry ${active}" data-date="${d}">
+        <div class="jrn-entry-date">${fmt(d)}</div>
+        <div class="jrn-entry-preview">${preview}</div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.jrn-entry').forEach(el => {
+    el.addEventListener('click', () => {
+      jrnSelected = el.dataset.date;
+      const dateInput = document.getElementById('jrn-date');
+      const area = document.getElementById('jrn-area');
+      if (dateInput) dateInput.value = jrnSelected;
+      if (area) area.value = (state.journal || {})[jrnSelected] || '';
+      list.querySelectorAll('.jrn-entry').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+    });
+  });
+}
+
+// ── THEME TOGGLE ───────────────────────────────────────
+(function initTheme() {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('karta-theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const cur = root.getAttribute('data-theme') || 'dark';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('karta-theme', next);
+    });
+  }
+})();
+
+// ── DAILY / JOB MODE SWITCHER ──────────────────────────
+function getMode() { return state.mode || 'job'; }
+function applyModeAttr() {
+  document.body.setAttribute('data-mode', getMode());
+}
+function setMode(m) {
+  state.mode = m;
+  save();
+  applyModeAttr();
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === m);
+  });
+  // Reset selection that may now be invisible after filtering
+  state.currentRobotId   = null;
+  state.currentFwId      = null;
+  state.currentMeetingId = null;
+
+  // If active tab isn't visible in this mode, redirect to projects/lists
+  const activeTab = document.querySelector('.tab.active');
+  if (activeTab) {
+    const allowed = activeTab.dataset.modes;
+    if (allowed && allowed !== m) {
+      const fallback = document.querySelector('.tab[data-tab="robots"]');
+      if (fallback) fallback.click();
+    }
+  }
+
+  // In daily mode, "Tasks" tab uses 'today' filter by default
+  allTasksFilter = m === 'daily' ? 'today' : 'open';
+  document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === allTasksFilter);
+  });
+
+  renderAll();
+}
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+
+// Filter helpers (default missing mode → 'job' for backwards compat)
+function inMode(item) { return (item.mode || 'job') === getMode(); }
+function projectsByMode()  { return (state.robots || []).filter(inMode); }
+function meetingsByMode()  { return (state.meetings || []).filter(inMode); }
+function visitsByMode()    { return (state.fieldVisits || []).filter(inMode); }
+function firmwareByMode()  { return (state.firmware || []).filter(inMode); }
+
+// ── PWA: register service worker (web only — Electron uses file:// and skips) ──
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ── INIT ───────────────────────────────────────────────
+load();
+// Language switcher
+document.querySelectorAll('.lang-btn').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+  b.classList.toggle('active', b.dataset.lang === currentLang);
+});
+applyI18n();
+// Apply mode initial state
+(function() {
+  const m = getMode();
+  applyModeAttr();
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === m);
+  });
+  allTasksFilter = m === 'daily' ? 'today' : 'open';
+  document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === allTasksFilter);
+  });
+})();
+renderAll();
+initJournal();
+BackupManager.initUI();
+BackupManager.init();

@@ -1,0 +1,13 @@
+{
+  "name": "karta",
+  "version": "3.0.0",
+  "description": "Karta — Project & task management (PWA)",
+  "private": true,
+  "scripts": {
+    "dev": "node serve.js",
+    "icons": "node assets/create-icon.js"
+  },
+  "devDependencies": {
+    "png-to-ico": "^3.0.1"
+  }
+}

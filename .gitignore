@@ -1,0 +1,11 @@
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+*.bak
+*.old
+release/
+dist/
+.claude/
+.vscode/
+.idea/
