@@ -2601,15 +2601,15 @@ function renderCalendar() {
   const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
   const todayStr = ymd(new Date());
 
-  // Pre-index events by date
+  // Pre-index events by date — calendar is mode-agnostic, show everything
   const eventsByDate = {};
-  meetingsByMode().forEach(m => {
+  (state.meetings || []).forEach(m => {
     if (!m.date) return;
-    (eventsByDate[m.date] = eventsByDate[m.date] || []).push({ kind: 'meeting', label: m.title, id: m.id });
+    (eventsByDate[m.date] = eventsByDate[m.date] || []).push({ kind: 'meeting', mode: m.mode || 'job', label: m.title, id: m.id });
   });
-  visitsByMode().forEach(v => {
+  (state.fieldVisits || []).forEach(v => {
     if (!v.date) return;
-    (eventsByDate[v.date] = eventsByDate[v.date] || []).push({ kind: 'visit', label: v.location || 'Visit', id: v.id });
+    (eventsByDate[v.date] = eventsByDate[v.date] || []).push({ kind: 'visit', mode: v.mode || 'job', label: v.location || 'Visit', id: v.id });
   });
 
   // Build cells: 7 dow headers + leading blanks + days + trailing blanks
@@ -2660,7 +2660,7 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
   if (dStr === todayStr)  classes.push('today');
   if (dStr === calSelected) classes.push('selected');
   const eventsHtml = events.slice(0, 3).map(ev => `
-    <div class="cal-day-event ${ev.kind}">${ev.label}</div>
+    <div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}">${ev.label}</div>
   `).join('');
   const more = events.length > 3 ? `<div class="cal-day-event">+${events.length - 3}</div>` : '';
   return `
@@ -2680,8 +2680,8 @@ function renderCalDayPanel() {
   const d = new Date(calSelected + 'T00:00:00');
   const dateStr = `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
 
-  const meetings = meetingsByMode().filter(m => m.date === calSelected);
-  const visits   = visitsByMode().filter(v => v.date === calSelected);
+  const meetings = (state.meetings || []).filter(m => m.date === calSelected);
+  const visits   = (state.fieldVisits || []).filter(v => v.date === calSelected);
   const notes    = (state.calendarNotes || {})[calSelected] || '';
 
   panel.innerHTML = `

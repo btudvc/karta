@@ -1854,6 +1854,7 @@ main { flex: 1; overflow: hidden; }
 }
 .cal-day-event.meeting { background: rgba(99,102,241,.15); color: var(--accent); }
 .cal-day-event.visit   { background: rgba(167,139,250,.15); color: var(--purple); }
+.cal-day-event[data-mode="daily"] { border-left: 2px solid var(--amber, #f59e0b); padding-left: 3px; }
 .cal-day-event-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
 .cal-day-panel {
