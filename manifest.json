@@ -1,6 +1,6 @@
 {
-  "name": "Karta — Project & Task Management",
-  "short_name": "Karta",
+  "name": "B-Less — Project & Task Management",
+  "short_name": "B-Less",
   "description": "Personal project and daily life planner",
   "start_url": "./index.html",
   "display": "standalone",

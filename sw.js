@@ -1,5 +1,5 @@
-// Karta service worker — offline-first app shell
-const VERSION = 'karta-v3.0.4';
+// B-Less service worker — offline-first app shell
+const VERSION = 'b-less-v4.0.0';
 const SHELL = [
   './',
   './index.html',

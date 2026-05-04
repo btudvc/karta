@@ -94,7 +94,7 @@ const I18N = {
     'bp.install_link': 'google.com/drive/download',
     'bp.manual_folder': 'Choose folder manually',
     'bp.or_manual_folder': 'Or choose folder manually',
-    'bp.hint_drive': 'Files are written to a "Karta" folder in Drive and synced automatically.',
+    'bp.hint_drive': 'Files are written to a "B-Less" folder in Drive and synced automatically.',
     'bp.hint_install': 'After installing Drive and signing in, reopen the app — it will auto-detect.',
     'bp.last_sync': 'Last sync',
     'bp.never': 'Never',
@@ -121,7 +121,7 @@ const I18N = {
     'bp.sign_out': 'Sign out',
     'bp.signed_in_as': 'Signed in as',
     'bp.web_subtitle': 'Sign in to back up to your Google Drive.',
-    'bp.web_hint': 'Files are stored in your Drive under a private "Karta" folder. Same files are visible when you open Karta on desktop.',
+    'bp.web_hint': 'Files are stored in your Drive under a private "B-Less" folder. Same files are visible when you open B-Less on desktop.',
     'bp.signing_in': 'Signing in…',
     'bp.sign_in_failed': 'Sign-in failed: {msg}',
     'bp.desktop_only': 'Only works in desktop app.',
@@ -256,7 +256,7 @@ const I18N = {
     'bp.install_link': 'google.com/drive/download',
     'bp.manual_folder': 'Manuel klasör seç',
     'bp.or_manual_folder': 'Veya manuel klasör seç',
-    'bp.hint_drive': 'Veriler Drive\'da "Karta" klasörüne yazılır, otomatik senkronize olur.',
+    'bp.hint_drive': 'Veriler Drive\'da "B-Less" klasörüne yazılır, otomatik senkronize olur.',
     'bp.hint_install': 'Drive\'ı kurup, oturum açıp sync klasörü oluştuktan sonra uygulamayı yeniden aç.',
     'bp.last_sync': 'Son yedek',
     'bp.never': 'Henüz yok',
@@ -283,7 +283,7 @@ const I18N = {
     'bp.sign_out': 'Çıkış yap',
     'bp.signed_in_as': 'Bağlı hesap',
     'bp.web_subtitle': 'Google Drive\'ına yedek almak için giriş yap.',
-    'bp.web_hint': 'Veriler Drive\'ında özel bir "Karta" klasörüne yazılır. Masaüstü uygulamayı açtığında aynı dosyaları görürsün.',
+    'bp.web_hint': 'Veriler Drive\'ında özel bir "B-Less" klasörüne yazılır. Masaüstü uygulamayı açtığında aynı dosyaları görürsün.',
     'bp.signing_in': 'Giriş yapılıyor…',
     'bp.sign_in_failed': 'Giriş başarısız: {msg}',
     'bp.desktop_only': 'Sadece masaüstü uygulamada çalışır.',
@@ -326,7 +326,24 @@ const I18N = {
   },
 };
 
-let currentLang = localStorage.getItem('karta-lang') ||
+// One-shot migration: copy any `karta-*` localStorage entries (from the previous
+// app name) to the new `b-less-*` keys. Idempotent — the copy is skipped if the
+// new key is already present, so re-running this on every load is safe.
+(() => {
+  const suffixes = ['', '-lang', '-theme', '-drive-user', '-backup-filename'];
+  for (const suf of suffixes) {
+    try {
+      const oldKey = 'karta' + suf;
+      const newKey = 'b-less' + suf;
+      const v = localStorage.getItem(oldKey);
+      if (v != null && localStorage.getItem(newKey) == null) {
+        localStorage.setItem(newKey, v);
+      }
+    } catch {}
+  }
+})();
+
+let currentLang = localStorage.getItem('b-less-lang') ||
   (typeof navigator !== 'undefined' && navigator.language && navigator.language.startsWith('tr') ? 'tr' : 'en');
 
 function t(key, params) {
@@ -349,7 +366,7 @@ function applyI18n() {
 
 function setLang(l) {
   currentLang = l;
-  localStorage.setItem('karta-lang', l);
+  localStorage.setItem('b-less-lang', l);
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
   applyI18n();
 }
@@ -391,18 +408,21 @@ let editingTaskId      = null;
 let editingIssueId     = null;
 let editingMeetingId   = null;
 
-const STORAGE_KEY = 'karta';
-const LEGACY_STORAGE_KEY = 'ais-planner';
+const STORAGE_KEY = 'b-less';
+// Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
+const LEGACY_STORAGE_KEY = 'karta';
+const OLDEST_STORAGE_KEY = 'ais-planner';
 
 function load() {
   try {
-    // Prefer new key, migrate from legacy if only old exists
+    // Prefer new key, walk back through legacy keys if only an older one exists
     let raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (legacy) {
-        localStorage.setItem(STORAGE_KEY, legacy);
-        raw = legacy;
+      const fallback = localStorage.getItem(LEGACY_STORAGE_KEY) ||
+                       localStorage.getItem(OLDEST_STORAGE_KEY);
+      if (fallback) {
+        localStorage.setItem(STORAGE_KEY, fallback);
+        raw = fallback;
       }
     }
     if (raw) state = JSON.parse(raw) || state;
@@ -1782,7 +1802,7 @@ window.deleteAttachment = async function(type, id, filename) {
 
 // ── DRIVE API (PWA / browser path) ─────────────────────
 // Uses Google Identity Services + Drive REST API.
-// Same folder structure as Electron path: Drive/Karta/{karta-backup.json, attachments/<id>/<file>}
+// Same folder structure as Electron path: Drive/B-Less/{b-less-backup.json, attachments/<id>/<file>}
 const DriveAPI = (() => {
   const CLIENT_ID = '733970458049-nh53ksvtjaavj0p5up5bs89jd78t9rf9.apps.googleusercontent.com';
   // drive.file = only files this app creates/opens. User's other Drive content is hidden from us.
@@ -1853,7 +1873,7 @@ const DriveAPI = (() => {
   function signOut() {
     if (accessToken) try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch {}
     accessToken = null; tokenExpiry = 0; folderId = null; userInfo = null;
-    try { localStorage.removeItem('karta-drive-user'); } catch {}
+    try { localStorage.removeItem('b-less-drive-user'); } catch {}
   }
 
   async function fetchUserInfo() {
@@ -1863,7 +1883,7 @@ const DriveAPI = (() => {
     if (!r.ok) return;
     const data = await r.json();
     userInfo = { email: data.email, name: data.name, picture: data.picture };
-    try { localStorage.setItem('karta-drive-user', JSON.stringify(userInfo)); } catch {}
+    try { localStorage.setItem('b-less-drive-user', JSON.stringify(userInfo)); } catch {}
   }
 
   async function ensureToken() {
@@ -1893,8 +1913,11 @@ const DriveAPI = (() => {
     return r;
   }
 
-  // Find or create the "Karta" folder at user's Drive root
-  async function ensureFolder(name = 'Karta', parent = null) {
+  // Find or create the "B-Less" folder at user's Drive root.
+  // (Older installs created a "Karta" folder — rename it manually if you're
+  // migrating, or let the app create a fresh "B-Less" folder and move the
+  // backup file/attachments into it.)
+  async function ensureFolder(name = 'B-Less', parent = null) {
     const cacheKey = `${parent || 'root'}/${name}`;
     if (parent === null && folderId) return folderId;
     const safeName = name.replace(/'/g, "\\'");
@@ -1931,7 +1954,7 @@ const DriveAPI = (() => {
     const meta = existingId
       ? { name }
       : { name, parents: [parentId] };
-    const boundary = '-------karta-' + Math.random().toString(36).slice(2);
+    const boundary = '-------b-less-' + Math.random().toString(36).slice(2);
     const head = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: ${mimeType || blob.type || 'application/octet-stream'}\r\n\r\n`;
     const tail = `\r\n--${boundary}--\r\n`;
     const body = new Blob([head, blob, tail], { type: `multipart/related; boundary=${boundary}` });
@@ -1960,14 +1983,14 @@ const DriveAPI = (() => {
   }
 
   // ── Backup ──
-  async function saveBackup(jsonStr, filename = 'karta-backup.json') {
+  async function saveBackup(jsonStr, filename = 'b-less-backup.json') {
     const fid = await ensureFolder();
     const existing = await findFile(filename, fid);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     return uploadBlob(filename, blob, fid, existing && existing.id, 'application/json');
   }
 
-  async function readBackup(filename = 'karta-backup.json') {
+  async function readBackup(filename = 'b-less-backup.json') {
     const fid = await ensureFolder();
     const f = await findFile(filename, fid);
     if (!f) return null;
@@ -2015,7 +2038,7 @@ const DriveAPI = (() => {
 
   // Restore last user info on init (for header chip without re-auth)
   try {
-    const cached = localStorage.getItem('karta-drive-user');
+    const cached = localStorage.getItem('b-less-drive-user');
     if (cached) userInfo = JSON.parse(cached);
   } catch {}
 
@@ -2036,8 +2059,8 @@ const BackupManager = (() => {
   let debounceId   = null;
   let lastBackup   = null;
   let filename     = (() => {
-    try { return localStorage.getItem('karta-backup-filename') || 'karta-backup.json'; }
-    catch { return 'karta-backup.json'; }
+    try { return localStorage.getItem('b-less-backup-filename') || 'b-less-backup.json'; }
+    catch { return 'b-less-backup.json'; }
   })();
 
   const GDRIVE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.71 3.5 1.15 15l3.5 6.5L11.21 10z"/><path d="m22.85 15-6.56-11.5h-7l6.57 11.5z"/><path d="M4.65 21.5h13.13l3.5-6.5H8.15z"/></svg>';
@@ -2157,7 +2180,7 @@ const BackupManager = (() => {
           let cleaned = next.trim().replace(/[\\/:*?"<>|]/g, '');
           if (!/\.json$/i.test(cleaned)) cleaned += '.json';
           filename = cleaned;
-          try { localStorage.setItem('karta-backup-filename', cleaned); } catch {}
+          try { localStorage.setItem('b-less-backup-filename', cleaned); } catch {}
           await doBackup();
           render();
         }
@@ -2658,7 +2681,7 @@ function renderJournalList() {
 // ── THEME TOGGLE ───────────────────────────────────────
 (function initTheme() {
   const root = document.documentElement;
-  const saved = localStorage.getItem('karta-theme') || 'dark';
+  const saved = localStorage.getItem('b-less-theme') || 'dark';
   root.setAttribute('data-theme', saved);
   const btn = document.getElementById('theme-toggle');
   if (btn) {
@@ -2666,7 +2689,7 @@ function renderJournalList() {
       const cur = root.getAttribute('data-theme') || 'dark';
       const next = cur === 'dark' ? 'light' : 'dark';
       root.setAttribute('data-theme', next);
-      localStorage.setItem('karta-theme', next);
+      localStorage.setItem('b-less-theme', next);
     });
   }
 })();

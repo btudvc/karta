@@ -1,7 +1,7 @@
 {
-  "name": "karta",
-  "version": "3.0.0",
-  "description": "Karta — Project & task management (PWA)",
+  "name": "b-less",
+  "version": "4.0.0",
+  "description": "B-Less — Project & task management (PWA). Blessed by batu, designed to be less.",
   "private": true,
   "scripts": {
     "dev": "node serve.js",

@@ -1,4 +1,4 @@
-// Karta brand asset generator
+// B-Less brand asset generator
 // Renders assets/logo.svg → assets/logo.png (512px) and assets/icon.ico (multi-size)
 const fs   = require('fs');
 const path = require('path');
