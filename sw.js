@@ -1,5 +1,5 @@
 // Karta service worker — offline-first app shell
-const VERSION = 'karta-v3.0.0';
+const VERSION = 'karta-v3.0.1';
 const SHELL = [
   './',
   './index.html',
