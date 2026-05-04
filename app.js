@@ -374,7 +374,9 @@ const ICO = {
 };
 
 // ── STATE ──────────────────────────────────────────────
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], currentRobotId: null, currentTopicId: null, currentFwId: null, currentMeetingId: null };
+// state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
+// dormant so a restore doesn't lose it, but no UI surface reads it anymore.
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -383,8 +385,6 @@ let editingVisitId     = null;
 let editingRobotId     = null;
 let editingTaskId      = null;
 let editingIssueId     = null;
-let editingFirmwareId  = null;
-let editingChangelogId = null;
 let editingMeetingId   = null;
 
 const STORAGE_KEY = 'karta';
@@ -1110,37 +1110,6 @@ window.editVisit = function(id) {
   setTimeout(() => document.getElementById('visit-location').focus(), 50);
 };
 
-window.editFirmware = function(id) {
-  const fw = (state.firmware||[]).find(f => f.id === id);
-  if (!fw) return;
-  editingFirmwareId = id;
-  document.getElementById('fw-code').value = fw.code;
-  document.getElementById('fw-name').value = fw.name || '';
-  document.getElementById('fw-desc').value = fw.description || '';
-  document.getElementById('fw-robot').value = fw.robot || '';
-  document.querySelector('#modal-fw h3').textContent = 'Edit Release';
-  document.getElementById('save-fw').textContent = 'Save Changes';
-  openModal('modal-fw');
-  setTimeout(() => document.getElementById('fw-code').focus(), 50);
-};
-
-window.editChangelogEntry = function(fwId, entryId) {
-  const fw = (state.firmware||[]).find(f => f.id === fwId);
-  const entry = fw && (fw.changelog||[]).find(e => e.id === entryId);
-  if (!entry) return;
-  editingChangelogId = entryId;
-  state.currentFwId = fwId;
-  document.getElementById('cl-version').value = entry.version;
-  document.getElementById('cl-changes').value = entry.changes || '';
-  document.getElementById('cl-notes').value = entry.notes || '';
-  resetRadio('cl-status-group', entry.status || 'rc');
-  initRadioGroup('cl-status-group');
-  document.querySelector('#modal-changelog h3').textContent = 'Edit Version';
-  document.getElementById('save-changelog').textContent = 'Save Changes';
-  openModal('modal-changelog');
-  setTimeout(() => document.getElementById('cl-version').focus(), 50);
-};
-
 // Brainstorm auto-save
 let bsTimer;
 function attachBrainstorm(entityId) {
@@ -1165,8 +1134,7 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
   // Reset editing state
   editingVisitId = null; editingRobotId = null; editingTaskId = null;
-  editingIssueId = null; editingFirmwareId = null; editingChangelogId = null;
-  editingMeetingId = null;
+  editingIssueId = null; editingMeetingId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
     'modal-robot':     ['#modal-robot h3',     getMode() === 'daily' ? t('modal.add_new_list') : t('modal.add_new_project'),
@@ -1174,8 +1142,6 @@ function closeModal(id) {
     'modal-task':      ['#modal-task h3',       t('modal.add_task'),    'save-task',     t('btn.add_task')],
     'modal-issue':     ['#modal-issue h3',      t('modal.add_issue'),   'save-issue',    t('btn.add_issue')],
     'modal-visit':     ['#modal-visit h3',      t('modal.add_visit'),   'save-visit',    t('btn.add_visit')],
-    'modal-fw':        ['#modal-fw h3',         t('modal.add_release'), 'save-fw',       t('btn.add_release')],
-    'modal-changelog': ['#modal-changelog h3',  t('modal.add_version'), 'save-changelog',t('btn.add_version')],
     'modal-meeting':   ['#modal-meeting h3',    t('modal.add_meeting'), 'save-meeting',  t('btn.add_meeting')],
   };
   const r = resets[id];
@@ -1422,228 +1388,6 @@ document.getElementById('save-visit').addEventListener('click', () => {
   save();
   renderVisits();
   closeModal('modal-visit');
-});
-
-// ── FIRMWARE ───────────────────────────────────────────
-function renderFirmwareList() {
-  const list = document.getElementById('fw-list');
-  if (!list) return;
-  const fw = firmwareByMode();
-  if (!fw.length) {
-    list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No releases yet</div>`;
-    return;
-  }
-  list.innerHTML = fw.map(f => {
-    const latest = (f.changelog || []).slice().sort((a,b) => b.createdAt - a.createdAt)[0];
-    const isSelected = f.id === state.currentFwId;
-    return `
-      <div class="robot-item ${isSelected ? 'active' : ''}" data-fw-id="${f.id}">
-        <div class="robot-avatar fw-avatar">${f.code.slice(0,2)}</div>
-        <div class="robot-item-info">
-          <div class="robot-item-name">${f.code}</div>
-          <div class="robot-item-count">${latest ? latest.version : 'No versions yet'}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-  list.querySelectorAll('.robot-item').forEach(item => {
-    item.addEventListener('click', () => {
-      state.currentFwId = item.dataset.fwId;
-      renderFirmwareList();
-      renderFirmwareDetail();
-    });
-  });
-}
-
-function renderFirmwareDetail() {
-  const content = document.getElementById('fw-content');
-  if (!content) return;
-  const fw = (state.firmware || []).find(f => f.id === state.currentFwId);
-  if (!fw) {
-    content.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">${ICO.chip}</div>
-        <p>Select a release or add a new one.</p>
-      </div>`;
-    return;
-  }
-
-  const changelog = [...(fw.changelog || [])].sort((a,b) => b.createdAt - a.createdAt);
-
-  content.innerHTML = `
-    <div class="robot-detail-header">
-      <div>
-        <div class="robot-detail-name" style="font-family:monospace;letter-spacing:1px">${fw.code}</div>
-        ${fw.name ? `<div class="robot-detail-desc">${fw.name}</div>` : ''}
-        ${fw.description ? `<div class="robot-detail-desc" style="margin-top:2px">${fw.description}</div>` : ''}
-        ${fw.robot ? `<div style="margin-top:6px"><span class="visit-robot-tag">${ICO.bot} ${fw.robot}</span></div>` : ''}
-      </div>
-      <div class="btn-group">
-        <button class="btn-sm" onclick="editFirmware('${fw.id}')">Edit</button>
-        <button class="btn-sm danger" onclick="deleteFirmware('${fw.id}')">Delete</button>
-      </div>
-    </div>
-
-    <div class="dsection">
-      <div class="dsection-header">
-        <div class="dsection-label">Changelog <span class="count-pill">${changelog.length} version${changelog.length !== 1 ? 's' : ''}</span></div>
-        <button class="btn-add" onclick="openChangelogModal()">+ Add Version</button>
-      </div>
-      <div id="changelog-list">
-        ${changelog.length === 0
-          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">No versions yet.</div>`
-          : changelog.map(c => renderChangelogEntry(c, fw.id)).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function renderChangelogEntry(entry, fwId) {
-  const statusColors = {
-    stable:     'var(--green)',
-    testing:    'var(--yellow)',
-    deprecated: 'var(--muted)',
-    rc:         'var(--accent)',
-  };
-  const statusLabels = { stable:'Stable', testing:'Testing', deprecated:'Deprecated', rc:'Release Candidate' };
-  const d = new Date(entry.createdAt);
-  const dateStr = `${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]} ${d.getFullYear()}`;
-
-  return `
-    <div class="changelog-entry" id="cl-${entry.id}">
-      <div class="cl-left">
-        <div class="cl-line"></div>
-        <div class="cl-dot" style="background:${statusColors[entry.status] || 'var(--accent)'}"></div>
-      </div>
-      <div class="cl-body">
-        <div class="cl-header">
-          <span class="cl-version">${entry.version}</span>
-          <span class="cl-status" style="color:${statusColors[entry.status] || 'var(--accent)'}">${statusLabels[entry.status] || entry.status}</span>
-          <span class="cl-date">${dateStr}</span>
-          <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-            <button class="btn-sm" onclick="editChangelogEntry('${fwId}','${entry.id}')">Edit</button>
-            <button class="nb-delete-btn" style="opacity:1" onclick="deleteChangelogEntry('${fwId}','${entry.id}')" aria-label="Sil">${ICO.close}</button>
-          </div>
-        </div>
-        ${entry.changes ? `<div class="cl-changes">${entry.changes.replace(/\n/g,'<br>')}</div>` : ''}
-        ${entry.notes ? `<div class="cl-notes">${entry.notes}</div>` : ''}
-      </div>
-    </div>
-  `;
-}
-
-window.deleteFirmware = function(id) {
-  if (!confirm(t('conf.delete_release'))) return;
-  state.firmware = (state.firmware||[]).filter(f => f.id !== id);
-  if (state.currentFwId === id) state.currentFwId = null;
-  save();
-  renderFirmwareList();
-  renderFirmwareDetail();
-};
-
-window.deleteChangelogEntry = function(fwId, entryId) {
-  const fw = (state.firmware||[]).find(f => f.id === fwId);
-  fw.changelog = (fw.changelog||[]).filter(e => e.id !== entryId);
-  save();
-  renderFirmwareDetail();
-  renderFirmwareList();
-};
-
-// Add Firmware Modal
-document.getElementById('add-fw-btn').addEventListener('click', () => {
-  document.getElementById('fw-code').value = '';
-  document.getElementById('fw-name').value = '';
-  document.getElementById('fw-desc').value = '';
-  document.getElementById('fw-robot').value = '';
-  openModal('modal-fw');
-  setTimeout(() => document.getElementById('fw-code').focus(), 50);
-});
-
-document.getElementById('fw-code').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('save-fw').click();
-});
-
-document.getElementById('save-fw').addEventListener('click', () => {
-  const code = document.getElementById('fw-code').value.trim().toUpperCase();
-  if (!code) { document.getElementById('fw-code').focus(); return; }
-  if (!state.firmware) state.firmware = [];
-  if (editingFirmwareId) {
-    const fw = state.firmware.find(f => f.id === editingFirmwareId);
-    if (fw) {
-      fw.code        = code;
-      fw.name        = document.getElementById('fw-name').value.trim();
-      fw.description = document.getElementById('fw-desc').value.trim();
-      fw.robot       = document.getElementById('fw-robot').value.trim();
-    }
-  } else {
-    const fw = {
-      id: uid(), code,
-      name:        document.getElementById('fw-name').value.trim(),
-      description: document.getElementById('fw-desc').value.trim(),
-      robot:       document.getElementById('fw-robot').value.trim(),
-      mode:        getMode(),
-      changelog:   [],
-      createdAt:   Date.now()
-    };
-    state.firmware.push(fw);
-    state.currentFwId = fw.id;
-  }
-  save();
-  renderFirmwareList();
-  renderFirmwareDetail();
-  closeModal('modal-fw');
-});
-
-// Add Changelog Modal
-window.openChangelogModal = function() {
-  document.getElementById('cl-version').value = '';
-  document.getElementById('cl-changes').value = '';
-  document.getElementById('cl-notes').value = '';
-  resetRadio('cl-status-group', 'testing');
-  initRadioGroup('cl-status-group');
-  // Auto-suggest next version
-  const fw = (state.firmware||[]).find(f => f.id === state.currentFwId);
-  if (fw && fw.changelog.length > 0) {
-    const sorted = [...fw.changelog].sort((a,b) => b.createdAt - a.createdAt);
-    const last = sorted[0].version;
-    const match = last.match(/V(\d+)$/i);
-    if (match) {
-      const next = String(parseInt(match[1]) + 1).padStart(match[1].length, '0');
-      document.getElementById('cl-version').value = last.replace(/V\d+$/i, 'V' + next);
-    }
-  } else if (fw) {
-    document.getElementById('cl-version').value = fw.code + '-V001';
-  }
-  openModal('modal-changelog');
-  setTimeout(() => document.getElementById('cl-version').focus(), 50);
-};
-
-document.getElementById('save-changelog').addEventListener('click', () => {
-  const version = document.getElementById('cl-version').value.trim();
-  if (!version) { document.getElementById('cl-version').focus(); return; }
-  const fw = (state.firmware||[]).find(f => f.id === state.currentFwId);
-  if (!fw) return;
-  if (editingChangelogId) {
-    const entry = fw.changelog.find(e => e.id === editingChangelogId);
-    if (entry) {
-      entry.version = version;
-      entry.status  = getRadioValue('cl-status-group') || 'testing';
-      entry.changes = document.getElementById('cl-changes').value.trim();
-      entry.notes   = document.getElementById('cl-notes').value.trim();
-    }
-  } else {
-    fw.changelog.push({
-      id: uid(), version,
-      status:   getRadioValue('cl-status-group') || 'testing',
-      changes:  document.getElementById('cl-changes').value.trim(),
-      notes:    document.getElementById('cl-notes').value.trim(),
-      createdAt: Date.now()
-    });
-  }
-  save();
-  renderFirmwareDetail();
-  renderFirmwareList();
-  closeModal('modal-changelog');
 });
 
 // ── MEETINGS ───────────────────────────────────────────
@@ -2393,7 +2137,7 @@ const BackupManager = (() => {
     if (!backup || !backup.data) return false;
     const hasData = (state.robots || []).length > 0 ||
                     (state.fieldVisits || []).length > 0 ||
-                    (state.firmware || []).length > 0;
+                    (state.meetings || []).length > 0;
     const backupDate   = new Date(backup.exportedAt).toLocaleString();
     const projectCount = (backup.data.robots || []).length;
     const msg = hasData
@@ -2423,7 +2167,7 @@ const BackupManager = (() => {
     if (ok) {
       const hasData = (state.robots || []).length > 0 ||
                       (state.fieldVisits || []).length > 0 ||
-                      (state.firmware || []).length > 0;
+                      (state.meetings || []).length > 0;
       if (!hasData) await tryRestore();
       scheduleInterval();
       doBackup();
@@ -2494,8 +2238,6 @@ function renderAll() {
   renderTopicList();
   renderTopicDetail();
   renderVisits();
-  renderFirmwareList();
-  renderFirmwareDetail();
   renderWorkHours();
   renderMeetingList();
   renderMeetingDetail();
@@ -2854,7 +2596,6 @@ function setMode(m) {
   });
   // Reset selection that may now be invisible after filtering
   state.currentRobotId   = null;
-  state.currentFwId      = null;
   state.currentMeetingId = null;
 
   // If active tab isn't visible in this mode, redirect to projects/lists
@@ -2884,7 +2625,6 @@ function inMode(item) { return (item.mode || 'job') === getMode(); }
 function projectsByMode()  { return (state.robots || []).filter(inMode); }
 function meetingsByMode()  { return (state.meetings || []).filter(inMode); }
 function visitsByMode()    { return (state.fieldVisits || []).filter(inMode); }
-function firmwareByMode()  { return (state.firmware || []).filter(inMode); }
 
 // ── PWA: register service worker (web only — Electron uses file:// and skips) ──
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

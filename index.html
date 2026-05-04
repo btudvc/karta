@@ -52,10 +52,6 @@
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
         <span data-i18n="tab.visits">Visits</span>
       </button>
-      <button class="tab" data-tab="firmware" data-modes="job">
-        <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
-        <span data-i18n="tab.releases">Releases</span>
-      </button>
     </nav>
 
     <div class="header-right">
@@ -126,25 +122,6 @@
             <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <p data-i18n="empty.select_meeting">Select a meeting or add a new one.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- RELEASES TAB (state.firmware — kept for backwards compat) -->
-    <section id="firmware" class="section">
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <span class="sidebar-label" data-i18n="sidebar.releases">Releases</span>
-          <button class="btn-add" id="add-fw-btn" data-i18n="btn.add">+ Add</button>
-        </div>
-        <div class="robot-list" id="fw-list"></div>
-      </div>
-      <div class="content" id="fw-content">
-        <div class="empty-state">
-          <div class="empty-icon">
-            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
-          </div>
-          <p data-i18n="empty.select_release">Select a release or add a new one.</p>
         </div>
       </div>
     </section>
@@ -297,59 +274,6 @@
       <div class="modal-actions">
         <button class="btn-ghost" data-close="modal-visit" data-i18n="btn.cancel">Cancel</button>
         <button class="btn-primary" id="save-visit" data-i18n="btn.add_visit">Add Visit</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Add Release -->
-  <div class="modal-overlay" id="modal-fw">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 data-i18n="modal.add_release">Add Release</h3>
-        <button class="modal-close" data-close="modal-fw" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <label data-i18n="label.release_code">Release Code *</label>
-      <input type="text" id="fw-code" data-i18n-ph="ph.release_code" style="font-family:monospace" />
-      <label data-i18n="label.name">Name</label>
-      <input type="text" id="fw-name" data-i18n-ph="ph.short_name" />
-      <label data-i18n="label.description">Description</label>
-      <textarea id="fw-desc" data-i18n-ph="ph.fw_desc"></textarea>
-      <label data-i18n="label.project_platform">Project / Platform</label>
-      <input type="text" id="fw-robot" data-i18n-ph="ph.platform" />
-      <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-fw" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-fw" data-i18n="btn.add_release">Add Release</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Add Changelog Entry -->
-  <div class="modal-overlay" id="modal-changelog">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 data-i18n="modal.add_version">Add Version</h3>
-        <button class="modal-close" data-close="modal-changelog" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <label data-i18n="label.version">Version *</label>
-      <input type="text" id="cl-version" data-i18n-ph="ph.version" style="font-family:monospace" />
-      <label data-i18n="label.status">Status</label>
-      <div class="radio-group" id="cl-status-group">
-        <label class="radio-btn" data-value="testing" data-i18n="status.testing">Testing</label>
-        <label class="radio-btn active" data-value="rc" data-i18n="status.rc">RC</label>
-        <label class="radio-btn" data-value="stable" data-i18n="status.stable">Stable</label>
-        <label class="radio-btn" data-value="deprecated" data-i18n="status.deprecated">Deprecated</label>
-      </div>
-      <label data-i18n="label.changes">Changes</label>
-      <textarea id="cl-changes" data-i18n-ph="ph.changes_lines"></textarea>
-      <label data-i18n="label.notes">Notes</label>
-      <textarea id="cl-notes" data-i18n-ph="ph.cl_notes" style="min-height:60px"></textarea>
-      <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-changelog" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-changelog" data-i18n="btn.add_version">Add Version</button>
       </div>
     </div>
   </div>
