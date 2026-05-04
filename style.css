@@ -256,6 +256,9 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .backup-btn.backup-ok     { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .backup-btn.backup-warn   { border-color: var(--orange); color: var(--orange); }
 .backup-icon              { display: inline-flex; align-items: center; }
+.backup-label:empty       { display: none; }
+/* Icon-only state: tighter, circular button */
+.backup-btn:has(.backup-label:empty) { padding: 6px; }
 
 /* Backup popover */
 .backup-popover {

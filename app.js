@@ -2305,7 +2305,7 @@ const BackupManager = (() => {
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-ok', 'backup-warn');
-        headerLabel.textContent = t('bp.set_up');
+        headerLabel.textContent = '';
       }
     }
 
@@ -2414,8 +2414,22 @@ const BackupManager = (() => {
     const popover = document.getElementById('backup-popover');
     if (!btn || !popover) return;
 
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', async e => {
       e.stopPropagation();
+      // Not signed in → trigger sign-in directly (no popover)
+      if (!DriveAPI.isSignedIn()) {
+        try {
+          await DriveAPI.signIn();
+          const restored = await tryRestore();
+          if (!restored) await doBackup();
+          scheduleInterval();
+          render();
+        } catch (e) {
+          alert(t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }));
+        }
+        return;
+      }
+      // Signed in → toggle popover for actions
       popover.classList.toggle('open');
     });
     document.addEventListener('click', e => {
