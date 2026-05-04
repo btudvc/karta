@@ -5,6 +5,8 @@ const I18N = {
     'tab.projects': 'Projects', 'tab.lists': 'Lists', 'tab.tasks': 'Tasks',
     'tab.today': 'Today', 'tab.calendar': 'Calendar', 'tab.journal': 'Journal',
     'tab.meetings': 'Meetings', 'tab.visits': 'Visits', 'tab.releases': 'Releases',
+    'tab.more': 'More',
+    'more.language': 'Language', 'more.theme': 'Theme', 'more.drive': 'Google Drive',
     'sidebar.projects': 'Projects', 'sidebar.lists': 'Lists',
     'sidebar.meetings': 'Meetings', 'sidebar.releases': 'Releases',
     'sidebar.entries': 'Entries',
@@ -165,6 +167,8 @@ const I18N = {
     'tab.projects': 'Projeler', 'tab.lists': 'Listeler', 'tab.tasks': 'Görevler',
     'tab.today': 'Bugün', 'tab.calendar': 'Takvim', 'tab.journal': 'Günlük',
     'tab.meetings': 'Toplantılar', 'tab.visits': 'Ziyaretler', 'tab.releases': 'Sürümler',
+    'tab.more': 'Daha',
+    'more.language': 'Dil', 'more.theme': 'Tema', 'more.drive': 'Google Drive',
     'sidebar.projects': 'Projeler', 'sidebar.lists': 'Listeler',
     'sidebar.meetings': 'Toplantılar', 'sidebar.releases': 'Sürümler',
     'sidebar.entries': 'Girdiler',
@@ -431,6 +435,10 @@ function uid() {
 }
 
 // ── TABS ───────────────────────────────────────────────
+// Sub-pages reachable from "More" — when one is active, keep "More" highlighted
+// in the bottom nav so the user has a clear way back.
+const MORE_SUBTABS = new Set(['meetings', 'journal']);
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -443,8 +451,34 @@ document.querySelectorAll('.tab').forEach(tab => {
     }
     if (tab.dataset.tab === 'calendar')   renderCalendar();
     if (tab.dataset.tab === 'all-tasks')  renderAllTasks();
+    if (MORE_SUBTABS.has(tab.dataset.tab)) {
+      const moreBtn = document.querySelector('.bnav-btn[data-tab="more"]');
+      if (moreBtn) moreBtn.classList.add('active');
+    }
   });
 });
+
+// "More" page cards: jump to the corresponding tab / open the corresponding control.
+document.querySelectorAll('[data-go-tab]').forEach(card => {
+  card.addEventListener('click', () => {
+    const target = document.querySelector(`.tab[data-tab="${card.dataset.goTab}"]`);
+    if (target) target.click();
+  });
+});
+const moreThemeBtn = document.getElementById('more-theme-trigger');
+if (moreThemeBtn) {
+  moreThemeBtn.addEventListener('click', () => {
+    const real = document.getElementById('theme-toggle');
+    if (real) real.click();
+  });
+}
+const moreDriveBtn = document.getElementById('more-drive-trigger');
+if (moreDriveBtn) {
+  moreDriveBtn.addEventListener('click', () => {
+    const real = document.getElementById('backup-btn');
+    if (real) real.click();
+  });
+}
 
 // ── HELPERS ────────────────────────────────────────────
 function getCurrentContainer() {
