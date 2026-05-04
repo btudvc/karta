@@ -550,12 +550,14 @@ function refreshCategoryDatalist() {
 function renderRobotDetail() {
   const content = document.getElementById('robot-content');
   const robot = getCurrentContainer();
+  const isDaily = getMode() === 'daily';
 
   if (!robot) {
+    const emptyMsg = (isDaily ? t('empty.select_list') : t('empty.select_project')).replace(/\n/g, '<br>');
     content.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">${ICO.botLg}</div>
-        <p>Select a project from the sidebar<br>or add a new one to get started.</p>
+        <p>${emptyMsg}</p>
       </div>`;
     return;
   }
@@ -568,6 +570,13 @@ function renderRobotDetail() {
   const issues = robot.issues || [];
   const openIssues = issues.filter(i => i.status !== 'resolved');
 
+  if (isDaily && robotTab === 'issues') robotTab = 'tasks';
+
+  const issuesTabBtn = isDaily ? '' : `
+      <button class="inner-tab ${robotTab==='issues'?'active':''}" onclick="switchRobotTab('issues')">
+        ${t('task.issues_label')} <span class="count-pill issues-pill">${openIssues.length}</span>
+      </button>`;
+
   content.innerHTML = `
     <div class="robot-detail-header">
       <div>
@@ -575,43 +584,43 @@ function renderRobotDetail() {
         ${robot.description ? `<div class="robot-detail-desc">${robot.description}</div>` : ''}
       </div>
       <div class="btn-group">
-        <button class="btn-sm" onclick="editRobot('${robot.id}')">Edit</button>
-        <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">Delete Project</button>
+        <button class="btn-sm" onclick="editRobot('${robot.id}')">${t('btn.edit')}</button>
+        <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">${isDaily ? t('btn.delete_list') : t('btn.delete_project')}</button>
       </div>
     </div>
 
     <div class="inner-tabs">
       <button class="inner-tab ${robotTab==='tasks'?'active':''}" onclick="switchRobotTab('tasks')">
-        Tasks <span class="count-pill">${activeTasks.length + pendingTasks.length}</span>
+        ${t('task.tasks_label')} <span class="count-pill">${activeTasks.length + pendingTasks.length}</span>
       </button>
-      <button class="inner-tab ${robotTab==='issues'?'active':''}" onclick="switchRobotTab('issues')">
-        Known Issues <span class="count-pill issues-pill">${openIssues.length}</span>
-      </button>
+      ${issuesTabBtn}
     </div>
 
     <div id="inner-tab-content">
       ${robotTab === 'tasks' ? renderTabTasks(orderedTasks, activeTasks, pendingTasks) : ''}
-      ${robotTab === 'issues' ? renderTabIssues(issues) : ''}
+      ${robotTab === 'issues' && !isDaily ? renderTabIssues(issues) : ''}
     </div>
   `;
 }
 
 window.switchRobotTab = function(tab) {
   if (tab === 'brainstorm') tab = 'tasks';
+  if (tab === 'issues' && getMode() === 'daily') tab = 'tasks';
   robotTab = tab;
   renderRobotDetail();
 };
 
 function renderTabTasks(ordered, activeTasks, pendingTasks) {
+  const openCount = activeTasks.length + pendingTasks.length;
   return `
     <div class="dsection">
       <div class="dsection-header">
-        <div class="dsection-label">Tasks <span class="count-pill">${activeTasks.length + pendingTasks.length} open</span></div>
-        <button class="btn-add" onclick="openTaskModal()">+ Add Task</button>
+        <div class="dsection-label">${t('task.tasks_label')} <span class="count-pill">${t('count.open', { n: openCount })}</span></div>
+        <button class="btn-add" onclick="openTaskModal()">+ ${t('btn.add_task')}</button>
       </div>
       <div id="task-list">
         ${ordered.length === 0
-          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">No tasks yet. Add your first task!</div>`
+          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">${t('empty.no_tasks_add')}</div>`
           : ordered.map(t => renderTask(t)).join('')}
       </div>
     </div>
@@ -644,12 +653,12 @@ function renderTabIssues(issues) {
   return `
     <div class="dsection">
       <div class="dsection-header">
-        <div class="dsection-label">Known Issues <span class="count-pill issues-pill">${open.length + invest.length} open</span></div>
-        <button class="btn-add" onclick="openIssueModal()">+ Add Issue</button>
+        <div class="dsection-label">${t('task.issues_label')} <span class="count-pill issues-pill">${t('count.open', { n: open.length + invest.length })}</span></div>
+        <button class="btn-add" onclick="openIssueModal()">+ ${t('btn.add_issue')}</button>
       </div>
       <div id="issue-list">
         ${ordered.length === 0
-          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">Kayıtlı hata yok.</div>`
+          ? `<div style="color:var(--muted);font-size:14px;padding:8px 0;">${t('empty.no_issues')}</div>`
           : ordered.map(i => renderIssue(i)).join('')}
       </div>
     </div>
