@@ -5,8 +5,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* ── THEME TOKENS ────────────────────────────────────────
-   Two themes. Default is dark (neutral zinc, not blue-tinted).
-   Toggle by setting data-theme="light" on <html> or <body>. */
+   Two themes. Monochrome palette — neutral zinc only, no chromatic
+   brand color. Status colors (green/red/yellow/etc.) are kept because
+   they carry semantic meaning (priority, severity, completion state). */
 :root,
 :root[data-theme="dark"] {
   /* Surfaces — zinc/neutral */
@@ -22,17 +23,17 @@
   --muted:        #a1a1aa;        /* zinc-400 */
   --muted-2:      #71717a;        /* zinc-500 */
 
-  /* Brand */
-  --accent:       #6366f1;        /* indigo-500 — brand-aligned with logo */
-  --accent-h:     #818cf8;        /* indigo-400 */
-  --accent-soft:  rgba(99,102,241,.14);
-  --accent-soft2: rgba(99,102,241,.22);
+  /* Brand — monochrome. Active highlights are zinc-200, hover steps brighter. */
+  --accent:       #e4e4e7;        /* zinc-200 */
+  --accent-h:     #f4f4f5;        /* zinc-100 */
+  --accent-soft:  rgba(228,228,231,.10);
+  --accent-soft2: rgba(228,228,231,.18);
 
-  /* Status */
+  /* Status — kept chromatic because the meaning (done/critical/etc) is the point */
   --green:        #22c55e;
   --orange:       #f59e0b;
   --red:          #ef4444;
-  --purple:       #a78bfa;
+  --purple:       #a1a1aa;        /* visits, demoted to a neutral gray */
   --yellow:       #eab308;
   --rose:         #f43f5e;
 
@@ -54,15 +55,16 @@
   --muted:        #71717a;
   --muted-2:      #a1a1aa;
 
-  --accent:       #6366f1;
-  --accent-h:     #4f46e5;
-  --accent-soft:  rgba(99,102,241,.10);
-  --accent-soft2: rgba(99,102,241,.18);
+  /* Brand — monochrome on light: dark gray serves as the "active" tone */
+  --accent:       #27272a;        /* zinc-800 */
+  --accent-h:     #18181b;        /* zinc-900 */
+  --accent-soft:  rgba(39,39,42,.07);
+  --accent-soft2: rgba(39,39,42,.14);
 
   --green:        #16a34a;
   --orange:       #d97706;
   --red:          #dc2626;
-  --purple:       #8b5cf6;
+  --purple:       #71717a;        /* visits, neutral gray */
   --yellow:       #ca8a04;
   --rose:         #e11d48;
 
@@ -1761,9 +1763,9 @@ main { flex: 1; overflow: hidden; }
   text-overflow: ellipsis;
   line-height: 1.3;
 }
-.cal-day-event.meeting { background: rgba(99,102,241,.15); color: var(--accent); }
-.cal-day-event.visit   { background: rgba(167,139,250,.15); color: var(--purple); }
-.cal-day-event[data-mode="daily"] { border-left: 2px solid var(--amber, #f59e0b); padding-left: 3px; }
+.cal-day-event.meeting { background: var(--accent-soft); color: var(--accent); }
+.cal-day-event.visit   { background: var(--surface-3); color: var(--muted); border: 1px dashed var(--border-2); }
+.cal-day-event[data-mode="daily"] { border-left: 2px solid var(--muted); padding-left: 3px; }
 .cal-day-event-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
 .cal-day-panel {
@@ -1939,9 +1941,9 @@ main { flex: 1; overflow: hidden; }
 }
 .cal-day-item.clickable:hover { background: var(--surface-2); }
 @keyframes karta-flash {
-  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,.55); }
-  50%  { box-shadow: 0 0 0 6px rgba(99,102,241,.15); }
-  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(228,228,231,.55); }
+  50%  { box-shadow: 0 0 0 6px rgba(228,228,231,.15); }
+  100% { box-shadow: 0 0 0 0 rgba(228,228,231,0); }
 }
 .visit-card.flash { animation: karta-flash 1.4s ease-out; }
 
@@ -2011,6 +2013,15 @@ main { flex: 1; overflow: hidden; }
   background: var(--border);
   margin: 10px 0;
 }
+.more-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  padding: 16px 4px 8px;
+}
+.more-section-title:first-child { padding-top: 4px; }
 
 /* Mode-scoped visibility for More-page cards */
 body[data-mode="job"]   .more-card.daily-only { display: none; }
@@ -2049,7 +2060,7 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
   .bnav-btn svg { stroke-width: 1.7; }
   .bnav-btn.active {
     color: var(--accent);
-    background: rgba(99,102,241,.08);
+    background: var(--accent-soft);
   }
   .bnav-btn .job-label,
   .bnav-btn .daily-label { display: none; }
@@ -2082,6 +2093,22 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
      give the detail content the full screen. Re-show via the in-detail "back" button. */
   #robots.section[data-detail-open="true"] .sidebar       { display: none; }
   #robots.section[data-detail-open="true"] .content       { padding: 14px 14px 18px; }
+
+  /* When no project is selected, give the project list the full screen instead
+     of cramming it into ~38vh and showing a redundant "select a project" empty
+     state below it. */
+  #robots.section:not([data-detail-open="true"]) .sidebar {
+    max-height: none;
+    height: 100%;
+    flex: 1;
+    border-bottom: none;
+  }
+  #robots.section:not([data-detail-open="true"]) .robot-list {
+    max-height: none;
+    height: calc(100% - 50px);
+    overflow-y: auto;
+  }
+  #robots.section:not([data-detail-open="true"]) .content { display: none; }
   .robot-detail-back {
     display: inline-flex;
     align-items: center; justify-content: center;
