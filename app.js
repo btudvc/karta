@@ -2423,9 +2423,14 @@ const BackupManager = (() => {
   }
 
   function initUI() {
-    const btn     = document.getElementById('backup-btn');
-    const popover = document.getElementById('backup-popover');
+    const btn      = document.getElementById('backup-btn');
+    const popover  = document.getElementById('backup-popover');
+    const backdrop = document.getElementById('backup-backdrop');
     if (!btn || !popover) return;
+
+    function openPopover()  { popover.classList.add('open');    if (backdrop) backdrop.classList.add('open'); }
+    function closePopover() { popover.classList.remove('open'); if (backdrop) backdrop.classList.remove('open'); }
+    function togglePopover(){ popover.classList.contains('open') ? closePopover() : openPopover(); }
 
     btn.addEventListener('click', async e => {
       e.stopPropagation();
@@ -2443,11 +2448,22 @@ const BackupManager = (() => {
         return;
       }
       // Signed in → toggle popover for actions
-      popover.classList.toggle('open');
+      togglePopover();
     });
+
+    // Backdrop click closes
+    if (backdrop) backdrop.addEventListener('click', closePopover);
+
+    // Outside click closes
     document.addEventListener('click', e => {
+      if (!popover.classList.contains('open')) return;
       if (!popover.contains(e.target) && e.target !== btn && !btn.contains(e.target))
-        popover.classList.remove('open');
+        closePopover();
+    });
+
+    // ESC closes
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && popover.classList.contains('open')) closePopover();
     });
 
     // Best-effort flush before unload

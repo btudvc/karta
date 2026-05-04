@@ -260,23 +260,54 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 /* Icon-only state: tighter, circular button */
 .backup-btn:has(.backup-label:empty) { padding: 6px; }
 
-/* Backup popover */
+/* Backup popover — centered modal-style popup with backdrop */
+.backup-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(8,11,18,.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 499;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s var(--ease);
+}
+.backup-backdrop.open { opacity: 1; pointer-events: auto; }
+
 .backup-popover {
   display: none;
   position: fixed;
-  top: 60px;
-  right: 16px;
-  width: 290px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(.96);
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border-2);
-  border-radius: var(--radius-md);
-  padding: 16px;
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
   z-index: 500;
   box-shadow: var(--shadow-lg);
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  opacity: 0;
+  transition: opacity .15s var(--ease), transform .18s var(--ease);
 }
-.backup-popover.open { display: flex; }
+.backup-popover.open {
+  display: flex;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@media (max-width: 800px) {
+  .backup-popover {
+    width: auto;
+    left: 12px; right: 12px;
+    transform: translate(0, -50%) scale(.96);
+    max-width: none;
+  }
+  .backup-popover.open { transform: translate(0, -50%) scale(1); }
+}
 
 .bp-title    { font-size: 13.5px; font-weight: 600; color: var(--text); }
 .bp-subtitle { font-size: 12px; color: var(--muted); margin-top: -4px; }
@@ -1501,11 +1532,7 @@ main { flex: 1; overflow: hidden; }
   }
   .modal-overlay { align-items: flex-end; }
 
-  /* Backup popover full-width */
-  .backup-popover {
-    right: 8px; left: 8px; width: auto;
-    top: 60px;
-  }
+  /* Backup popover full-width handled in main .backup-popover @media block above */
 
   /* Calendar — single column, panel below grid */
   .cal-body { grid-template-columns: 1fr; }
