@@ -1,5 +1,5 @@
 // Karta service worker — offline-first app shell
-const VERSION = 'karta-v3.0.3';
+const VERSION = 'karta-v3.0.4';
 const SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const SHELL = [
   './app.js',
   './manifest.json',
   './assets/logo.png',
+  './assets/logo.svg',
 ];
 
 self.addEventListener('install', e => {

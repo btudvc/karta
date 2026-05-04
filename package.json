@@ -8,6 +8,7 @@
     "icons": "node assets/create-icon.js"
   },
   "devDependencies": {
-    "png-to-ico": "^3.0.1"
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
   }
 }
