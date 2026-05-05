@@ -2260,7 +2260,12 @@ const DriveAPI = (() => {
         try { await fetchUserInfo(); } catch {}
         resolve(true);
       });
-      try { tc.requestAccessToken({ prompt: 'none' }); } catch { resolve(false); }
+      // Passing the cached email as login_hint helps GSI pick the right
+      // session and noticeably improves silent re-auth success in standalone
+      // PWAs where the iframe doesn't always share session state cleanly.
+      const opts = { prompt: 'none' };
+      if (userInfo && userInfo.email) opts.hint = userInfo.email;
+      try { tc.requestAccessToken(opts); } catch { resolve(false); }
     });
   }
 
