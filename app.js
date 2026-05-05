@@ -1008,11 +1008,27 @@ function renderNotebook(task) {
   const entries = task.notebook || [];
   const entriesHtml = entries.length === 0
     ? `<div class="nb-empty">${t('empty.no_notes')}</div>`
-    : entries.map(e => `
+    : entries.map(e => e.editing ? `
+        <div class="nb-entry nb-editing" id="nbentry-${e.id}">
+          <div class="nb-entry-meta">
+            <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
+            <span class="nb-entry-actions">
+              <button class="nb-save-btn" onclick="saveEditedNoteEntry('${task.id}','${e.id}')">Kaydet</button>
+              <button class="nb-cancel-btn" onclick="cancelEditNoteEntry('${task.id}','${e.id}')">İptal</button>
+            </span>
+          </div>
+          <textarea class="nb-edit-input" id="nb-edit-input-${task.id}-${e.id}"
+            onkeydown="editNbKeydown(event,'${task.id}','${e.id}')"
+            rows="4">${escapeHtml(e.text)}</textarea>
+        </div>
+      ` : `
         <div class="nb-entry" id="nbentry-${e.id}">
           <div class="nb-entry-meta">
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
-            <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+            <span class="nb-entry-actions">
+              <button class="nb-edit-btn" onclick="editNoteEntry('${task.id}','${e.id}')">Düzenle</button>
+              <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+            </span>
           </div>
           <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
         </div>
@@ -1165,6 +1181,51 @@ window.addNoteEntry = function(taskId) {
 
 window.nbKeydown = function(e, taskId) {
   if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); addNoteEntry(taskId); }
+};
+
+window.editNbKeydown = function(e, taskId, entryId) {
+  if (e.key === 'Enter' && e.ctrlKey) {
+    e.preventDefault(); saveEditedNoteEntry(taskId, entryId);
+  }
+};
+
+window.editNoteEntry = function(taskId, entryId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const entry = (task.notebook || []).find(e => e.id === entryId);
+  if (!entry) return;
+  entry.editing = true;
+  const nb = document.getElementById('notebook-' + taskId);
+  if (nb) nb.outerHTML = renderNotebook(task);
+};
+
+window.cancelEditNoteEntry = function(taskId, entryId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const entry = (task.notebook || []).find(e => e.id === entryId);
+  if (!entry) return;
+  delete entry.editing;
+  const nb = document.getElementById('notebook-' + taskId);
+  if (nb) nb.outerHTML = renderNotebook(task);
+};
+
+window.saveEditedNoteEntry = function(taskId, entryId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const entry = (task.notebook || []).find(e => e.id === entryId);
+  if (!entry) return;
+  const input = document.getElementById(`nb-edit-input-${taskId}-${entryId}`);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) { input.focus(); return; }
+  entry.text = text;
+  delete entry.editing;
+  save();
+  const nb = document.getElementById('notebook-' + taskId);
+  if (nb) nb.outerHTML = renderNotebook(task);
 };
 
 window.deleteNoteEntry = function(taskId, entryId) {

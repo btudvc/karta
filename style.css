@@ -151,9 +151,10 @@ header {
   flex-shrink: 0;
 }
 .logo-mark {
-  width: 30px; height: 30px;
+  width: 42px; height: 42px;
   object-fit: contain;
   display: block;
+  border-radius: 10px;
 }
 .logo-text {
   font-size: 20px;
@@ -177,6 +178,10 @@ header {
   .logo {
     gap: 6px;
     min-width: 0;
+  }
+  .logo-mark {
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -1423,6 +1428,47 @@ main { flex: 1; overflow: hidden; display: flex; }
 .nb-entry:hover .nb-delete-btn { opacity: 1; }
 .nb-delete-btn:hover { color: var(--red); background: rgba(248,81,73,.1); }
 
+.nb-entry-actions {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nb-edit-btn,
+.nb-save-btn,
+.nb-cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  transition: all .15s var(--ease);
+}
+
+.nb-edit-btn:hover,
+.nb-save-btn:hover,
+.nb-cancel-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--surface-3);
+}
+
+.nb-edit-input {
+  width: 100%;
+  min-height: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.6;
+}
+
 .nb-entry-text {
   font-size: 13.5px;
   line-height: 1.65;
@@ -1876,8 +1922,10 @@ main { flex: 1; overflow: hidden; display: flex; }
     gap: 10px;
     height: 56px;
     overflow: visible;
+    justify-content: center;
   }
-  .logo-mark { width: 26px; height: 26px; }
+  .logo { margin: 0 auto; }
+  .logo-mark { width: 44px; height: 44px; }
   .mode-switcher { padding: 2px; }
   .mode-btn { padding: 5px 10px; font-size: 12px; }
 
