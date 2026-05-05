@@ -4389,21 +4389,7 @@ renderAll = function() {
 renderAll();
 initJournal();
 BackupManager.initUI();
-// Init returns once silent re-auth + any restore are done. We hide the splash
-// after it resolves so the brief GSI iframe flash stays behind our branded
-// loader. Cap with a 3.5s timeout in case init hangs (offline, slow GSI,
-// etc.) — the app is fully functional locally either way.
-const _hideSplash = () => {
-  const sp = document.getElementById('b-splash');
-  if (!sp || sp.classList.contains('fading')) return;
-  sp.classList.add('fading');
-  setTimeout(() => sp.remove(), 400);
-};
-const _splashTimer = setTimeout(_hideSplash, 3500);
-Promise.resolve(BackupManager.init()).finally(() => {
-  clearTimeout(_splashTimer);
-  _hideSplash();
-});
+BackupManager.init();
 renderPaletteGrid();
 
 // Default landing view: All Tasks
