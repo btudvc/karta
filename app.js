@@ -123,6 +123,7 @@ const I18N = {
     'add_item.meeting': 'Meeting', 'add_item.meeting_hint': 'Notes + action items for a single meeting',
     'add_item.visit': 'Visit', 'add_item.visit_hint': 'Plan a place + date',
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
+    'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
     'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
     'space.name_prompt': 'Space name:',
     'label.space': 'Space',
@@ -170,6 +171,26 @@ const I18N = {
     'status.active': 'Active', 'status.pending': 'Pending', 'status.done': 'Done',
     'status.open': 'Open', 'status.investigating': 'Investigating', 'status.resolved': 'Resolved',
     'status.testing': 'Testing', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Deprecated',
+    'fin.title': 'Expenses',
+    'fin.subtitle': 'Subscriptions and recurring monthly costs',
+    'fin.add_subscription': 'Add Subscription',
+    'fin.modal_add': 'Add Subscription',
+    'fin.modal_edit': 'Edit Subscription',
+    'fin.name': 'Name',
+    'fin.amount': 'Amount',
+    'fin.currency': 'Currency',
+    'fin.cycle': 'Cycle',
+    'fin.monthly': 'Monthly',
+    'fin.yearly': 'Yearly',
+    'fin.category': 'Category',
+    'fin.due_day': 'Payment day',
+    'fin.monthly_total': 'Monthly total',
+    'fin.yearly_total': 'Yearly estimate',
+    'fin.count': '{n} active subscription(s)',
+    'fin.empty': 'No subscriptions yet.',
+    'fin.per_month': '/ month',
+    'fin.per_year': '/ year',
+    'fin.delete_confirm': 'Delete this subscription?',
   },
   tr: {
     'mode.job': 'İş', 'mode.daily': 'Kişisel',
@@ -344,6 +365,52 @@ const I18N = {
   },
 };
 
+Object.assign(I18N.tr, {
+  'add_item.finance': 'Harcamalar',
+  'add_item.finance_hint': 'Abonelikler ve aylik giderler',
+  'fin.title': 'Harcamalar',
+  'fin.subtitle': 'Abonelikler ve aylik tekrar eden giderler',
+  'fin.add_subscription': 'Abonelik Ekle',
+  'fin.modal_add': 'Abonelik Ekle',
+  'fin.modal_edit': 'Aboneligi Duzenle',
+  'fin.name': 'Ad',
+  'fin.amount': 'Tutar',
+  'fin.currency': 'Para birimi',
+  'fin.cycle': 'Dongu',
+  'fin.monthly': 'Aylik',
+  'fin.yearly': 'Yillik',
+  'fin.category': 'Kategori',
+  'fin.due_day': 'Odeme gunu',
+  'fin.monthly_total': 'Aylik toplam',
+  'fin.yearly_total': 'Yillik tahmini',
+  'fin.count': '{n} aktif abonelik',
+  'fin.empty': 'Henuz abonelik yok.',
+  'fin.per_month': '/ ay',
+  'fin.per_year': '/ yil',
+  'fin.delete_confirm': 'Bu abonelik silinsin mi?',
+  'fin.add_expense': 'Harcama Ekle',
+  'fin.modal_expense_add': 'Harcama Ekle',
+  'fin.modal_expense_edit': 'Harcamayi Duzenle',
+  'fin.expenses_this_month': 'Bu ayki harcamalar',
+  'fin.subscriptions': 'Abonelikler',
+  'fin.expense_total': 'Bu ay harcama',
+  'fin.empty_expenses': 'Bu ay henuz harcama yok.',
+  'fin.auto_subscription': 'Otomatik abonelik',
+  'fin.delete_expense_confirm': 'Bu harcama silinsin mi?',
+});
+
+Object.assign(I18N.en, {
+  'fin.add_expense': 'Add Expense',
+  'fin.modal_expense_add': 'Add Expense',
+  'fin.modal_expense_edit': 'Edit Expense',
+  'fin.expenses_this_month': 'This month expenses',
+  'fin.subscriptions': 'Subscriptions',
+  'fin.expense_total': 'This month spent',
+  'fin.empty_expenses': 'No expenses this month yet.',
+  'fin.auto_subscription': 'Automatic subscription',
+  'fin.delete_expense_confirm': 'Delete this expense?',
+});
+
 // One-shot migration: copy any `karta-*` localStorage entries (from the previous
 // app name) to the new `b-less-*` keys. Idempotent — the copy is skipped if the
 // new key is already present, so re-running this on every load is safe.
@@ -415,7 +482,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -425,6 +492,9 @@ let editingRobotId     = null;
 let editingTaskId      = null;
 let editingIssueId     = null;
 let editingMeetingId   = null;
+let editingSubscriptionId = null;
+let editingExpenseId = null;
+let financeSelectedMonth = ymd(new Date()).slice(0, 7);
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -1351,6 +1421,8 @@ function closeModal(id) {
   // Reset editing state
   editingVisitId = null; editingRobotId = null; editingTaskId = null;
   editingIssueId = null; editingMeetingId = null;
+  editingSubscriptionId = null;
+  editingExpenseId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
     'modal-robot':     ['#modal-robot h3',     getMode() === 'daily' ? t('modal.add_new_list') : t('modal.add_new_project'),
@@ -1359,6 +1431,8 @@ function closeModal(id) {
     'modal-issue':     ['#modal-issue h3',      t('modal.add_issue'),   'save-issue',    t('btn.add_issue')],
     'modal-visit':     ['#modal-visit h3',      t('modal.add_visit'),   'save-visit',    t('btn.add_visit')],
     'modal-meeting':   ['#modal-meeting h3',    t('modal.add_meeting'), 'save-meeting',  t('btn.add_meeting')],
+    'modal-subscription': ['#modal-subscription h3', t('fin.modal_add'), 'save-subscription', t('fin.add_subscription')],
+    'modal-expense': ['#modal-expense h3', t('fin.modal_expense_add'), 'save-expense', t('fin.add_expense')],
   };
   const r = resets[id];
   if (r) {
@@ -2493,6 +2567,7 @@ function renderAll() {
   if (!state.topics)     state.topics = [];
   if (!state.workHours)  state.workHours = [];
   if (!state.meetings)   state.meetings = [];
+  ensureFinanceState();
   if (state.currentTopicId   === undefined) state.currentTopicId   = null;
   if (state.currentMeetingId === undefined) state.currentMeetingId = null;
   renderRobotList();
@@ -2503,6 +2578,7 @@ function renderAll() {
   renderWorkHours();
   renderMeetingList();
   renderMeetingDetail();
+  renderFinance();
 }
 
 function renderWorkHours() {} // removed
@@ -2884,6 +2960,287 @@ function renderJournalList() {
 })();
 
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
+function ensureFinanceState() {
+  if (!state.finance || typeof state.finance !== 'object') state.finance = {};
+  if (!Array.isArray(state.finance.subscriptions)) state.finance.subscriptions = [];
+  if (!Array.isArray(state.finance.expenses)) state.finance.expenses = [];
+}
+
+function financeMonthKey(date = new Date()) {
+  return ymd(date).slice(0, 7);
+}
+
+function shiftMonthKey(monthKey, delta) {
+  const [y, m] = monthKey.split('-').map(Number);
+  const d = new Date(y, (m - 1) + delta, 1);
+  return ymd(d).slice(0, 7);
+}
+
+function formatMonthKey(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function syncSubscriptionExpenses(month = financeMonthKey()) {
+  ensureFinanceState();
+  let changed = false;
+  state.finance.subscriptions.forEach(sub => {
+    const autoId = `sub:${sub.id}:${month}`;
+    if (state.finance.expenses.some(e => e.autoId === autoId)) return;
+    const due = Math.min(Math.max(Number(sub.dueDay) || 1, 1), 28);
+    state.finance.expenses.push({
+      id: uid(),
+      autoId,
+      subscriptionId: sub.id,
+      source: 'subscription',
+      name: sub.name,
+      amount: subMonthlyAmount(sub),
+      currency: sub.currency || 'TRY',
+      category: sub.category || t('fin.subscriptions'),
+      date: `${month}-${String(due).padStart(2, '0')}`,
+      createdAt: Date.now(),
+    });
+    changed = true;
+  });
+  if (changed) save();
+}
+
+function subMonthlyAmount(sub) {
+  const amount = Number(sub.amount) || 0;
+  return sub.cycle === 'yearly' ? amount / 12 : amount;
+}
+
+function formatMoney(amount, currency) {
+  const cur = currency || 'TRY';
+  try {
+    return new Intl.NumberFormat(currentLang === 'tr' ? 'tr-TR' : 'en-US', {
+      style: 'currency',
+      currency: cur,
+      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    }).format(amount || 0);
+  } catch {
+    return `${(amount || 0).toFixed(2)} ${cur}`;
+  }
+}
+
+function financeTotalsByCurrency() {
+  ensureFinanceState();
+  const month = financeSelectedMonth;
+  return state.finance.expenses.filter(e => (e.date || '').slice(0, 7) === month).reduce((acc, expense) => {
+    const cur = expense.currency || 'TRY';
+    acc[cur] = (acc[cur] || 0) + (Number(expense.amount) || 0);
+    return acc;
+  }, {});
+}
+
+function renderFinance() {
+  ensureFinanceState();
+  syncSubscriptionExpenses(financeSelectedMonth);
+  const summary = document.getElementById('finance-summary');
+  const list = document.getElementById('subscription-list');
+  const expenseList = document.getElementById('expense-list');
+  const monthLabel = document.getElementById('finance-month-label');
+  if (!summary || !list || !expenseList) return;
+  if (monthLabel) monthLabel.textContent = formatMonthKey(financeSelectedMonth);
+  const subs = state.finance.subscriptions.slice().sort((a, b) => (a.dueDay || 99) - (b.dueDay || 99) || a.name.localeCompare(b.name, 'tr'));
+  const totals = financeTotalsByCurrency();
+  const monthlyParts = Object.entries(totals).map(([cur, val]) => formatMoney(val, cur));
+  const month = financeSelectedMonth;
+  const monthExpenses = state.finance.expenses.filter(e => (e.date || '').slice(0, 7) === month)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  summary.innerHTML = `
+    <div class="finance-summary-grid">
+      <div class="finance-summary-card"><span>${t('fin.expense_total')}</span><strong>${monthlyParts.join(' + ') || formatMoney(0, 'TRY')}</strong></div>
+      <div class="finance-summary-card"><span>${t('fin.monthly_total')}</span><strong>${Object.entries(financeSubscriptionTotals()).map(([cur, val]) => formatMoney(val, cur)).join(' + ') || formatMoney(0, 'TRY')}</strong></div>
+      <div class="finance-summary-card"><span>${t('fin.cycle')}</span><strong>${t('fin.count', { n: subs.length })}</strong></div>
+    </div>`;
+  expenseList.innerHTML = monthExpenses.length ? monthExpenses.map(expense => `
+    <div class="subscription-card expense-card ${expense.source === 'subscription' ? 'auto' : ''}">
+      <div class="subscription-main">
+        <div class="subscription-name">${escapeHtml(expense.name)}</div>
+        <div class="subscription-meta">
+          <span>${escapeHtml(expense.date || '')}</span>
+          ${expense.category ? `<span>${escapeHtml(expense.category)}</span>` : ''}
+          ${expense.source === 'subscription' ? `<span>${t('fin.auto_subscription')}</span>` : ''}
+        </div>
+      </div>
+      <div class="subscription-cost">
+        <strong>${formatMoney(Number(expense.amount) || 0, expense.currency)}</strong>
+      </div>
+      <div class="subscription-actions">
+        ${expense.source === 'subscription' ? '' : `<button class="btn-sm" onclick="editExpense('${expense.id}')">${t('btn.edit')}</button>`}
+        ${expense.source === 'subscription' ? '' : `<button class="btn-sm danger" onclick="deleteExpense('${expense.id}')">${t('btn.delete')}</button>`}
+      </div>
+    </div>`).join('') : `<div class="empty-visits"><p>${t('fin.empty_expenses')}</p></div>`;
+  if (!subs.length) {
+    list.innerHTML = `<div class="empty-visits"><p>${t('fin.empty')}</p></div>`;
+    return;
+  }
+  list.innerHTML = subs.map(sub => {
+    const monthly = subMonthlyAmount(sub);
+    const cycleLabel = sub.cycle === 'yearly' ? t('fin.per_year') : t('fin.per_month');
+    return `
+      <div class="subscription-card">
+        <div class="subscription-main">
+          <div class="subscription-name">${escapeHtml(sub.name)}</div>
+          <div class="subscription-meta">
+            ${sub.category ? `<span>${escapeHtml(sub.category)}</span>` : ''}
+            ${sub.dueDay ? `<span>${t('fin.due_day')}: ${escapeHtml(sub.dueDay)}</span>` : ''}
+          </div>
+        </div>
+        <div class="subscription-cost">
+          <strong>${formatMoney(Number(sub.amount) || 0, sub.currency)}</strong>
+          <span>${cycleLabel}</span>
+          ${sub.cycle === 'yearly' ? `<em>${formatMoney(monthly, sub.currency)} ${t('fin.per_month')}</em>` : ''}
+        </div>
+        <div class="subscription-actions">
+          <button class="btn-sm" onclick="editSubscription('${sub.id}')">${t('btn.edit')}</button>
+          <button class="btn-sm danger" onclick="deleteSubscription('${sub.id}')">${t('btn.delete')}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function financeSubscriptionTotals() {
+  ensureFinanceState();
+  return state.finance.subscriptions.reduce((acc, sub) => {
+    const cur = sub.currency || 'TRY';
+    acc[cur] = (acc[cur] || 0) + subMonthlyAmount(sub);
+    return acc;
+  }, {});
+}
+
+function openSubscriptionModal(sub) {
+  ensureFinanceState();
+  editingSubscriptionId = sub ? sub.id : null;
+  document.getElementById('sub-name').value = sub ? sub.name : '';
+  document.getElementById('sub-amount').value = sub ? sub.amount : '';
+  document.getElementById('sub-currency').value = sub ? (sub.currency || 'TRY') : 'TRY';
+  document.getElementById('sub-category').value = sub ? (sub.category || '') : '';
+  document.getElementById('sub-due-day').value = sub && sub.dueDay ? sub.dueDay : '';
+  resetRadio('sub-cycle-group', sub ? (sub.cycle || 'monthly') : 'monthly');
+  initRadioGroup('sub-cycle-group');
+  document.querySelector('#modal-subscription h3').textContent = sub ? t('fin.modal_edit') : t('fin.modal_add');
+  document.getElementById('save-subscription').textContent = sub ? t('btn.save_changes') : t('fin.add_subscription');
+  openModal('modal-subscription');
+  setTimeout(() => document.getElementById('sub-name')?.focus(), 50);
+}
+
+window.editSubscription = function(id) {
+  ensureFinanceState();
+  const sub = state.finance.subscriptions.find(s => s.id === id);
+  if (sub) openSubscriptionModal(sub);
+};
+
+window.deleteSubscription = function(id) {
+  if (!confirm(t('fin.delete_confirm'))) return;
+  ensureFinanceState();
+  state.finance.subscriptions = state.finance.subscriptions.filter(s => s.id !== id);
+  state.finance.expenses = state.finance.expenses.filter(e => e.subscriptionId !== id);
+  save();
+  renderFinance();
+};
+
+function removeCurrentAutoExpenseForSub(subId) {
+  const prefix = `sub:${subId}:${financeMonthKey()}`;
+  state.finance.expenses = state.finance.expenses.filter(e => e.autoId !== prefix);
+}
+
+document.getElementById('add-subscription-btn')?.addEventListener('click', () => openSubscriptionModal(null));
+document.getElementById('save-subscription')?.addEventListener('click', () => {
+  ensureFinanceState();
+  const name = document.getElementById('sub-name').value.trim();
+  const amount = Number(document.getElementById('sub-amount').value);
+  if (!name) { document.getElementById('sub-name').focus(); return; }
+  if (!Number.isFinite(amount) || amount < 0) { document.getElementById('sub-amount').focus(); return; }
+  const dueRaw = Number(document.getElementById('sub-due-day').value);
+  const payload = {
+    name,
+    amount,
+    currency: document.getElementById('sub-currency').value || 'TRY',
+    cycle: getRadioValue('sub-cycle-group') || 'monthly',
+    category: document.getElementById('sub-category').value.trim(),
+    dueDay: Number.isFinite(dueRaw) && dueRaw >= 1 && dueRaw <= 31 ? dueRaw : null,
+  };
+  if (editingSubscriptionId) {
+    const sub = state.finance.subscriptions.find(s => s.id === editingSubscriptionId);
+    if (sub) {
+      Object.assign(sub, payload);
+      removeCurrentAutoExpenseForSub(sub.id);
+    }
+  } else {
+    state.finance.subscriptions.push({ id: uid(), ...payload, createdAt: Date.now() });
+  }
+  save();
+  renderFinance();
+  closeModal('modal-subscription');
+});
+
+function openExpenseModal(expense) {
+  ensureFinanceState();
+  editingExpenseId = expense ? expense.id : null;
+  const fallbackDay = Math.min(new Date().getDate(), 28);
+  document.getElementById('expense-name').value = expense ? expense.name : '';
+  document.getElementById('expense-amount').value = expense ? expense.amount : '';
+  document.getElementById('expense-currency').value = expense ? (expense.currency || 'TRY') : 'TRY';
+  document.getElementById('expense-date').value = expense ? expense.date : `${financeSelectedMonth}-${String(fallbackDay).padStart(2, '0')}`;
+  document.getElementById('expense-category').value = expense ? (expense.category || '') : '';
+  document.querySelector('#modal-expense h3').textContent = expense ? t('fin.modal_expense_edit') : t('fin.modal_expense_add');
+  document.getElementById('save-expense').textContent = expense ? t('btn.save_changes') : t('fin.add_expense');
+  openModal('modal-expense');
+  setTimeout(() => document.getElementById('expense-name')?.focus(), 50);
+}
+
+window.editExpense = function(id) {
+  ensureFinanceState();
+  const expense = state.finance.expenses.find(e => e.id === id && e.source !== 'subscription');
+  if (expense) openExpenseModal(expense);
+};
+
+window.deleteExpense = function(id) {
+  if (!confirm(t('fin.delete_expense_confirm'))) return;
+  ensureFinanceState();
+  state.finance.expenses = state.finance.expenses.filter(e => e.id !== id);
+  save();
+  renderFinance();
+};
+
+document.getElementById('add-expense-btn')?.addEventListener('click', () => openExpenseModal(null));
+document.getElementById('finance-prev-month')?.addEventListener('click', () => {
+  financeSelectedMonth = shiftMonthKey(financeSelectedMonth, -1);
+  renderFinance();
+});
+document.getElementById('finance-next-month')?.addEventListener('click', () => {
+  financeSelectedMonth = shiftMonthKey(financeSelectedMonth, 1);
+  renderFinance();
+});
+document.getElementById('save-expense')?.addEventListener('click', () => {
+  ensureFinanceState();
+  const name = document.getElementById('expense-name').value.trim();
+  const amount = Number(document.getElementById('expense-amount').value);
+  const date = document.getElementById('expense-date').value || ymd(new Date());
+  if (!name) { document.getElementById('expense-name').focus(); return; }
+  if (!Number.isFinite(amount) || amount < 0) { document.getElementById('expense-amount').focus(); return; }
+  const payload = {
+    name,
+    amount,
+    date,
+    currency: document.getElementById('expense-currency').value || 'TRY',
+    category: document.getElementById('expense-category').value.trim(),
+    source: 'manual',
+  };
+  if (editingExpenseId) {
+    const expense = state.finance.expenses.find(e => e.id === editingExpenseId);
+    if (expense) Object.assign(expense, payload);
+  } else {
+    state.finance.expenses.push({ id: uid(), ...payload, createdAt: Date.now() });
+  }
+  save();
+  renderFinance();
+  closeModal('modal-expense');
+});
+
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
@@ -2997,6 +3354,7 @@ const ITEM_ICONS = {
   meeting: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   visit:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
+  finance: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>',
 };
 
 function escapeHtml(s) {
@@ -3031,7 +3389,7 @@ function migrateToSpaces() {
   const personal = state.spaces.find(s => s.name === 'Personal') || state.spaces[1] || work;
 
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -3066,12 +3424,19 @@ function migrateToSpaces() {
     added = true;
   }
 
+  const hasFinance = state.spaces.some(s => s.items.some(i => i.type === 'finance'));
+  if (!hasFinance) {
+    personal.items.push({ id: uid(), type: 'finance', refId: 'default' });
+    added = true;
+  }
+
   // Drop dead refs (robot/meeting/visit deleted from legacy but still in space.items)
   const liveIds = {
     list:    new Set((state.robots      || []).map(r => r.id)),
     meeting: new Set((state.meetings    || []).map(m => m.id)),
     visit:   new Set((state.fieldVisits || []).map(v => v.id)),
     journal: new Set(['default']),
+    finance: new Set(['default']),
   };
   let removed = false;
   state.spaces.forEach(sp => {
@@ -3131,6 +3496,7 @@ function resolveItemData(item) {
   if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
   if (item.type === 'journal') return { name: 'Journal' };
+  if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
   return null;
 }
 function itemDisplayName(item) {
@@ -3217,6 +3583,7 @@ function renderSidebar() {
     const meetings = sp.items.filter(i => i.type === 'meeting');
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
+    const finances = sp.items.filter(i => i.type === 'finance');
 
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
@@ -3224,7 +3591,8 @@ function renderSidebar() {
     const meetingsHtml = subgroup('Meetings', 'meeting', meetings, sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
-    const body = listsHtml + meetingsHtml + journalsHtml;
+    const financeHtml  = finances.map(it => itemRow(it, sp.id)).join('');
+    const body = listsHtml + financeHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -3370,6 +3738,9 @@ function selectSpaceItem(spaceId, itemId) {
     if (typeof renderVisits === 'function') renderVisits();
   } else if (item.type === 'journal') {
     activateSection('journal');
+  } else if (item.type === 'finance') {
+    activateSection('finance');
+    renderFinance();
   }
 
   save();
@@ -3441,6 +3812,15 @@ function handleAddItemPick(type) {
     }
     pendingItemAttach = null;
     selectSpaceItem(spaceId, sp.items.find(i => i.type === 'journal').id);
+  } else if (type === 'finance') {
+    const sp = findSpace(spaceId);
+    if (sp && !sp.items.some(i => i.type === 'finance')) {
+      sp.items.push({ id: uid(), type: 'finance', refId: 'default' });
+      save();
+      renderSidebar();
+    }
+    pendingItemAttach = null;
+    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'finance').id);
   }
 }
 
