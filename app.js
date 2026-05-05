@@ -2889,42 +2889,77 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Migration: build state.spaces from legacy collections (one-time) ──
+// ── Migration: build state.spaces from legacy collections ──
+// IDEMPOTENT: also catches "orphan" entities that exist in legacy collections
+// but aren't referenced by any space (e.g. after restoring a pre-v4 backup).
 function migrateToSpaces() {
-  if (state.spaces && Array.isArray(state.spaces) && state.spaces.length > 0) return;
-
-  const work     = { id: uid(), name: 'Work',     items: [] };
-  const personal = { id: uid(), name: 'Personal', items: [] };
-
-  // Lists / projects: split by legacy mode (job → Work, daily → Personal)
-  (state.robots || []).forEach(r => {
-    const target = r.mode === 'daily' ? personal : work;
-    target.items.push({ id: uid(), type: 'list', refId: r.id });
-  });
-
-  // Meetings — all into Work for now (user can reorganize)
-  (state.meetings || []).forEach(m => {
-    work.items.push({ id: uid(), type: 'meeting', refId: m.id });
-  });
-
-  // Visits — all into Work
-  (state.fieldVisits || []).forEach(v => {
-    work.items.push({ id: uid(), type: 'visit', refId: v.id });
-  });
-
-  // Journal — single item in Personal (existing daily entries)
-  if (state.journal && Object.keys(state.journal).length > 0) {
-    personal.items.push({ id: uid(), type: 'journal', refId: 'default' });
-  } else if (state.spaces === undefined) {
-    // Fresh install: still give Personal a journal slot
-    personal.items.push({ id: uid(), type: 'journal', refId: 'default' });
+  // First-time bootstrap: create Work + Personal
+  const firstTime = !state.spaces || !Array.isArray(state.spaces) || state.spaces.length === 0;
+  if (firstTime) {
+    state.spaces = [
+      { id: uid(), name: 'Work',     items: [] },
+      { id: uid(), name: 'Personal', items: [] },
+    ];
   }
 
-  state.spaces = [work, personal];
-  state.currentSpaceId = work.id;
-  state.currentItemId  = null;
-  state.collapsedSpaces = state.collapsedSpaces || {};
-  save();
+  const work     = state.spaces.find(s => s.name === 'Work')     || state.spaces[0];
+  const personal = state.spaces.find(s => s.name === 'Personal') || state.spaces[1] || work;
+
+  // Build a set of all currently-referenced refIds, by type
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set() };
+  state.spaces.forEach(sp => {
+    sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
+  });
+
+  // Lists / projects: any robot not referenced anywhere → add to Work (or Personal if mode=daily)
+  let added = false;
+  (state.robots || []).forEach(r => {
+    if (referenced.list.has(r.id)) return;
+    const target = r.mode === 'daily' ? personal : work;
+    target.items.push({ id: uid(), type: 'list', refId: r.id });
+    added = true;
+  });
+
+  // Meetings — orphans → Work
+  (state.meetings || []).forEach(m => {
+    if (referenced.meeting.has(m.id)) return;
+    work.items.push({ id: uid(), type: 'meeting', refId: m.id });
+    added = true;
+  });
+
+  // Visits — orphans → Work
+  (state.fieldVisits || []).forEach(v => {
+    if (referenced.visit.has(v.id)) return;
+    work.items.push({ id: uid(), type: 'visit', refId: v.id });
+    added = true;
+  });
+
+  // Journal — single global instance; ensure at least one space has a slot
+  const hasJournal = state.spaces.some(s => s.items.some(i => i.type === 'journal'));
+  if (!hasJournal) {
+    personal.items.push({ id: uid(), type: 'journal', refId: 'default' });
+    added = true;
+  }
+
+  // Drop dead refs (robot/meeting/visit deleted from legacy but still in space.items)
+  const liveIds = {
+    list:    new Set((state.robots      || []).map(r => r.id)),
+    meeting: new Set((state.meetings    || []).map(m => m.id)),
+    visit:   new Set((state.fieldVisits || []).map(v => v.id)),
+    journal: new Set(['default']),
+  };
+  let removed = false;
+  state.spaces.forEach(sp => {
+    const before = sp.items.length;
+    sp.items = sp.items.filter(it => liveIds[it.type] && liveIds[it.type].has(it.refId));
+    if (sp.items.length !== before) removed = true;
+  });
+
+  if (firstTime || added || removed) {
+    if (!state.currentSpaceId) state.currentSpaceId = work.id;
+    state.collapsedSpaces = state.collapsedSpaces || {};
+    save();
+  }
 }
 
 // ── Helpers ────────────────────────────────────────────
@@ -3163,9 +3198,11 @@ if (_addItemModal) {
   _addItemModal.addEventListener('click', e => { if (e.target === _addItemModal) closeAddItemPicker(); });
 }
 
-// Re-render sidebar whenever data changes
+// Re-render sidebar whenever data changes. Also re-run the (idempotent)
+// migration so legacy entities restored from a backup get attached to a space.
 const _origRenderAll = renderAll;
 renderAll = function() {
+  migrateToSpaces();
   _origRenderAll.apply(this, arguments);
   renderSidebar();
 };
