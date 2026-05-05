@@ -126,6 +126,20 @@ const I18N = {
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
     'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
     'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
+    'nav.spaces': 'Spaces',
+    'btn.add_short': '+ Add',
+    'btn.save': 'Save',
+    'btn.today_star': '★ Today',
+    'btn.add_to_today': '☆ Add to today',
+    'btn.start_today_title': 'Start today',
+    'btn.remove_today_title': 'Remove from today',
+    'aria.delete': 'Delete',
+    'aria.completed': 'Completed',
+    'ph.note_input': 'Write a note... (Ctrl+Enter to save)',
+    'due.today': 'today', 'due.tomorrow': 'tomorrow', 'due.yesterday': 'yesterday',
+    'due.days_from_now': '{n}d to go', 'due.days_ago': '{n}d ago',
+    'months.short': 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
+    'meeting.notes_label': 'Notes',
     'space.name_prompt': 'Space name:',
     'label.space': 'Space',
     'bp.sign_in': 'Sign in with Google',
@@ -318,6 +332,20 @@ const I18N = {
     'add_item.visit': 'Ziyaret', 'add_item.visit_hint': 'Yer + tarih planla',
     'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
     'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler', 'cross.visits': 'Ziyaretler',
+    'nav.spaces': 'Alanlar',
+    'btn.add_short': '+ Ekle',
+    'btn.save': 'Kaydet',
+    'btn.today_star': '★ Bugün',
+    'btn.add_to_today': '☆ Bugüne al',
+    'btn.start_today_title': 'Bugün başla',
+    'btn.remove_today_title': 'Bugünden kaldır',
+    'aria.delete': 'Sil',
+    'aria.completed': 'Tamamlandı',
+    'ph.note_input': 'Not yaz... (Ctrl+Enter ile kaydet)',
+    'due.today': 'bugün', 'due.tomorrow': 'yarın', 'due.yesterday': 'dün',
+    'due.days_from_now': '{n}g sonra', 'due.days_ago': '{n}g geçti',
+    'months.short': 'Oca,Şub,Mar,Nis,May,Haz,Tem,Ağu,Eyl,Eki,Kas,Ara',
+    'meeting.notes_label': 'Notlar',
     'space.name_prompt': 'Space adı:',
     'label.space': 'Alan',
     'bp.sign_in': 'Google ile giriş yap',
@@ -905,7 +933,7 @@ function renderIssueNotebook(issue) {
         <div class="nb-entry" id="nbentry-${e.id}">
           <div class="nb-entry-meta">
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
-            <button class="nb-delete-btn" onclick="deleteIssueNoteEntry('${issue.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+            <button class="nb-delete-btn" onclick="deleteIssueNoteEntry('${issue.id}','${e.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
           </div>
           <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
         </div>
@@ -915,11 +943,11 @@ function renderIssueNotebook(issue) {
       <div class="nb-entries">${entriesHtml}</div>
       <div class="nb-input-row">
         <textarea class="nb-input" id="issue-nb-input-${issue.id}"
-          placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
+          placeholder="${t('ph.note_input')}"
           onkeydown="issueNbKeydown(event,'${issue.id}')"
           rows="4"
         ></textarea>
-        <button class="nb-add-btn" onclick="addIssueNoteEntry('${issue.id}')">+ Ekle</button>
+        <button class="nb-add-btn" onclick="addIssueNoteEntry('${issue.id}')">${t('btn.add_short')}</button>
       </div>
     </div>
   `;
@@ -1007,8 +1035,8 @@ function renderNotebook(task) {
           <div class="nb-entry-meta">
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
             <span class="nb-entry-actions">
-              <button class="nb-save-btn" onclick="saveEditedNoteEntry('${task.id}','${e.id}')">Kaydet</button>
-              <button class="nb-cancel-btn" onclick="cancelEditNoteEntry('${task.id}','${e.id}')">İptal</button>
+              <button class="nb-save-btn" onclick="saveEditedNoteEntry('${task.id}','${e.id}')">${t('btn.save')}</button>
+              <button class="nb-cancel-btn" onclick="cancelEditNoteEntry('${task.id}','${e.id}')">${t('btn.cancel')}</button>
             </span>
           </div>
           <textarea class="nb-edit-input" id="nb-edit-input-${task.id}-${e.id}"
@@ -1020,8 +1048,8 @@ function renderNotebook(task) {
           <div class="nb-entry-meta">
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
             <span class="nb-entry-actions">
-              <button class="nb-edit-btn" onclick="editNoteEntry('${task.id}','${e.id}')">Düzenle</button>
-              <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
+              <button class="nb-edit-btn" onclick="editNoteEntry('${task.id}','${e.id}')">${t('btn.edit')}</button>
+              <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
             </span>
           </div>
           <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
@@ -1033,11 +1061,11 @@ function renderNotebook(task) {
       <div class="nb-entries">${entriesHtml}</div>
       <div class="nb-input-row">
         <textarea class="nb-input" id="nb-input-${task.id}"
-          placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
+          placeholder="${t('ph.note_input')}"
           onkeydown="nbKeydown(event,'${task.id}')"
           rows="4"
         ></textarea>
-        <button class="nb-add-btn" onclick="addNoteEntry('${task.id}')">+ Ekle</button>
+        <button class="nb-add-btn" onclick="addNoteEntry('${task.id}')">${t('btn.add_short')}</button>
       </div>
     </div>
   `;
@@ -1075,12 +1103,12 @@ function formatDueShort(iso) {
   const d = new Date(iso + 'T00:00:00');
   const today = new Date(); today.setHours(0,0,0,0);
   const diff = Math.round((d - today) / 86400000);
-  if (diff === 0) return 'bugün';
-  if (diff === 1) return 'yarın';
-  if (diff === -1) return 'dün';
-  if (diff > 1 && diff < 7) return `${diff}g sonra`;
-  if (diff < 0)  return `${-diff}g geçti`;
-  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  if (diff === 0) return t('due.today');
+  if (diff === 1) return t('due.tomorrow');
+  if (diff === -1) return t('due.yesterday');
+  if (diff > 1 && diff < 7) return t('due.days_from_now', { n: diff });
+  if (diff < 0)  return t('due.days_ago', { n: -diff });
+  const months = t('months.short').split(',');
   return `${d.getDate()} ${months[d.getMonth()]}`;
 }
 
@@ -1105,7 +1133,7 @@ function renderTask(task) {
           <div class="task-actions-row">
             ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="event.stopPropagation();setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
             ${task.status === 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
-            ${task.status !== 'done'    ? `<button class="btn-sm ${isToday(task.dueDate) ? 'active-toggle' : ''}" onclick="event.stopPropagation();assignToday('${task.id}')" title="${isToday(task.dueDate) ? 'Bugünden kaldır' : 'Bugün başla'}">${isToday(task.dueDate) ? '★ Bugün' : '☆ Bugüne al'}</button>` : ''}
+            ${task.status !== 'done'    ? `<button class="btn-sm ${isToday(task.dueDate) ? 'active-toggle' : ''}" onclick="event.stopPropagation();assignToday('${task.id}')" title="${isToday(task.dueDate) ? t('btn.remove_today_title') : t('btn.start_today_title')}">${isToday(task.dueDate) ? t('btn.today_star') : t('btn.add_to_today')}</button>` : ''}
             ${task.status === 'active'  ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
             ${task.status === 'pending' ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
             <button class="btn-sm" onclick="event.stopPropagation();editTask('${task.id}')">Edit</button>
@@ -1907,11 +1935,11 @@ function renderMeetingDetail() {
 
     <div class="dsection">
       <div class="dsection-header">
-        <div class="dsection-label">Notlar</div>
+        <div class="dsection-label">${t('meeting.notes_label')}</div>
         <div class="save-indicator" id="mtg-save-ind">Saved</div>
       </div>
       <textarea class="brainstorm-area" id="mtg-notes-area"
-        placeholder="Toplantı notları, kararlar, tartışılan konular..."
+        placeholder="${t('ph.brainstorm_notes')}"
       >${escapeHtml(meeting.notes || '')}</textarea>
     </div>
 
@@ -1924,11 +1952,11 @@ function renderMeetingDetail() {
       <div id="mtg-actions-list">
         ${actions.map(a => `
           <div class="action-item ${a.done ? 'done' : ''}" id="action-${a.id}">
-            <button class="action-check ${a.done ? 'checked' : ''}" onclick="toggleMeetingAction('${meeting.id}','${a.id}')" aria-label="Tamamlandı">
+            <button class="action-check ${a.done ? 'checked' : ''}" onclick="toggleMeetingAction('${meeting.id}','${a.id}')" aria-label="${t('aria.completed')}">
               ${a.done ? ICO.checkSm : ''}
             </button>
             <span class="action-text">${escapeHtml(a.text)}</span>
-            <button class="nb-delete-btn" onclick="deleteMeetingAction('${meeting.id}','${a.id}')" aria-label="Sil">${ICO.close}</button>
+            <button class="nb-delete-btn" onclick="deleteMeetingAction('${meeting.id}','${a.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
           </div>`).join('')}
       </div>
       <div class="nb-input-row" style="margin-top:8px">
@@ -1936,7 +1964,7 @@ function renderMeetingDetail() {
           placeholder="${t('ph.action_item')}"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addMeetingAction('${meeting.id}')}"
           style="padding:8px 12px;height:auto;font-size:14px" />
-        <button class="nb-add-btn" onclick="addMeetingAction('${meeting.id}')">+ Ekle</button>
+        <button class="nb-add-btn" onclick="addMeetingAction('${meeting.id}')">${t('btn.add_short')}</button>
       </div>
     </div>
   `;
@@ -3083,7 +3111,7 @@ function renderJournalList() {
   const entries = state.journal || {};
   const dates = Object.keys(entries).sort().reverse();
   if (dates.length === 0) {
-    list.innerHTML = `<div class="jrn-empty">Henüz girdi yok. Bugünden başla.</div>`;
+    list.innerHTML = `<div class="jrn-empty">${t('empty.no_journal')}</div>`;
     return;
   }
   const fmt = (d) => {

@@ -3179,7 +3179,7 @@ body { font-size: 13px; }
 }
 .task-item.flash-highlight { animation: karta-flash-task 1.4s ease-out; }
 
-/* "Bugüne al" toggle highlighted state */
+/* "Add to today" toggle highlighted state */
 .btn-sm.active-toggle {
   background: rgba(63,185,80,.14);
   color: var(--green);
