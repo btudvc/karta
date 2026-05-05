@@ -1,14 +1,9 @@
 {
   "name": "b-less",
   "version": "4.0.0",
-  "description": "B-Less — Project & task management (PWA). Blessed by batu, designed to be less.",
+  "description": "B-Less Planner — personal project and task planner.",
   "private": true,
   "scripts": {
-    "dev": "node serve.js",
-    "icons": "node assets/create-icon.js"
-  },
-  "devDependencies": {
-    "png-to-ico": "^3.0.1",
-    "sharp": "^0.34.5"
+    "dev": "node serve.js"
   }
 }
