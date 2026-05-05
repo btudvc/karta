@@ -3770,6 +3770,199 @@ function showIremWelcome() {
   setTimeout(dismiss, 8000);
 }
 
+// ── Global search ─────────────────────────────────────
+const SEARCH_LIMIT = 40;
+
+function searchAll(rawQuery) {
+  const q = String(rawQuery || '').trim().toLowerCase();
+  if (!q) return [];
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const matches = (text) => {
+    if (!text) return false;
+    const t = String(text).toLowerCase();
+    return tokens.every(tk => t.includes(tk));
+  };
+  // Score: lower = better. Title-hit beats body-hit.
+  const score = (titleHit, bodyHit) => titleHit ? 0 : (bodyHit ? 1 : 9);
+  const out = [];
+
+  // Build a map: refId → { spaceId, itemId } so we can navigate
+  const refIndex = {};
+  (state.spaces || []).forEach(sp => {
+    (sp.items || []).forEach(it => {
+      refIndex[it.type + ':' + it.refId] = { spaceId: sp.id, itemId: it.id };
+    });
+  });
+
+  // Lists (a.k.a. robots)
+  (state.robots || []).forEach(r => {
+    const ref = refIndex['list:' + r.id];
+    const titleHit = matches(r.name);
+    const bodyHit  = matches(r.description) || matches(r.category);
+    if (titleHit || bodyHit) {
+      out.push({ kind: 'list', s: score(titleHit, bodyHit), title: r.name, sub: r.category || r.description || 'List', ref, refId: r.id });
+    }
+    // Tasks within this list
+    (r.tasks || []).forEach(task => {
+      const tHit = matches(task.title);
+      const tagHit = (task.tags || []).some(matches);
+      const noteHit = (task.notebook || []).some(n => matches(n.text));
+      const subHit = (task.subtasks || []).some(s => matches(s.title));
+      if (tHit || tagHit || noteHit || subHit) {
+        out.push({
+          kind: 'task',
+          s: score(tHit, tagHit || noteHit || subHit),
+          title: task.title,
+          sub: r.name + (task.dueDate ? ' · ' + task.dueDate : ''),
+          ref, refId: r.id, taskId: task.id,
+        });
+      }
+    });
+    // Issues within this list
+    (r.issues || []).forEach(issue => {
+      const iHit = matches(issue.title);
+      const noteHit = (issue.notebook || []).some(n => matches(n.text));
+      if (iHit || noteHit) {
+        out.push({ kind: 'issue', s: score(iHit, noteHit), title: issue.title, sub: r.name + ' · Issue', ref, refId: r.id, issueId: issue.id });
+      }
+    });
+  });
+
+  // Visits
+  (state.fieldVisits || []).forEach(v => {
+    const titleHit = matches(v.location);
+    const bodyHit  = matches(v.robot) || matches(v.notes);
+    if (titleHit || bodyHit) {
+      const ref = refIndex['visit:' + v.id];
+      out.push({ kind: 'visit', s: score(titleHit, bodyHit), title: v.location || 'Visit', sub: (v.date ? v.date + ' · ' : '') + (v.robot || ''), ref, refId: v.id });
+    }
+  });
+
+  // Meetings
+  (state.meetings || []).forEach(m => {
+    const titleHit = matches(m.title);
+    const bodyHit  = matches(m.location) || matches(m.attendees) || matches(m.robot) || matches(m.notes) || (m.actions || []).some(a => matches(a.text));
+    if (titleHit || bodyHit) {
+      const ref = refIndex['meeting:' + m.id];
+      out.push({ kind: 'meeting', s: score(titleHit, bodyHit), title: m.title || 'Meeting', sub: (m.date ? m.date + ' · ' : '') + (m.location || ''), ref, refId: m.id });
+    }
+  });
+
+  out.sort((a, b) => a.s - b.s || a.title.localeCompare(b.title));
+  return out.slice(0, SEARCH_LIMIT);
+}
+
+const SEARCH_KIND_LABEL = {
+  list: 'List', task: 'Task', issue: 'Issue', visit: 'Visit', meeting: 'Meeting',
+};
+
+function renderSearchResults(query) {
+  const list = document.getElementById('search-results');
+  if (!list) return;
+  const items = searchAll(query);
+  if (!query) {
+    list.innerHTML = '<div class="search-empty">Type to search across tasks, lists, meetings and visits.</div>';
+    return;
+  }
+  if (!items.length) {
+    list.innerHTML = `<div class="search-empty">No matches for "${escapeHtml(query)}".</div>`;
+    return;
+  }
+  list.innerHTML = items.map((it, i) => `
+    <button class="search-result" data-idx="${i}" type="button">
+      <span class="search-result-kind">${SEARCH_KIND_LABEL[it.kind]}</span>
+      <span class="search-result-body">
+        <span class="search-result-title">${escapeHtml(it.title || '')}</span>
+        <span class="search-result-sub">${escapeHtml(it.sub || '')}</span>
+      </span>
+    </button>
+  `).join('');
+  list.querySelectorAll('.search-result').forEach((el, i) => {
+    el.addEventListener('click', () => navigateToSearchResult(items[i]));
+  });
+}
+
+function navigateToSearchResult(it) {
+  closeSearchModal();
+  if (!it) return;
+  // Best-effort navigation: open the parent (list/meeting/visit) via the
+  // existing space-item flow so all the right state and renderers fire.
+  if (it.kind === 'task' || it.kind === 'issue' || it.kind === 'list') {
+    if (it.ref) {
+      selectSpaceItem(it.ref.spaceId, it.ref.itemId);
+    } else {
+      // Orphan: jump straight to the list
+      state.currentRobotId = it.refId;
+      activateSection('robots');
+      renderRobotList(); renderRobotDetail();
+    }
+    if (it.kind === 'task') {
+      // Expand the task so the user lands on it
+      const robot = (state.robots || []).find(r => r.id === it.refId);
+      const task  = robot && (robot.tasks || []).find(t => t.id === it.taskId);
+      if (task) { task.expanded = true; renderRobotDetail(); }
+    }
+    if (it.kind === 'issue') {
+      const robot = (state.robots || []).find(r => r.id === it.refId);
+      const issue = robot && (robot.issues || []).find(x => x.id === it.issueId);
+      if (issue) { issue.expanded = true; renderRobotDetail(); }
+    }
+  } else if (it.kind === 'meeting') {
+    if (it.ref) selectSpaceItem(it.ref.spaceId, it.ref.itemId);
+    else { state.currentMeetingId = it.refId; activateSection('meetings'); renderMeetingList(); renderMeetingDetail(); }
+  } else if (it.kind === 'visit') {
+    if (it.ref) selectSpaceItem(it.ref.spaceId, it.ref.itemId);
+    else { activateSection('field-visits'); renderVisits(); }
+  }
+}
+
+function openSearchModal() {
+  const modal = document.getElementById('modal-search');
+  const input = document.getElementById('search-input');
+  if (!modal || !input) return;
+  modal.classList.add('open');
+  input.value = '';
+  renderSearchResults('');
+  // Focus after the open transition starts so iOS shows the keyboard.
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeSearchModal() {
+  document.getElementById('modal-search')?.classList.remove('open');
+}
+
+(function wireSearch() {
+  const wire = () => {
+    const input = document.getElementById('search-input');
+    const overlay = document.getElementById('modal-search');
+    const trigger = document.getElementById('open-search-btn');
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = '1';
+      input.addEventListener('input', e => renderSearchResults(e.target.value));
+      input.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearchModal(); });
+    }
+    if (overlay && !overlay.dataset.bound) {
+      overlay.dataset.bound = '1';
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeSearchModal(); });
+      overlay.querySelectorAll('[data-close="modal-search"]').forEach(b => b.addEventListener('click', closeSearchModal));
+    }
+    if (trigger && !trigger.dataset.bound) {
+      trigger.dataset.bound = '1';
+      trigger.addEventListener('click', () => { openSearchModal(); closeSpaceDrawer && closeSpaceDrawer(); });
+    }
+  };
+  wire();
+  // Also wire after init in case elements weren't in the DOM yet
+  if (document.readyState !== 'complete') document.addEventListener('DOMContentLoaded', wire);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      const isOpen = document.getElementById('modal-search')?.classList.contains('open');
+      if (isOpen) closeSearchModal(); else openSearchModal();
+    }
+  });
+})();
+
 function maybeShowWelcome() {
   if (state.onboarded) return;
   const modal = document.getElementById('modal-welcome');

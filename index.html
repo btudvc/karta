@@ -90,7 +90,12 @@
     <aside class="space-sidebar" id="space-sidebar">
       <div class="space-sidebar-header">
         <span class="space-sidebar-title">Spaces</span>
-        <button class="space-add-space-btn" id="add-space-btn" title="New space" aria-label="New space">+</button>
+        <div class="space-sidebar-actions">
+          <button class="space-search-btn" id="open-search-btn" title="Search (Ctrl+K)" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="space-add-space-btn" id="add-space-btn" title="New space" aria-label="New space">+</button>
+        </div>
       </div>
       <div class="space-list" id="space-list"></div>
     </aside>
@@ -563,6 +568,20 @@
       <div class="modal-actions">
         <button class="btn-primary" id="welcome-got-it">Got it</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Global search -->
+  <div class="modal-overlay search-overlay" id="modal-search">
+    <div class="modal search-modal">
+      <div class="search-bar">
+        <svg class="search-bar-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search tasks, lists, meetings, visits..." autocomplete="off" spellcheck="false" />
+        <button class="modal-close search-close" data-close="modal-search" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="search-results" id="search-results"></div>
     </div>
   </div>
 
