@@ -2497,9 +2497,10 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
     const goAttr = ev.kind === 'meeting' ? `data-go-meeting="${ev.id}"`
                   : ev.kind === 'visit'   ? `data-go-visit="${ev.id}"`
                   : '';
-    return `<div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}" ${goAttr}>${ev.label}</div>`;
+    const tt = escapeAttr(ev.label);
+    return `<div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}" title="${tt}" aria-label="${tt}" ${goAttr}><span class="cal-day-event-label">${ev.label}</span></div>`;
   }).join('');
-  const more = events.length > 3 ? `<div class="cal-day-event">+${events.length - 3}</div>` : '';
+  const more = events.length > 3 ? `<div class="cal-day-event cal-day-event-more">+${events.length - 3}</div>` : '';
   return `
     <div class="${classes.join(' ')}" data-date="${dStr}">
       <div class="cal-day-num">${d.getDate()}</div>

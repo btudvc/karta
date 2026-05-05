@@ -1704,7 +1704,9 @@ main { flex: 1; overflow: hidden; }
 
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0, 1fr) prevents long event labels from blowing up column width
+     and forcing the whole grid to scroll horizontally. */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-rows: 1fr;
   gap: 4px;
   background: var(--surface);
@@ -1759,18 +1761,31 @@ main { flex: 1; overflow: hidden; }
   overflow: hidden;
 }
 .cal-day-event {
-  display: flex; align-items: center; gap: 4px;
+  display: block;
+  max-width: 100%;
   padding: 1px 4px;
   border-radius: 3px;
   background: var(--surface-2);
+  line-height: 1.3;
+  cursor: pointer;
+}
+.cal-day-event-label {
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
+  min-width: 0;
 }
 .cal-day-event.meeting { background: var(--accent-soft); color: var(--accent); }
 .cal-day-event.visit   { background: var(--surface-3); color: var(--muted); border: 1px dashed var(--border-2); }
 .cal-day-event[data-mode="daily"] { border-left: 2px solid var(--muted); padding-left: 3px; }
+.cal-day-event.cal-day-event-more {
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0 4px;
+  cursor: default;
+}
 .cal-day-event-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
 .cal-day-panel {
