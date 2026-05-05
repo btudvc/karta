@@ -102,11 +102,7 @@ header {
 /* Mobile header optimizations */
 @media (max-width: 600px) {
   header {
-    height: 48px;
-    padding: 0 12px;
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
-    gap: 12px;
+    display: none;
   }
 }
 
