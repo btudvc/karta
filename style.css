@@ -102,6 +102,13 @@ body {
   line-height: 1.5;
 }
 
+/* Improve readability on mobile */
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+}
+
 /* Universal focus ring */
 :where(button, input, textarea, [role="button"]):focus-visible {
   outline: 2px solid var(--accent);
@@ -115,6 +122,8 @@ header {
   display: flex;
   align-items: center;
   padding: 0 18px;
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
   height: 54px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -122,6 +131,17 @@ header {
   flex-shrink: 0;
   z-index: 10;
   position: relative;
+}
+
+/* Mobile header optimizations */
+@media (max-width: 600px) {
+  header {
+    height: 48px;
+    padding: 0 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    gap: 12px;
+  }
 }
 
 .logo {
@@ -146,6 +166,16 @@ header {
 .logo-text strong {
   color: var(--text);
   font-weight: 700;
+}
+
+/* Hide logo text on very small screens */
+@media (max-width: 480px) {
+  .logo-text {
+    display: none;
+  }
+  .logo {
+    gap: 0;
+  }
 }
 
 /* ── Daily / Job mode switcher ────────────────────────── */
@@ -256,6 +286,14 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
 .icon-btn.open  { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 
+/* Improve touch targets on mobile */
+@media (max-width: 480px) {
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* Backup button (chip-style) */
 .backup-btn {
   display: inline-flex;
@@ -278,6 +316,16 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .backup-label:empty       { display: none; }
 /* Icon-only state: tighter, circular button */
 .backup-btn:has(.backup-label:empty) { padding: 6px; }
+
+/* Hide backup label on mobile for space */
+@media (max-width: 600px) {
+  .backup-label {
+    display: none !important;
+  }
+  .backup-btn {
+    padding: 6px;
+  }
+}
 
 /* Backup popover — centered modal-style popup with backdrop */
 .backup-backdrop {
@@ -326,6 +374,16 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
     max-width: none;
   }
   .backup-popover.open { transform: translate(0, -50%) scale(1); }
+}
+
+@media (max-width: 480px) {
+  .backup-popover {
+    width: calc(100vw - 20px);
+    left: 10px;
+    right: 10px;
+    padding: 16px 18px;
+    max-height: calc(100vh - 100px);
+  }
 }
 
 .bp-title    { font-size: 13.5px; font-weight: 600; color: var(--text); }
@@ -713,6 +771,7 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-size: 13px;
   transition: background .12s var(--ease), color .12s var(--ease);
   margin: 1px 0;
+  min-height: 32px;
 }
 .space-item:hover { background: var(--surface-2); color: var(--text); }
 .space-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
@@ -732,6 +791,16 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-size: 11.5px;
   color: var(--muted-2);
   font-style: italic;
+}
+
+/* Improve sidebar items on mobile */
+@media (max-width: 480px) {
+  .space-item {
+    padding: 8px 12px;
+    min-height: 40px;
+    font-size: 13.5px;
+  }
+}
 }
 
 /* Collapsible sub-groups inside a space (Meetings / Visits) */
@@ -822,6 +891,7 @@ main { flex: 1; overflow: hidden; display: flex; }
 .cross-nav-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 6px 12px;
   background: transparent;
@@ -833,6 +903,7 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-family: inherit;
   cursor: pointer;
   transition: all .15s var(--ease);
+  min-height: 32px;
 }
 .cross-nav-btn:hover  { background: var(--surface-2); color: var(--text); }
 .cross-nav-btn.active { background: var(--accent-soft); color: var(--accent); }
@@ -840,7 +911,16 @@ main { flex: 1; overflow: hidden; display: flex; }
 
 @media (max-width: 800px) {
   .cross-nav-btn span { display: none; }
-  .cross-nav-btn { padding: 6px 10px; }
+  .cross-nav-btn { padding: 6px 10px; min-height: 40px; }
+}
+
+@media (max-width: 480px) {
+  .cross-nav-btn {
+    padding: 8px 8px;
+    min-height: 44px;
+    font-size: 11px;
+  }
+  .cross-nav-btn svg { width: 18px; height: 18px; }
 }
 
 /* ── Add Item picker modal ──────────────────────────── */
@@ -892,7 +972,7 @@ main { flex: 1; overflow: hidden; display: flex; }
   .space-sidebar {
     width: 100%;
     height: auto;
-    max-height: 38vh;
+    max-height: 30vh;
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
@@ -1021,6 +1101,19 @@ main { flex: 1; overflow: hidden; display: flex; }
   overflow-y: auto;
   padding: 28px 32px;
   background: var(--bg);
+}
+
+/* Improve content padding on mobile */
+@media (max-width: 600px) {
+  .content {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px;
+  }
 }
 
 .empty-state {
@@ -1475,6 +1568,19 @@ main { flex: 1; overflow: hidden; display: flex; }
   animation: scaleIn .18s var(--ease);
 }
 
+/* Improve modal for mobile */
+@media (max-width: 480px) {
+  .modal {
+    padding: 20px 16px;
+    width: 100%;
+    max-width: calc(100vw - 20px);
+    gap: 12px;
+  }
+  .modal-header h3 {
+    font-size: 16px;
+  }
+}
+
 .modal-header {
   display: flex; align-items: center;
   justify-content: space-between;
@@ -1499,6 +1605,14 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .modal-close:hover { color: var(--text); background: var(--surface-2); }
 
+/* Improve close button for mobile */
+@media (max-width: 480px) {
+  .modal-close {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 .modal label {
   font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .8px;
@@ -1521,11 +1635,42 @@ main { flex: 1; overflow: hidden; display: flex; }
 .modal textarea:focus { outline: none; border-color: var(--accent); }
 .modal textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
 
+/* Improve form inputs on mobile */
+@media (max-width: 480px) {
+  .modal input,
+  .modal textarea {
+    padding: 12px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .modal textarea {
+    min-height: 140px;
+  }
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 6px;
+}
+
+/* Improve button sizing on mobile */
+@media (max-width: 480px) {
+  .btn-primary,
+  .btn-ghost {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal-actions .btn-primary,
+  .modal-actions .btn-ghost {
+    width: 100%;
+  }
 }
 
 /* ─── RADIO GROUP ──────────────────────────────────────── */
@@ -1544,6 +1689,15 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .radio-btn:hover  { border-color: var(--accent); color: var(--text); }
 .radio-btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+/* Improve radio buttons on mobile */
+@media (max-width: 480px) {
+  .radio-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+}
 
 /* ─── FIELD VISITS ─────────────────────────────────────── */
 .fv-container {
@@ -2501,7 +2655,7 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
   #robots.section[data-detail-open="true"] .content       { padding: 14px 14px 18px; }
 
   /* When no project is selected, give the project list the full screen instead
-     of cramming it into ~38vh and showing a redundant "select a project" empty
+     of cramming it into ~30vh and showing a redundant "select a project" empty
      state below it. */
   #robots.section:not([data-detail-open="true"]) .sidebar {
     max-height: none;
@@ -2530,6 +2684,16 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     flex-shrink: 0;
   }
   .robot-detail-back:hover { background: var(--surface-2); color: var(--text); }
+
+  /* Improve bottom nav button sizing on smaller phones */
+  @media (max-width: 480px) {
+    .bnav-btn {
+      min-height: 56px;
+      padding: 8px 4px 6px;
+      font-size: 11px;
+    }
+    .bnav-btn svg { width: 20px; height: 20px; }
+  }
 }
 
 /* ─── "blessed by batu" — bottom-right credit ───────────── */

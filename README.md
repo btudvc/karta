@@ -60,6 +60,8 @@ Same account on phone + PC = same data.
 > For Drive: rename your existing `My Drive/Karta` folder to `B-Less` and the
 > `karta-backup.json` file inside it to `b-less-backup.json`. App will pick it
 > up on next sync.
+>
+> **Repository renamed to b-less:** URL is now `https://your-user.github.io/b-less/`
 
 ## Regenerate icons
 

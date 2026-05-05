@@ -40,6 +40,6 @@ http.createServer((req, res) => {
     fs.createReadStream(filePath).pipe(res);
   });
 }).listen(PORT, () => {
-  console.log(`✓ Karta dev server: http://localhost:${PORT}`);
+  console.log(`✓ B-Less dev server: http://localhost:${PORT}`);
   console.log(`  Add this URL to Cloud Console "Authorized JavaScript origins" once.`);
 });
