@@ -753,6 +753,28 @@ main { flex: 1; overflow: hidden; display: flex; }
 .space-subitems { padding-left: 18px; }
 .space-subitems .space-item { padding: 5px 9px; font-size: 12.5px; }
 
+/* Journal "+today" shortcut on the sub-header */
+.space-jrn-today-btn {
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all .15s var(--ease);
+  flex-shrink: 0;
+}
+.space-subheader:hover .space-jrn-today-btn { opacity: 1; }
+.space-jrn-today-btn:hover { background: var(--surface-3); color: var(--accent); }
+
+/* v4: the legacy in-section journal sidebar (date list in middle pane) is now
+   redundant — all entries live in the global Space sidebar. Hide it. */
+#journal .jrn-sidebar { display: none !important; }
+#journal .jrn-main    { padding: 28px 32px; }
+
 /* Cross-space top nav (Today / Calendar / All Tasks) */
 .cross-nav {
   display: flex;

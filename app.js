@@ -3040,6 +3040,42 @@ function renderSidebar() {
       </div>`;
   }
 
+  function journalSubgroup(items, spaceId) {
+    if (!items.length) return '';
+    // Each entry in state.journal becomes a sub-item under a "Journal" group
+    const entries = state.journal || {};
+    const dates = Object.keys(entries).filter(d => entries[d] && entries[d].trim()).sort().reverse();
+    const key = spaceId + ':journal';
+    const collapsed = !!state.collapsedGroups[key];
+    const fmt = d => {
+      const dt = new Date(d + 'T00:00:00');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const now = new Date();
+      const sameYear = dt.getFullYear() === now.getFullYear();
+      return `${dt.getDate()} ${months[dt.getMonth()]}${sameYear ? '' : ' ' + dt.getFullYear()}`;
+    };
+    const rows = dates.map(d => {
+      const active = (state.currentJournalDate === d && document.getElementById('journal')?.classList.contains('active')) ? 'active' : '';
+      return `
+        <div class="space-item space-jrn-item ${active}" data-jrn-date="${d}" data-space-id="${spaceId}">
+          <span class="space-item-icon">${ITEM_ICONS.journal}</span>
+          <span class="space-item-name">${escapeHtml(fmt(d))}</span>
+        </div>`;
+    }).join('');
+    const headerItemId = items[0].id;
+    return `
+      <div class="space-subgroup ${collapsed ? 'collapsed' : ''}" data-subgroup-key="${key}">
+        <div class="space-subheader">
+          <span class="space-subchev">${ICO.chevron}</span>
+          <span class="space-item-icon space-subicon">${ITEM_ICONS.journal}</span>
+          <span class="space-subname">Journal</span>
+          <span class="space-subcount">${dates.length}</span>
+          <button class="space-jrn-today-btn" data-jrn-today="${spaceId}" data-jrn-item-id="${headerItemId}" title="Today" aria-label="Today">+</button>
+        </div>
+        <div class="space-subitems">${rows || '<div class="space-empty">No entries</div>'}</div>
+      </div>`;
+  }
+
   list.innerHTML = (state.spaces || []).map(sp => {
     const collapsed = !!state.collapsedSpaces[sp.id];
     const lists    = sp.items.filter(i => i.type === 'list');
@@ -3047,11 +3083,11 @@ function renderSidebar() {
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
 
-    // Lists are flat (each is its own page). Meetings/Visits group up.
+    // Lists are flat (each is its own page). Meetings/Visits/Journal group up.
     const listsHtml    = lists.map(it => itemRow(it, sp.id)).join('');
-    const journalsHtml = journals.map(it => itemRow(it, sp.id)).join('');
     const meetingsHtml = subgroup('Meetings', 'meeting', meetings, sp.id);
     const visitsHtml   = subgroup('Visits',   'visit',   visits,   sp.id);
+    const journalsHtml = journalSubgroup(journals, sp.id);
 
     const body = listsHtml + meetingsHtml + visitsHtml + journalsHtml;
 
@@ -3067,9 +3103,21 @@ function renderSidebar() {
       </div>`;
   }).join('');
 
-  // Item click
-  list.querySelectorAll('.space-item').forEach(el => {
+  // Item click (regular items)
+  list.querySelectorAll('.space-item:not(.space-jrn-item)').forEach(el => {
     el.addEventListener('click', () => selectSpaceItem(el.dataset.spaceId, el.dataset.itemId));
+  });
+  // Journal date entry click
+  list.querySelectorAll('.space-jrn-item').forEach(el => {
+    el.addEventListener('click', () => selectJournalDate(el.dataset.spaceId, el.dataset.jrnDate));
+  });
+  // Journal "+today" button
+  list.querySelectorAll('.space-jrn-today-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const today = (typeof ymd === 'function') ? ymd(new Date()) : new Date().toISOString().slice(0, 10);
+      selectJournalDate(el.dataset.jrnToday, today);
+    });
   });
   // Space header click → toggle collapse
   list.querySelectorAll('.space-header').forEach(el => {
@@ -3132,6 +3180,23 @@ function selectSpaceItem(spaceId, itemId) {
 
   save();
   renderSidebar();
+}
+
+function selectJournalDate(spaceId, date) {
+  state.currentSpaceId = spaceId;
+  state.currentItemId = null;
+  state.currentJournalDate = date;
+  // Update existing jrnSelected used by initJournal/renderJournalList
+  if (typeof jrnSelected !== 'undefined') jrnSelected = date;
+  activateSection('journal');
+  const dateInput = document.getElementById('jrn-date');
+  const area      = document.getElementById('jrn-area');
+  if (dateInput) dateInput.value = date;
+  if (area)      area.value      = (state.journal || {})[date] || '';
+  if (typeof renderJournalList === 'function') renderJournalList();
+  save();
+  renderSidebar();
+  setTimeout(() => area && area.focus(), 50);
 }
 
 function activateSection(id) {
