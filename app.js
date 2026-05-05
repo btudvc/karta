@@ -775,7 +775,7 @@ function renderIssueNotebook(issue) {
         <textarea class="nb-input" id="issue-nb-input-${issue.id}"
           placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
           onkeydown="issueNbKeydown(event,'${issue.id}')"
-          rows="2"
+          rows="4"
         ></textarea>
         <button class="nb-add-btn" onclick="addIssueNoteEntry('${issue.id}')">+ Ekle</button>
       </div>
@@ -877,7 +877,7 @@ function renderNotebook(task) {
         <textarea class="nb-input" id="nb-input-${task.id}"
           placeholder="Not yaz... (Ctrl+Enter ile kaydet)"
           onkeydown="nbKeydown(event,'${task.id}')"
-          rows="2"
+          rows="4"
         ></textarea>
         <button class="nb-add-btn" onclick="addNoteEntry('${task.id}')">+ Ekle</button>
       </div>

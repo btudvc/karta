@@ -906,7 +906,7 @@ main { flex: 1; overflow: hidden; }
   font-size: 13.5px;
   font-family: inherit;
   resize: vertical;
-  min-height: 80px;
+  min-height: 160px;
   line-height: 1.6;
   transition: border-color .15s var(--ease);
 }
@@ -1058,7 +1058,7 @@ main { flex: 1; overflow: hidden; }
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  min-height: 160px;
+  min-height: 320px;
   line-height: 1.75;
   transition: border-color .15s var(--ease);
 }
@@ -1220,7 +1220,7 @@ main { flex: 1; overflow: hidden; }
 }
 .modal input:focus,
 .modal textarea:focus { outline: none; border-color: var(--accent); }
-.modal textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+.modal textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
 
 .modal-actions {
   display: flex;
@@ -1833,7 +1833,7 @@ main { flex: 1; overflow: hidden; }
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
-  min-height: 100px;
+  min-height: 200px;
   line-height: 1.55;
   transition: border-color .15s var(--ease);
 }
