@@ -3028,19 +3028,18 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
   }
 }
 
-/* ─── "blessed by batu" — bottom-right credit ───────────── */
+/* ─── settings signature ────────────────────────────────── */
 .blessed-tag {
-  position: fixed;
-  right: 10px;
-  bottom: 6px;
+  margin: 22px 4px 0;
+  padding-bottom: 8px;
   font-size: 10.5px;
   letter-spacing: .4px;
   color: var(--muted-2);
   opacity: .55;
   pointer-events: none;
   user-select: none;
-  z-index: 1;
   font-family: ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
 }
 .blessed-tag:hover { opacity: .85; }
 
