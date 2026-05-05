@@ -17,7 +17,7 @@ const icoPath = path.join(here, 'icon.ico');
   // bottom "B-Less" text out.
   const trimmed = await sharp(srcPath).trim({ threshold: 12 }).toBuffer();
   const meta = await sharp(trimmed).metadata();
-  const pad = Math.round(Math.max(meta.width, meta.height) * 0.22);
+  const pad = Math.round(Math.max(meta.width, meta.height) * 0.32);
   const padded = await sharp(trimmed)
     .extend({ top: pad, bottom: pad, left: pad, right: pad,
               background: { r: 255, g: 255, b: 255, alpha: 1 } })
