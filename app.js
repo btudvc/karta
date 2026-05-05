@@ -2654,6 +2654,17 @@ const BackupManager = (() => {
   }
 
   async function init() {
+    // Skip silent sign-in for first-time users. We only know they've granted
+    // consent if they previously signed in (then we cached b-less-drive-user).
+    // Without this guard the Google Identity Services library still loads its
+    // accounts.google.com iframe on every fresh launch, which flashes briefly
+    // and looks broken — even though prompt:'none' would have failed anyway.
+    let hasPriorAuth = false;
+    try { hasPriorAuth = !!localStorage.getItem('b-less-drive-user'); } catch {}
+    if (!hasPriorAuth) {
+      render();
+      return;
+    }
     const ok = await DriveAPI.trySilentSignIn().catch(() => false);
     if (ok) {
       const hasData = (state.robots || []).length > 0 ||
