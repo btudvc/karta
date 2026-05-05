@@ -30,6 +30,7 @@ const I18N = {
     'label.project_name': 'Project Name *', 'label.list_name': 'List Name *',
     'label.task_title': 'Task Title *', 'label.priority': 'Priority',
     'label.status': 'Status', 'label.severity': 'Severity',
+    'label.due_date': 'Due Date', 'label.tags': 'Tags',
     'label.description': 'Description', 'label.category': 'Category',
     'label.location': 'Location *', 'label.date': 'Date *',
     'label.reference': 'Reference', 'label.notes': 'Notes',
@@ -222,6 +223,7 @@ const I18N = {
     'label.project_name': 'Proje Adı *', 'label.list_name': 'Liste Adı *',
     'label.task_title': 'Görev *', 'label.priority': 'Öncelik',
     'label.status': 'Durum', 'label.severity': 'Önem',
+    'label.due_date': 'Bitiş Tarihi', 'label.tags': 'Etiketler',
     'label.description': 'Açıklama', 'label.category': 'Kategori',
     'label.location': 'Konum *', 'label.date': 'Tarih *',
     'label.reference': 'Referans', 'label.notes': 'Notlar',
@@ -317,7 +319,7 @@ const I18N = {
     'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
     'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler', 'cross.visits': 'Ziyaretler',
     'space.name_prompt': 'Space adı:',
-    'label.space': 'Space',
+    'label.space': 'Alan',
     'bp.sign_in': 'Google ile giriş yap',
     'bp.sign_out': 'Çıkış yap',
     'bp.signed_in_as': 'Bağlı hesap',
@@ -361,7 +363,7 @@ const I18N = {
     'priority.normal': 'Normal', 'priority.high': 'Yüksek', 'priority.critical': 'Kritik', 'priority.low': 'Düşük', 'priority.medium': 'Orta',
     'status.active': 'Aktif', 'status.pending': 'Beklemede', 'status.done': 'Tamam',
     'status.open': 'Açık', 'status.investigating': 'İnceleniyor', 'status.resolved': 'Çözüldü',
-    'status.testing': 'Test', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Eski',
+    'status.testing': 'Test', 'status.rc': 'RC', 'status.stable': 'Kararlı', 'status.deprecated': 'Eski',
   },
 };
 
@@ -428,8 +430,7 @@ Object.assign(I18N.en, {
   }
 })();
 
-let currentLang = localStorage.getItem('b-less-lang') ||
-  (typeof navigator !== 'undefined' && navigator.language && navigator.language.startsWith('tr') ? 'tr' : 'en');
+let currentLang = 'en';
 
 function t(key, params) {
   let s = (I18N[currentLang] && I18N[currentLang][key]) ?? I18N.en[key] ?? key;
@@ -635,13 +636,6 @@ document.querySelectorAll('[data-go-tab]').forEach(card => {
     if (target) target.click();
   });
 });
-const moreThemeBtn = document.getElementById('more-theme-trigger');
-if (moreThemeBtn) {
-  moreThemeBtn.addEventListener('click', () => {
-    const real = document.getElementById('theme-toggle');
-    if (real) real.click();
-  });
-}
 // More-page Drive trigger is now wired directly in BackupManager.initUI() so the
 // user gesture is preserved (synthetic .click() forwarding here was blocking the
 // OAuth popup on mobile browsers).
@@ -664,7 +658,7 @@ function renderRobotList() {
   if (!list) return;
   const projects = projectsByMode();
   if (!projects.length) {
-    const emptyKey = getMode() === 'daily' ? 'empty.no_lists' : 'empty.no_projects';
+    const emptyKey = 'empty.no_lists';
     list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">${t(emptyKey)}</div>`;
     refreshCategoryDatalist();
     return;
@@ -756,7 +750,7 @@ function renderRobotDetail() {
 
   if (!robot) {
     if (robotsSection) robotsSection.removeAttribute('data-detail-open');
-    const emptyMsg = (isDaily ? t('empty.select_list') : t('empty.select_project')).replace(/\n/g, '<br>');
+    const emptyMsg = t('empty.select_list').replace(/\n/g, '<br>');
     content.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">${ICO.botLg}</div>
@@ -792,7 +786,7 @@ function renderRobotDetail() {
       </div>
       <div class="btn-group">
         <button class="btn-sm" onclick="editRobot('${robot.id}')">${t('btn.edit')}</button>
-        <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">${isDaily ? t('btn.delete_list') : t('btn.delete_project')}</button>
+        <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">${t('btn.delete_list')}</button>
       </div>
     </div>
 
@@ -1049,6 +1043,47 @@ function renderNotebook(task) {
   `;
 }
 
+function isToday(iso) {
+  if (!iso) return false;
+  const d = new Date(iso + 'T00:00:00');
+  const t = new Date(); t.setHours(0,0,0,0);
+  return d.getTime() === t.getTime();
+}
+window.assignToday = function(taskId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (isToday(task.dueDate)) {
+    task.dueDate = null;        // toggle off
+  } else {
+    task.dueDate = new Date().toISOString().slice(0, 10);
+    if (task.status === 'pending') task.status = 'active';
+  }
+  save();
+  renderCurrentDetail();
+};
+function dueClass(iso, status) {
+  if (!iso || status === 'done') return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(iso + 'T00:00:00');
+  if (d < today) return 'overdue';
+  if (d.getTime() === today.getTime()) return 'today';
+  return '';
+}
+function formatDueShort(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((d - today) / 86400000);
+  if (diff === 0) return 'bugün';
+  if (diff === 1) return 'yarın';
+  if (diff === -1) return 'dün';
+  if (diff > 1 && diff < 7) return `${diff}g sonra`;
+  if (diff < 0)  return `${-diff}g geçti`;
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
 function renderTask(task) {
   const subs = task.subtasks || [];
   const subDone = subs.filter(s => s.done).length;
@@ -1057,22 +1092,25 @@ function renderTask(task) {
       <div class="task-header" onclick="toggleTask('${task.id}')">
         <div class="task-dot ${task.status}"></div>
         <div class="task-title-text">${escapeHtml(task.title)}</div>
-        <div class="task-header-right">
+        <div class="task-tags">
+          ${(task.tags || []).map(tg => `<span class="task-label-chip" data-tag="${escapeAttr(tg)}">${escapeHtml(tg)}</span>`).join('')}
+          ${task.dueDate ? `<span class="task-due ${dueClass(task.dueDate, task.status)}">${formatDueShort(task.dueDate)}</span>` : ''}
           ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
-          <div class="task-header-actions">
+          <span class="status-tag ${task.status}">${task.status}</span>
+        </div>
+        <span class="expand-chevron">${ICO.chevron}</span>
+      </div>
+      <div class="task-body">
+        <div class="task-body-inner">
+          <div class="task-actions-row">
             ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="event.stopPropagation();setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
             ${task.status === 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
+            ${task.status !== 'done'    ? `<button class="btn-sm ${isToday(task.dueDate) ? 'active-toggle' : ''}" onclick="event.stopPropagation();assignToday('${task.id}')" title="${isToday(task.dueDate) ? 'Bugünden kaldır' : 'Bugün başla'}">${isToday(task.dueDate) ? '★ Bugün' : '☆ Bugüne al'}</button>` : ''}
             ${task.status === 'active'  ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
             ${task.status === 'pending' ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
             <button class="btn-sm" onclick="event.stopPropagation();editTask('${task.id}')">Edit</button>
             <button class="btn-sm danger" onclick="event.stopPropagation();deleteTask('${task.id}')">Delete</button>
           </div>
-          <span class="status-tag ${task.status}">${task.status}</span>
-          <span class="expand-chevron">${ICO.chevron}</span>
-        </div>
-      </div>
-      <div class="task-body">
-        <div class="task-body-inner">
           ${renderSubtasks(task)}
           ${renderNotebook(task)}
           ${renderAttachments('task', task.id, task.attachments)}
@@ -1262,7 +1300,7 @@ window.deleteTask = function(id) {
 };
 
 window.deleteRobot = function(id) {
-  if (!confirm(getMode() === 'daily' ? t('conf.delete_list') : t('conf.delete_project'))) return;
+  if (!confirm(t('conf.delete_list'))) return;
   state.robots = state.robots.filter(r => r.id !== id);
   if (state.currentRobotId === id) state.currentRobotId = null;
   save();
@@ -1294,9 +1332,9 @@ window.editTopic = function(id) {
   editingRobotId = id;
   document.getElementById('robot-name').value = topic.name;
   document.getElementById('robot-desc').value = topic.description || '';
-  document.querySelector('#modal-robot h3').textContent = 'Edit Area';
-  document.getElementById('save-robot').textContent = 'Save Changes';
-  document.getElementById('robot-name-label').textContent = 'Area Name *';
+  document.querySelector('#modal-robot h3').textContent = t('modal.edit_list');
+  document.getElementById('save-robot').textContent = t('btn.save_changes');
+  document.getElementById('robot-name-label').textContent = t('label.list_name');
   openModal('modal-robot');
   setTimeout(() => document.getElementById('robot-name').focus(), 50);
 };
@@ -1394,10 +1432,9 @@ window.editRobot = function(id) {
   document.getElementById('robot-desc').value = robot.description || '';
   const catEl = document.getElementById('robot-category');
   if (catEl) catEl.value = robot.category || '';
-  const isDaily = getMode() === 'daily';
-  document.querySelector('#modal-robot h3').textContent     = isDaily ? t('modal.edit_list')   : t('modal.edit_project');
+  document.querySelector('#modal-robot h3').textContent     = t('modal.edit_list');
   document.getElementById('save-robot').textContent          = t('btn.save_changes');
-  document.getElementById('robot-name-label').textContent    = isDaily ? t('label.list_name')  : t('label.project_name');
+  document.getElementById('robot-name-label').textContent    = t('label.list_name');
   refreshCategoryDatalist();
   // Pre-select the Space that currently holds this list
   if (typeof refreshSpaceSelect === 'function') {
@@ -1418,8 +1455,13 @@ window.editTask = function(id) {
   resetRadio('task-status-group', task.status || 'active');
   initRadioGroup('task-priority-group');
   initRadioGroup('task-status-group');
-  document.querySelector('#modal-task h3').textContent = 'Edit Task';
-  document.getElementById('save-task').textContent = 'Save Changes';
+  const dd = document.getElementById('task-due-date');
+  if (dd) dd.value = task.dueDate || '';
+  const ti = document.getElementById('task-tags-input');
+  if (ti) ti.value = (task.tags || []).join(', ');
+  renderTagPicker(task.tags || []);
+  document.querySelector('#modal-task h3').textContent = t('modal.edit_task');
+  document.getElementById('save-task').textContent = t('btn.save_changes');
   openModal('modal-task');
   setTimeout(() => document.getElementById('task-title').focus(), 50);
 };
@@ -1434,8 +1476,8 @@ window.editIssue = function(id) {
   resetRadio('issue-status-group', issue.status === 'resolved' ? 'open' : (issue.status || 'open'));
   initRadioGroup('issue-severity-group');
   initRadioGroup('issue-status-group');
-  document.querySelector('#modal-issue h3').textContent = 'Edit Issue';
-  document.getElementById('save-issue').textContent = 'Save Changes';
+  document.querySelector('#modal-issue h3').textContent = t('modal.edit_issue');
+  document.getElementById('save-issue').textContent = t('btn.save_changes');
   openModal('modal-issue');
   setTimeout(() => document.getElementById('issue-title').focus(), 50);
 };
@@ -1448,8 +1490,8 @@ window.editVisit = function(id) {
   document.getElementById('visit-date').value = visit.date;
   document.getElementById('visit-robot').value = visit.robot || '';
   document.getElementById('visit-notes').value = visit.notes || '';
-  document.querySelector('#modal-visit h3').textContent = 'Edit Field Visit';
-  document.getElementById('save-visit').textContent = 'Save Changes';
+  document.querySelector('#modal-visit h3').textContent = t('modal.edit_visit');
+  document.getElementById('save-visit').textContent = t('btn.save_changes');
   openModal('modal-visit');
   setTimeout(() => document.getElementById('visit-location').focus(), 50);
 };
@@ -1486,8 +1528,8 @@ function closeModal(id) {
   editingExpenseId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
-    'modal-robot':     ['#modal-robot h3',     getMode() === 'daily' ? t('modal.add_new_list') : t('modal.add_new_project'),
-                        'save-robot',          getMode() === 'daily' ? t('btn.add_list') : t('btn.add_project')],
+    'modal-robot':     ['#modal-robot h3',     t('modal.add_new_list'),
+                        'save-robot',          t('btn.add_list')],
     'modal-task':      ['#modal-task h3',       t('modal.add_task'),    'save-task',     t('btn.add_task')],
     'modal-issue':     ['#modal-issue h3',      t('modal.add_issue'),   'save-issue',    t('btn.add_issue')],
     'modal-visit':     ['#modal-visit h3',      t('modal.add_visit'),   'save-visit',    t('btn.add_visit')],
@@ -1615,6 +1657,9 @@ window.openTaskModal = function() {
   resetRadio('task-status-group', 'active');
   initRadioGroup('task-priority-group');
   initRadioGroup('task-status-group');
+  const dd = document.getElementById('task-due-date'); if (dd) dd.value = '';
+  const ti = document.getElementById('task-tags-input'); if (ti) ti.value = '';
+  renderTagPicker([]);
   openModal('modal-task');
   setTimeout(() => document.getElementById('task-title').focus(), 50);
 };
@@ -1628,19 +1673,43 @@ document.getElementById('save-task').addEventListener('click', () => {
   if (!title) { document.getElementById('task-title').focus(); return; }
   const priority = getRadioValue('task-priority-group') || 'normal';
   const status   = getRadioValue('task-status-group')   || 'active';
+  const dueDate  = (document.getElementById('task-due-date')?.value || '').trim();
+  const tagsRaw  = (document.getElementById('task-tags-input')?.value || '').trim();
+  const tags     = tagsRaw ? Array.from(new Set(tagsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean))) : [];
   const robot = getCurrentContainer();
   if (!robot) return;
   if (editingTaskId) {
     const task = robot.tasks.find(t => t.id === editingTaskId);
-    if (task) { task.title = title; task.priority = priority; task.status = status; }
+    if (task) { task.title = title; task.priority = priority; task.status = status; task.dueDate = dueDate || null; task.tags = tags; }
   } else {
-    robot.tasks.push({ id: uid(), title, priority, status, notebook: [], expanded: false, createdAt: Date.now() });
+    robot.tasks.push({ id: uid(), title, priority, status, dueDate: dueDate || null, tags, notebook: [], expanded: false, createdAt: Date.now() });
   }
   save();
   renderCurrentDetail();
   if (activeSection === 'topics') renderTopicList(); else renderRobotList();
   closeModal('modal-task');
 });
+
+// Tag picker — quick-pick chips for common categories
+const COMMON_TAGS = ['embedded', 'hardware', 'cabling', 'software', 'mechanical', 'electrical', 'firmware', 'test', 'docs'];
+function renderTagPicker(active) {
+  const host = document.getElementById('task-tag-picker');
+  if (!host) return;
+  const set = new Set((active || []).map(s => s.toLowerCase()));
+  host.innerHTML = COMMON_TAGS.map(tag =>
+    `<button type="button" class="tag-chip ${set.has(tag) ? 'active' : ''}" data-tag="${tag}">${tag}</button>`
+  ).join('');
+  host.querySelectorAll('.tag-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById('task-tags-input');
+      const cur = (input.value || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      const tag = btn.dataset.tag;
+      const next = cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag];
+      input.value = next.join(', ');
+      btn.classList.toggle('active');
+    });
+  });
+}
 
 // ── ADD ISSUE ──────────────────────────────────────────
 window.openIssueModal = function() {
@@ -2591,14 +2660,14 @@ const BackupManager = (() => {
     const moreBtn  = document.getElementById('more-drive-trigger');
     const popover  = document.getElementById('backup-popover');
     const backdrop = document.getElementById('backup-backdrop');
-    if (!btn || !popover) return;
+    if (!popover || (!btn && !moreBtn)) return;
 
+    const entryControls = [btn, moreBtn].filter(Boolean);
     function closePopover() { popover.classList.remove('open'); if (backdrop) backdrop.classList.remove('open'); }
 
     // Attach the SAME real handler to both entry points — no synthetic click forwarding,
     // because that loses user-gesture context and mobile browsers block the popup.
-    btn.addEventListener('click', handleHeaderClick);
-    if (moreBtn) moreBtn.addEventListener('click', handleHeaderClick);
+    entryControls.forEach(el => el.addEventListener('click', handleHeaderClick));
 
     // Backdrop click closes
     if (backdrop) backdrop.addEventListener('click', closePopover);
@@ -2606,8 +2675,7 @@ const BackupManager = (() => {
     // Outside click closes
     document.addEventListener('click', e => {
       if (!popover.classList.contains('open')) return;
-      if (!popover.contains(e.target) && e.target !== btn && !btn.contains(e.target)
-          && (!moreBtn || (e.target !== moreBtn && !moreBtn.contains(e.target))))
+      if (!popover.contains(e.target) && !entryControls.some(el => e.target === el || el.contains(e.target)))
         closePopover();
     });
 
@@ -2665,8 +2733,10 @@ function renderAllTasks() {
     const today = new Date(); today.setHours(0,0,0,0);
     filtered = items.filter(it => {
       if (it.task.status === 'done') return false;
-      const due = it.task.dueDate ? new Date(it.task.dueDate) : null;
-      return !due || due.toDateString() === today.toDateString();
+      if (!it.task.dueDate) return false;
+      const due = new Date(it.task.dueDate + 'T00:00:00');
+      // Today filter: due today OR overdue (still open)
+      return due <= today;
     });
   }
 
@@ -2681,7 +2751,12 @@ function renderAllTasks() {
   });
 
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty-visits"><p>No tasks ${allTasksFilter === 'open' ? 'open' : (allTasksFilter === 'today' ? 'for today' : 'yet')}.</p></div>`;
+    const msg = allTasksFilter === 'open'
+      ? t('empty.no_tasks_open')
+      : allTasksFilter === 'today'
+        ? t('empty.no_tasks_today')
+        : t('empty.no_tasks_yet');
+    list.innerHTML = `<div class="empty-visits"><p>${escapeHtml(msg)}</p></div>`;
     return;
   }
 
@@ -2700,15 +2775,50 @@ function renderAllTasks() {
         <span class="count-pill">${g.items.length}</span>
       </div>
       ${g.items.map(it => `
-        <div class="at-task ${it.task.status}">
+        <div class="at-task ${it.task.status}" data-project-id="${escapeAttr(it.project.id)}" data-task-id="${escapeAttr(it.task.id)}">
           <span class="at-task-dot ${it.task.status}"></span>
           <span class="at-task-title">${escapeHtml(it.task.title)}</span>
+          ${(it.task.tags || []).map(tg => `<span class="task-label-chip">${escapeHtml(tg)}</span>`).join('')}
+          ${it.task.dueDate ? `<span class="task-due ${dueClass(it.task.dueDate, it.task.status)}">${formatDueShort(it.task.dueDate)}</span>` : ''}
           ${it.task.priority && it.task.priority !== 'normal' ? `<span class="at-task-prio ${escapeAttr(it.task.priority)}">${escapeHtml(it.task.priority)}</span>` : ''}
           <span class="at-task-project">${escapeHtml(g.project.name)}</span>
         </div>
       `).join('')}
     </div>
   `).join('');
+
+  // Click any task → navigate to its source list and expand it
+  list.querySelectorAll('.at-task').forEach(el => {
+    el.addEventListener('click', () => {
+      const pid = el.dataset.projectId;
+      const tid = el.dataset.taskId;
+      if (!pid || !tid) return;
+      let spaceId = null, itemId = null;
+      (state.spaces || []).forEach(sp => {
+        (sp.items || []).forEach(it => {
+          if ((it.type === 'list' || it.type === 'meeting' || it.type === 'visit') && it.refId === pid) {
+            spaceId = sp.id; itemId = it.id;
+          }
+        });
+      });
+      if (spaceId && itemId && typeof selectSpaceItem === 'function') {
+        selectSpaceItem(spaceId, itemId);
+      } else {
+        state.currentRobotId = pid;
+        if (typeof activateSection === 'function') activateSection('robots');
+        if (typeof selectRobot === 'function') selectRobot(pid);
+      }
+      setTimeout(() => {
+        const robot = (state.robots||[]).find(r => r.id === pid)
+                  || (state.meetings||[]).find(r => r.id === pid)
+                  || (state.fieldVisits||[]).find(r => r.id === pid);
+        const t = robot && (robot.tasks || []).find(x => x.id === tid);
+        if (t) { t.expanded = true; if (typeof renderCurrentDetail === 'function') renderCurrentDetail(); }
+        const node = document.getElementById('task-' + tid);
+        if (node) { node.scrollIntoView({ block: 'center', behavior: 'smooth' }); node.classList.add('flash-highlight'); setTimeout(() => node.classList.remove('flash-highlight'), 1400); }
+      }, 60);
+    });
+  });
 }
 
 document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
@@ -3006,18 +3116,7 @@ function renderJournalList() {
 
 // ── THEME TOGGLE ───────────────────────────────────────
 (function initTheme() {
-  const root = document.documentElement;
-  const saved = localStorage.getItem('b-less-theme') || 'dark';
-  root.setAttribute('data-theme', saved);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const cur = root.getAttribute('data-theme') || 'dark';
-      const next = cur === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem('b-less-theme', next);
-    });
-  }
+  document.documentElement.setAttribute('data-theme', 'light');
 })();
 
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
@@ -3556,7 +3655,7 @@ function resolveItemData(item) {
   if (item.type === 'list')    return (state.robots      || []).find(r => r.id === item.refId);
   if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
-  if (item.type === 'journal') return { name: 'Journal' };
+  if (item.type === 'journal') return { name: t('add_item.journal') || 'Journal' };
   if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
   return null;
 }
@@ -3598,7 +3697,7 @@ function renderSidebar() {
           <span class="space-item-icon space-subicon">${ITEM_ICONS[type] || ''}</span>
           <span class="space-subname">${escapeHtml(label)}</span>
           <span class="space-subcount">${items.length}</span>
-          <button class="space-sub-add-btn" data-sub-add-type="${type}" data-sub-add-space="${spaceId}" title="Add ${escapeHtml(label.toLowerCase())}" aria-label="Add">+</button>
+          <button class="space-sub-add-btn" data-sub-add-type="${type}" data-sub-add-space="${spaceId}" title="${t('btn.add') || 'Add'} ${escapeHtml(label.toLowerCase())}" aria-label="${t('btn.add') || 'Add'}">+</button>
         </div>
         <div class="space-subitems">${rows}</div>
       </div>`;
@@ -3606,9 +3705,14 @@ function renderSidebar() {
 
   function journalSubgroup(items, spaceId) {
     if (!items.length) return '';
-    // Each entry in state.journal becomes a sub-item under a "Journal" group
+    // Each entry in state.journal becomes a sub-item under a "Journal" group.
+    // state.journalSpace[date] = spaceId pins an entry to one space; unpinned shows in all.
     const entries = state.journal || {};
-    const dates = Object.keys(entries).filter(d => entries[d] && entries[d].trim()).sort().reverse();
+    const pin = state.journalSpace || {};
+    const dates = Object.keys(entries)
+      .filter(d => entries[d] && entries[d].trim())
+      .filter(d => !pin[d] || pin[d] === spaceId)
+      .sort().reverse();
     const key = spaceId + ':journal';
     const collapsed = !!state.collapsedGroups[key];
     const fmt = d => {
@@ -3630,11 +3734,11 @@ function renderSidebar() {
         <div class="space-subheader">
           <span class="space-subchev">${ICO.chevron}</span>
           <span class="space-item-icon space-subicon">${ITEM_ICONS.journal}</span>
-          <span class="space-subname">Journal</span>
+          <span class="space-subname">${t('add_item.journal') || 'Journal'}</span>
           <span class="space-subcount">${dates.length}</span>
-          <button class="space-jrn-today-btn" data-jrn-today="${spaceId}" data-jrn-item-id="${headerItemId}" title="Today" aria-label="Today">+</button>
+          <button class="space-jrn-today-btn" data-jrn-today="${spaceId}" data-jrn-item-id="${headerItemId}" title="${t('btn.today') || 'Today'}" aria-label="${t('btn.today') || 'Today'}">+</button>
         </div>
-        <div class="space-subitems">${rows || '<div class="space-empty">No entries</div>'}</div>
+        <div class="space-subitems">${rows || `<div class="space-empty">${t('empty.no_journal') || 'No entries'}</div>`}</div>
       </div>`;
   }
 
@@ -3649,7 +3753,7 @@ function renderSidebar() {
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
     const listsHtml    = lists.map(it => itemRow(it, sp.id)).join('');
-    const meetingsHtml = subgroup('Meetings', 'meeting', meetings, sp.id);
+    const meetingsHtml = subgroup(t('sidebar.meetings') || 'Meetings', 'meeting', meetings, sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
     const financeHtml  = finances.map(it => itemRow(it, sp.id)).join('');
@@ -3685,9 +3789,24 @@ function renderSidebar() {
     });
     el.addEventListener('dragend', () => el.classList.remove('dragging'));
   });
+  // Journal entries: draggable to pin a date to a specific space
+  list.querySelectorAll('.space-jrn-item').forEach(el => {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => {
+      e.stopPropagation();
+      e.dataTransfer.setData('text/karta-journal', JSON.stringify({
+        date: el.dataset.jrnDate,
+        sourceSpaceId: el.dataset.spaceId,
+      }));
+      e.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  });
   list.querySelectorAll('.space-group').forEach(el => {
     el.addEventListener('dragover', e => {
-      if (!Array.from(e.dataTransfer.types).includes('text/karta-item')) return;
+      const types = Array.from(e.dataTransfer.types);
+      if (!types.includes('text/karta-item') && !types.includes('text/karta-journal')) return;
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       el.classList.add('drag-target');
@@ -3699,9 +3818,25 @@ function renderSidebar() {
     el.addEventListener('drop', e => {
       e.preventDefault();
       el.classList.remove('drag-target');
+      const targetSpaceId = el.dataset.spaceId;
+      // Journal entry drop → pin date to this space
+      const jrnRaw = e.dataTransfer.getData('text/karta-journal');
+      if (jrnRaw) {
+        let j; try { j = JSON.parse(jrnRaw); } catch { return; }
+        if (!j || !j.date) return;
+        if (!state.journalSpace) state.journalSpace = {};
+        if (j.sourceSpaceId === targetSpaceId) {
+          // dropping back onto same space → unpin (show in all)
+          delete state.journalSpace[j.date];
+        } else {
+          state.journalSpace[j.date] = targetSpaceId;
+        }
+        save();
+        renderSidebar();
+        return;
+      }
       let data;
       try { data = JSON.parse(e.dataTransfer.getData('text/karta-item')); } catch { return; }
-      const targetSpaceId = el.dataset.spaceId;
       if (!data || !data.itemId || data.sourceSpaceId === targetSpaceId) return;
       const src = findSpace(data.sourceSpaceId);
       const dst = findSpace(targetSpaceId);

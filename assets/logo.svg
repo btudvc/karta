@@ -1,37 +1,22 @@
-<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="B-Less logo">
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="B-Less">
   <title>B-Less</title>
-  <desc>Full-bleed B-Less wordmark app icon</desc>
-  <defs>
-    <linearGradient id="bg" x1="88" y1="38" x2="424" y2="474" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#202127"/>
-      <stop offset="0.62" stop-color="#111216"/>
-      <stop offset="1" stop-color="#050506"/>
-    </linearGradient>
-    <linearGradient id="fg" x1="116" y1="142" x2="384" y2="370" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#d9d9de"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
-    </filter>
-  </defs>
-
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <path d="M74 114c0-22 18-40 40-40h284c22 0 40 18 40 40v284c0 22-18 40-40 40H114c-22 0-40-18-40-40V114Z" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
-
-  <g filter="url(#shadow)" fill="url(#fg)">
-    <text x="88" y="292"
-      font-family="Inter, Segoe UI, Arial, sans-serif"
-      font-size="184"
-      font-weight="850"
-      letter-spacing="-10">B</text>
-    <rect x="217" y="236" width="62" height="20" rx="10"/>
-    <text x="292" y="253"
-      font-family="Inter, Segoe UI, Arial, sans-serif"
-      font-size="76"
-      font-weight="780"
-      letter-spacing="-3">Less</text>
+  <!-- Stack of 4 isometric plates, centered. #ffffff adapts to header text color. -->
+  <g fill="#ffffff" stroke="none">
+    <!-- Plate 1 (top): only thickness band, top diamond stays outlined for layered look -->
+    <path d="M396 178 L396 196 L256 266 L256 248 Z" />
+    <path d="M256 248 L256 266 L116 196 L116 178 Z" />
+    <!-- Plate 2 -->
+    <path d="M256 198 L396 268 L256 338 L116 268 Z" />
+    <path d="M396 268 L396 286 L256 356 L256 338 Z" />
+    <path d="M256 338 L256 356 L116 286 L116 268 Z" />
+    <!-- Plate 3 -->
+    <path d="M256 288 L396 358 L256 428 L116 358 Z" />
+    <path d="M396 358 L396 376 L256 446 L256 428 Z" />
+    <path d="M256 428 L256 446 L116 376 L116 358 Z" />
   </g>
-
-  <path d="M116 338h280" stroke="#ffffff" stroke-opacity="0.18" stroke-width="10" stroke-linecap="round"/>
+  <!-- Top diamond: outline only, matches the new logo's open top plate -->
+  <path d="M256 108 L396 178 L256 248 L116 178 Z"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-linejoin="miter"/>
 </svg>
+</content>
+</invoke>

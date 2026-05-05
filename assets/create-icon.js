@@ -1,28 +1,40 @@
 // B-Less brand asset generator
-// Renders assets/logo.svg → assets/logo.png (512px) and assets/icon.ico (multi-size)
+// Source of truth: assets/b-less-icon-v3.png
+// Outputs: b-less-icon-v3-512.png (header/manifest), icon.ico (multi-size)
 const fs   = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
 const here = __dirname;
-const svgPath = path.join(here, 'logo.svg');
-const pngPath = path.join(here, 'logo.png');
+const srcPath = path.join(here, 'b-less-icon-v3.png');
+const out512  = path.join(here, 'b-less-icon-v3-512.png');
 const icoPath = path.join(here, 'icon.ico');
 
 (async () => {
-  const svg = fs.readFileSync(svgPath);
+  // Trim whitespace around the source so the icon fills more of the frame.
+  // Then add a small breathing margin and resize.
+  const trimmed = await sharp(srcPath).trim({ threshold: 12 }).toBuffer();
+  const meta = await sharp(trimmed).metadata();
+  const pad = Math.round(Math.max(meta.width, meta.height) * 0.06);
+  const padded = await sharp(trimmed)
+    .extend({ top: pad, bottom: pad, left: pad, right: pad,
+              background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .toBuffer();
 
-  // Main 512x512 PNG (used in app header, manifest, apple-touch-icon)
-  await sharp(svg).resize(512, 512).png().toFile(pngPath);
-  console.log('✓ logo.png');
+  await sharp(padded)
+    .resize(512, 512, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .png()
+    .toFile(out512);
+  console.log('✓ b-less-icon-v3-512.png');
 
-  // Multi-size PNG → ICO via png-to-ico
   const sizes = [16, 32, 48, 64, 128, 256];
   const buffers = await Promise.all(
-    sizes.map(s => sharp(svg).resize(s, s).png().toBuffer())
+    sizes.map(s => sharp(padded)
+      .resize(s, s, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+      .png()
+      .toBuffer())
   );
   const pngToIco = (await import('png-to-ico')).default;
-  const icoBuf = await pngToIco(buffers);
-  fs.writeFileSync(icoPath, icoBuf);
+  fs.writeFileSync(icoPath, await pngToIco(buffers));
   console.log('✓ icon.ico (' + sizes.join(',') + ')');
 })();

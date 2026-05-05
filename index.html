@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#09090b">
+  <meta name="theme-color" content="#fafafa">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="B-Less">
   <link rel="manifest" href="manifest.json?v=4.1.2">
-  <link rel="icon" type="image/svg+xml" href="assets/b-less-icon-v2.svg">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/b-less-icon-v2.png">
-  <link rel="apple-touch-icon" href="assets/b-less-icon-v2.png">
+  <link rel="icon" type="image/png" href="assets/b-less-icon-v3-512.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/b-less-icon-v3-512.png">
+  <link rel="apple-touch-icon" href="assets/b-less-icon-v3-512.png">
   <title>B-Less</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -18,7 +18,7 @@
 
   <header>
     <div class="logo">
-      <img class="logo-mark" src="assets/b-less-icon-v2.svg" alt="B-Less" />
+      <img class="logo-mark" src="assets/b-less-icon-v3-512.png" alt="B-Less" />
     </div>
 
     <!-- Legacy mode switcher (hidden in v4 — Spaces replace this) -->
@@ -31,15 +31,15 @@
     <nav class="cross-nav" id="cross-nav">
       <button class="cross-nav-btn" data-cross="today">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-        <span data-i18n="cross.today">Today</span>
+        <span data-i18n="cross.today">Bugün</span>
       </button>
       <button class="cross-nav-btn" data-cross="calendar">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span data-i18n="cross.calendar">Calendar</span>
+        <span data-i18n="cross.calendar">Takvim</span>
       </button>
       <button class="cross-nav-btn" data-cross="visits">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
-        <span data-i18n="cross.visits">Visits</span>
+        <span data-i18n="cross.visits">Ziyaretler</span>
       </button>
     </nav>
 
@@ -51,50 +51,31 @@
     <nav class="tabs v4-hidden" hidden>
       <button class="tab active" data-tab="robots">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <span class="job-label" data-i18n="tab.projects">Projects</span><span class="daily-label" data-i18n="tab.lists">Lists</span>
+        <span class="job-label" data-i18n="tab.projects">Projeler</span><span class="daily-label" data-i18n="tab.lists">Listeler</span>
       </button>
       <button class="tab" data-tab="all-tasks">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span class="job-label" data-i18n="tab.tasks">Tasks</span><span class="daily-label" data-i18n="tab.today">Today</span>
+        <span class="job-label" data-i18n="tab.tasks">Görevler</span><span class="daily-label" data-i18n="tab.today">Bugün</span>
       </button>
       <button class="tab" data-tab="calendar">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span data-i18n="tab.calendar">Calendar</span>
+        <span data-i18n="tab.calendar">Takvim</span>
       </button>
       <button class="tab" data-tab="journal" data-modes="daily">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-        <span data-i18n="tab.journal">Journal</span>
+        <span data-i18n="tab.journal">Günlük</span>
       </button>
       <button class="tab" data-tab="meetings" data-modes="job">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span data-i18n="tab.meetings">Meetings</span>
+        <span data-i18n="tab.meetings">Toplantılar</span>
       </button>
       <button class="tab" data-tab="field-visits">
         <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
-        <span data-i18n="tab.visits">Visits</span>
+        <span data-i18n="tab.visits">Ziyaretler</span>
       </button>
     </nav>
 
     <div class="header-right">
-      <div class="lang-switcher">
-        <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
-        <button class="lang-btn" data-lang="tr" aria-label="Türkçe">TR</button>
-      </div>
-      <button class="icon-btn" id="theme-toggle" title="Theme" aria-label="Toggle theme">
-        <svg class="theme-ico-dark" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="theme-ico-light" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      </button>
-
-      <button class="backup-btn" id="backup-btn" title="Google Drive">
-        <span class="backup-icon">
-          <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7.71 3.5 1.15 15l3.5 6.5L11.21 10z" fill="#0066da"/>
-            <path d="m22.85 15-6.56-11.5h-7l6.57 11.5z" fill="#ffcd46"/>
-            <path d="M4.65 21.5h13.13l3.5-6.5H8.15z" fill="#00ac47"/>
-          </svg>
-        </span>
-        <span class="backup-label" id="backup-label"></span>
-      </button>
     </div>
 
     <!-- Backup popover (centered modal, dynamic content) -->
@@ -120,9 +101,9 @@
       <div class="sidebar">
         <div class="sidebar-header">
           <span class="sidebar-label">
-            <span class="job-label" data-i18n="sidebar.projects">Projects</span><span class="daily-label" data-i18n="sidebar.lists">Lists</span>
+            <span class="job-label" data-i18n="sidebar.projects">Projeler</span><span class="daily-label" data-i18n="sidebar.lists">Listeler</span>
           </span>
-          <button class="btn-add" id="add-robot-btn" data-i18n="btn.add">+ Add</button>
+          <button class="btn-add" id="add-robot-btn" data-i18n="btn.add">+ Ekle</button>
         </div>
         <div class="robot-list" id="robot-list"></div>
       </div>
@@ -132,8 +113,8 @@
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
           </div>
-          <p class="job-label" data-i18n="empty.select_project">Select a project from the sidebar or add a new one to get started.</p>
-          <p class="daily-label" data-i18n="empty.select_list">Select a list from the sidebar or add a new one to get started.</p>
+          <p class="job-label" data-i18n="empty.select_project">Sol taraftan bir proje seçin veya yeni bir proje ekleyin.</p>
+          <p class="daily-label" data-i18n="empty.select_list">Sol taraftan bir liste seçin veya yeni bir liste ekleyin.</p>
         </div>
       </div>
     </section>
@@ -142,8 +123,8 @@
     <section id="meetings" class="section">
       <div class="sidebar">
         <div class="sidebar-header">
-          <span class="sidebar-label" data-i18n="sidebar.meetings">Meetings</span>
-          <button class="btn-add" id="add-meeting-btn" data-i18n="btn.add">+ Add</button>
+          <span class="sidebar-label" data-i18n="sidebar.meetings">Toplantılar</span>
+          <button class="btn-add" id="add-meeting-btn" data-i18n="btn.add">+ Ekle</button>
         </div>
         <div class="robot-list" id="meeting-list"></div>
       </div>
@@ -152,7 +133,7 @@
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <p data-i18n="empty.select_meeting">Select a meeting or add a new one.</p>
+          <p data-i18n="empty.select_meeting">Bir toplantı seçin veya yeni bir tane ekleyin.</p>
         </div>
       </div>
     </section>
@@ -162,10 +143,10 @@
       <div class="fv-container">
         <div class="fv-header">
           <div>
-            <h2 data-i18n="visits.title">Visits</h2>
-            <p class="fv-subtitle" data-i18n="visits.subtitle">Planned visits and trips</p>
+            <h2 data-i18n="visits.title">Ziyaretler</h2>
+            <p class="fv-subtitle" data-i18n="visits.subtitle">Planlanmış ziyaretler ve seyahatler</p>
           </div>
-          <button class="btn-primary" id="add-visit-btn"><span data-i18n="btn.add_visit">+ Add Visit</span></button>
+          <button class="btn-primary" id="add-visit-btn"><span data-i18n="btn.add_visit">+ Ziyaret Ekle</span></button>
         </div>
         <div id="visits-list"></div>
       </div>
@@ -176,13 +157,13 @@
       <div class="fv-container">
         <div class="fv-header">
           <div>
-            <h2 data-i18n="all_tasks.title">All Tasks</h2>
-            <p class="fv-subtitle" data-i18n="all_tasks.subtitle">Everything across your projects</p>
+            <h2 data-i18n="all_tasks.title">Tüm Görevler</h2>
+            <p class="fv-subtitle" data-i18n="all_tasks.subtitle">Projelerinizin tamamı</p>
           </div>
           <div class="at-filter" id="at-filter">
-            <button class="at-filter-btn active" data-filter="open" data-i18n="filter.open">Open</button>
-            <button class="at-filter-btn" data-filter="today" data-i18n="filter.today">Today</button>
-            <button class="at-filter-btn" data-filter="all" data-i18n="filter.all">All</button>
+            <button class="at-filter-btn active" data-filter="open" data-i18n="filter.open">Açık</button>
+            <button class="at-filter-btn" data-filter="today" data-i18n="filter.today">Bugün</button>
+            <button class="at-filter-btn" data-filter="all" data-i18n="filter.all">Hepsi</button>
           </div>
         </div>
         <div id="all-tasks-list"></div>
@@ -193,19 +174,19 @@
     <section id="calendar" class="section">
       <div class="cal-container">
         <div class="cal-header">
-          <button class="cal-nav" id="cal-prev" aria-label="Previous month">
+          <button class="cal-nav" id="cal-prev" aria-label="Önceki ay">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <h2 id="cal-title">Loading…</h2>
-          <button class="cal-nav" id="cal-next" aria-label="Next month">
+          <button class="cal-nav" id="cal-next" aria-label="Sonraki ay">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-          <button class="btn-ghost cal-today-btn" id="cal-today" data-i18n="btn.today">Today</button>
+          <button class="btn-ghost cal-today-btn" id="cal-today" data-i18n="btn.today">Bugün</button>
         </div>
         <div class="cal-body">
           <div class="cal-grid" id="cal-grid"></div>
           <aside class="cal-day-panel" id="cal-day-panel">
-            <div class="cal-day-empty" data-i18n="empty.select_day">Select a day</div>
+            <div class="cal-day-empty" data-i18n="empty.select_day">Bir gün seçin</div>
           </aside>
         </div>
       </div>
@@ -215,40 +196,26 @@
     <section id="more" class="section">
       <div class="more-page">
 
-        <div class="more-section-title" data-i18n="more.section.pages">Pages</div>
+        <div class="more-section-title" data-i18n="more.section.pages">Sayfalar</div>
         <div class="more-card-list">
           <button class="more-card more-card-link job-only" data-go-tab="meetings">
             <span class="more-card-icon">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </span>
-            <span class="more-card-label" data-i18n="tab.meetings">Meetings</span>
+            <span class="more-card-label" data-i18n="tab.meetings">Toplantılar</span>
             <span class="more-card-arrow">›</span>
           </button>
           <button class="more-card more-card-link daily-only" data-go-tab="journal">
             <span class="more-card-icon">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
             </span>
-            <span class="more-card-label" data-i18n="tab.journal">Journal</span>
+            <span class="more-card-label" data-i18n="tab.journal">Günlük</span>
             <span class="more-card-arrow">›</span>
           </button>
         </div>
 
-        <div class="more-section-title" data-i18n="more.section.settings">Settings</div>
+        <div class="more-section-title" data-i18n="more.section.settings">Ayarlar</div>
         <div class="more-card-list">
-          <div class="more-card more-card-static">
-            <span class="more-card-label" data-i18n="more.language">Language</span>
-            <div class="more-card-actions">
-              <button class="lang-btn" data-lang="en">EN</button>
-              <button class="lang-btn" data-lang="tr">TR</button>
-            </div>
-          </div>
-          <button class="more-card more-card-link" id="more-theme-trigger">
-            <span class="more-card-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            </span>
-            <span class="more-card-label" data-i18n="more.theme">Theme</span>
-            <span class="more-card-arrow">›</span>
-          </button>
           <button class="more-card more-card-link" id="more-drive-trigger">
             <span class="more-card-icon">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05M12 22.08V12"/></svg>
@@ -265,8 +232,8 @@
       <div class="jrn-container">
         <aside class="jrn-sidebar">
           <div class="jrn-side-head">
-            <span class="sidebar-label" data-i18n="jrn.entries">Entries</span>
-            <button class="btn-add" id="jrn-today-btn" data-i18n="btn.today">Today</button>
+            <span class="sidebar-label" data-i18n="jrn.entries">Girdiler</span>
+            <button class="btn-add" id="jrn-today-btn" data-i18n="btn.today">Bugün</button>
           </div>
           <div class="jrn-list" id="jrn-list"></div>
         </aside>
@@ -275,7 +242,7 @@
             <input type="date" id="jrn-date" />
             <span class="jrn-status" id="jrn-status"></span>
           </div>
-          <textarea class="jrn-area" id="jrn-area" data-i18n-ph="jrn.placeholder" placeholder="Write about today..."></textarea>
+          <textarea class="jrn-area" id="jrn-area" data-i18n-ph="jrn.placeholder" placeholder="Bugün hakkında yaz..."></textarea>
         </div>
       </div>
     </section>
@@ -294,11 +261,11 @@
         </div>
         <div id="finance-summary"></div>
         <div class="finance-month-nav">
-          <button class="cal-nav" id="finance-prev-month" aria-label="Previous month">
+          <button class="cal-nav" id="finance-prev-month" aria-label="Önceki ay">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <strong id="finance-month-label"></strong>
-          <button class="cal-nav" id="finance-next-month" aria-label="Next month">
+          <button class="cal-nav" id="finance-next-month" aria-label="Sonraki ay">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </div>
@@ -318,23 +285,23 @@
   <nav class="bottom-nav" aria-label="Primary">
     <button class="bnav-btn active" data-mobile-spaces="true" aria-controls="space-sidebar" aria-expanded="false">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
-      <span>Spaces</span>
+      <span>Alanlar</span>
     </button>
     <button class="bnav-btn" data-cross="today">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      <span data-i18n="cross.today">Today</span>
+      <span data-i18n="cross.today">Bugün</span>
     </button>
     <button class="bnav-btn" data-cross="calendar">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      <span data-i18n="cross.calendar">Calendar</span>
+      <span data-i18n="cross.calendar">Takvim</span>
     </button>
     <button class="bnav-btn" data-cross="visits">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
-      <span data-i18n="cross.visits">Visits</span>
+      <span data-i18n="cross.visits">Ziyaretler</span>
     </button>
     <button class="tab bnav-btn" data-tab="more">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .58V20a2 2 0 1 1-4 0v-.05a1.7 1.7 0 0 0-1-.58 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-.58-1H4a2 2 0 1 1 0-4h.05a1.7 1.7 0 0 0 .58-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-.58V4a2 2 0 1 1 4 0v.05a1.7 1.7 0 0 0 1 .58 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.2.35.2.65.58 1H20a2 2 0 1 1 0 4h-.05a1.7 1.7 0 0 0-.55 1z"/></svg>
-      <span data-i18n="more.section.settings">Settings</span>
+      <span data-i18n="more.section.settings">Ayarlar</span>
     </button>
   </nav>
 
@@ -342,26 +309,26 @@
   <div class="modal-overlay" id="modal-add-item">
     <div class="modal modal-picker">
       <div class="modal-header">
-        <h3 data-i18n="add_item.title">Add to space</h3>
-        <button class="modal-close" data-close="modal-add-item" aria-label="Close">
+        <h3 data-i18n="add_item.title">Alana ekle</h3>
+        <button class="modal-close" data-close="modal-add-item" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
       <div class="add-item-grid">
         <button class="add-item-card" data-add-type="list">
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
-          <span class="add-item-label" data-i18n="add_item.list">List</span>
-          <span class="add-item-hint" data-i18n="add_item.list_hint">Tasks grouped under a name</span>
+          <span class="add-item-label" data-i18n="add_item.list">Liste</span>
+          <span class="add-item-hint" data-i18n="add_item.list_hint">Bir isim altında gruplanmış görevler</span>
         </button>
         <button class="add-item-card" data-add-type="meeting">
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-          <span class="add-item-label" data-i18n="add_item.meeting">Meeting</span>
-          <span class="add-item-hint" data-i18n="add_item.meeting_hint">Notes + action items for a single meeting</span>
+          <span class="add-item-label" data-i18n="add_item.meeting">Toplantı</span>
+          <span class="add-item-hint" data-i18n="add_item.meeting_hint">Toplantı notları + aksiyon maddeleri</span>
         </button>
         <button class="add-item-card" data-add-type="journal">
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>
-          <span class="add-item-label" data-i18n="add_item.journal">Journal</span>
-          <span class="add-item-hint" data-i18n="add_item.journal_hint">Daily free-form entries</span>
+          <span class="add-item-label" data-i18n="add_item.journal">Günlük</span>
+          <span class="add-item-hint" data-i18n="add_item.journal_hint">Günlük serbest girişler</span>
         </button>
         <button class="add-item-card" data-add-type="finance">
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg></span>
@@ -376,12 +343,12 @@
     <div class="modal">
       <div class="modal-header">
         <h3 data-i18n="fin.modal_add">Abonelik Ekle</h3>
-        <button class="modal-close" data-close="modal-subscription" aria-label="Close">
+        <button class="modal-close" data-close="modal-subscription" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
       <label data-i18n="fin.name">Ad</label>
-      <input type="text" id="sub-name" placeholder="Netflix, Spotify..." />
+      <input type="text" id="sub-name" placeholder="Örn. Netflix, Spotify..." />
       <label data-i18n="fin.amount">Tutar</label>
       <input type="number" id="sub-amount" min="0" step="0.01" placeholder="0.00" />
       <label data-i18n="fin.currency">Para birimi</label>
@@ -400,7 +367,7 @@
       <label data-i18n="fin.due_day">Ödeme günü</label>
       <input type="number" id="sub-due-day" min="1" max="31" placeholder="1-31" />
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-subscription" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn-ghost" data-close="modal-subscription" data-i18n="btn.cancel">İptal</button>
         <button class="btn-primary" id="save-subscription" data-i18n="fin.add_subscription">Abonelik Ekle</button>
       </div>
     </div>
@@ -410,12 +377,12 @@
     <div class="modal">
       <div class="modal-header">
         <h3 data-i18n="fin.modal_expense_add">Harcama Ekle</h3>
-        <button class="modal-close" data-close="modal-expense" aria-label="Close">
+        <button class="modal-close" data-close="modal-expense" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
       <label data-i18n="fin.name">Ad</label>
-      <input type="text" id="expense-name" placeholder="Market, kahve..." />
+      <input type="text" id="expense-name" placeholder="Örn. Market, kahve..." />
       <label data-i18n="fin.amount">Tutar</label>
       <input type="number" id="expense-amount" min="0" step="0.01" placeholder="0.00" />
       <label data-i18n="fin.currency">Para birimi</label>
@@ -429,7 +396,7 @@
       <label data-i18n="fin.category">Kategori</label>
       <input type="text" id="expense-category" placeholder="Yemek, ulaşım..." />
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-expense" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn-ghost" data-close="modal-expense" data-i18n="btn.cancel">İptal</button>
         <button class="btn-primary" id="save-expense" data-i18n="fin.add_expense">Harcama Ekle</button>
       </div>
     </div>
@@ -439,20 +406,20 @@
   <div class="modal-overlay" id="modal-robot">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modal.add_new_project">Add New Project</h3>
-        <button class="modal-close" data-close="modal-robot" aria-label="Close">
+        <h3 data-i18n="modal.add_new_project">Yeni Proje</h3>
+        <button class="modal-close" data-close="modal-robot" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <label id="robot-name-label" data-i18n="label.project_name">Project Name *</label>
+      <label id="robot-name-label" data-i18n="label.project_name">Proje Adı *</label>
       <input type="text" id="robot-name" data-i18n-ph="ph.project_name" />
-      <label data-i18n="label.space">Space</label>
+      <label data-i18n="label.space">Alan</label>
       <select id="robot-space"></select>
-      <label data-i18n="label.description">Description</label>
+      <label data-i18n="label.description">Açıklama</label>
       <textarea id="robot-desc" data-i18n-ph="ph.description"></textarea>
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-robot" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-robot" data-i18n="btn.add_project">Add Project</button>
+        <button class="btn-ghost" data-close="modal-robot" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-robot" data-i18n="btn.add_project">Proje Ekle</button>
       </div>
     </div>
   </div>
@@ -461,28 +428,33 @@
   <div class="modal-overlay" id="modal-task">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modal.add_task">Add Task</h3>
-        <button class="modal-close" data-close="modal-task" aria-label="Close">
+        <h3 data-i18n="modal.add_task">Görev Ekle</h3>
+        <button class="modal-close" data-close="modal-task" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <label data-i18n="label.task_title">Task Title *</label>
+      <label data-i18n="label.task_title">Görev *</label>
       <input type="text" id="task-title" data-i18n-ph="ph.task_title" />
-      <label data-i18n="label.priority">Priority</label>
+      <label data-i18n="label.priority">Öncelik</label>
       <div class="radio-group" id="task-priority-group">
         <label class="radio-btn active" data-value="normal" data-i18n="priority.normal">Normal</label>
-        <label class="radio-btn" data-value="high" data-i18n="priority.high">High</label>
-        <label class="radio-btn" data-value="critical" data-i18n="priority.critical">Critical</label>
+        <label class="radio-btn" data-value="high" data-i18n="priority.high">Yüksek</label>
+        <label class="radio-btn" data-value="critical" data-i18n="priority.critical">Kritik</label>
       </div>
-      <label data-i18n="label.status">Status</label>
+      <label data-i18n="label.status">Durum</label>
       <div class="radio-group" id="task-status-group">
-        <label class="radio-btn active" data-value="active" data-i18n="status.active">Active</label>
-        <label class="radio-btn" data-value="pending" data-i18n="status.pending">Pending</label>
-        <label class="radio-btn" data-value="done" data-i18n="status.done">Done</label>
+        <label class="radio-btn active" data-value="active" data-i18n="status.active">Aktif</label>
+        <label class="radio-btn" data-value="pending" data-i18n="status.pending">Beklemede</label>
+        <label class="radio-btn" data-value="done" data-i18n="status.done">Tamamlandı</label>
       </div>
+      <label data-i18n="label.due_date">Bitiş Tarihi</label>
+      <input type="date" id="task-due-date" />
+      <label data-i18n="label.tags">Etiketler</label>
+      <div class="tag-picker" id="task-tag-picker"></div>
+      <input type="text" id="task-tags-input" placeholder="embedded, hardware, cabling, software…" />
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-task" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-task" data-i18n="btn.add_task">Add Task</button>
+        <button class="btn-ghost" data-close="modal-task" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-task" data-i18n="btn.add_task">Görev Ekle</button>
       </div>
     </div>
   </div>
@@ -491,22 +463,22 @@
   <div class="modal-overlay" id="modal-visit">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modal.add_visit">Add Visit</h3>
-        <button class="modal-close" data-close="modal-visit" aria-label="Close">
+        <h3 data-i18n="modal.add_visit">Ziyaret Ekle</h3>
+        <button class="modal-close" data-close="modal-visit" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <label data-i18n="label.location">Location *</label>
+      <label data-i18n="label.location">Konum *</label>
       <input type="text" id="visit-location" data-i18n-ph="ph.location" />
-      <label data-i18n="label.date">Date *</label>
+      <label data-i18n="label.date">Tarih *</label>
       <input type="date" id="visit-date" />
-      <label data-i18n="label.reference">Reference</label>
+      <label data-i18n="label.reference">Referans</label>
       <input type="text" id="visit-robot" data-i18n-ph="ph.reference" />
-      <label data-i18n="label.notes">Notes</label>
+      <label data-i18n="label.notes">Notlar</label>
       <textarea id="visit-notes" data-i18n-ph="ph.visit_notes"></textarea>
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-visit" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-visit" data-i18n="btn.add_visit">Add Visit</button>
+        <button class="btn-ghost" data-close="modal-visit" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-visit" data-i18n="btn.add_visit">Ziyaret Ekle</button>
       </div>
     </div>
   </div>
@@ -515,28 +487,28 @@
   <div class="modal-overlay" id="modal-issue">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modal.add_issue">Add Known Issue</h3>
-        <button class="modal-close" data-close="modal-issue" aria-label="Close">
+        <h3 data-i18n="modal.add_issue">Bilinen Sorun Ekle</h3>
+        <button class="modal-close" data-close="modal-issue" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <label data-i18n="label.issue_title">Issue Title *</label>
+      <label data-i18n="label.issue_title">Sorun Başlığı *</label>
       <input type="text" id="issue-title" data-i18n-ph="ph.issue_title" />
-      <label data-i18n="label.severity">Severity</label>
+      <label data-i18n="label.severity">Önem</label>
       <div class="radio-group" id="issue-severity-group">
-        <label class="radio-btn active" data-value="low" data-i18n="priority.low">Low</label>
-        <label class="radio-btn" data-value="medium" data-i18n="priority.medium">Medium</label>
-        <label class="radio-btn" data-value="high" data-i18n="priority.high">High</label>
-        <label class="radio-btn" data-value="critical" data-i18n="priority.critical">Critical</label>
+        <label class="radio-btn active" data-value="low" data-i18n="priority.low">Düşük</label>
+        <label class="radio-btn" data-value="medium" data-i18n="priority.medium">Orta</label>
+        <label class="radio-btn" data-value="high" data-i18n="priority.high">Yüksek</label>
+        <label class="radio-btn" data-value="critical" data-i18n="priority.critical">Kritik</label>
       </div>
-      <label data-i18n="label.status">Status</label>
+      <label data-i18n="label.status">Durum</label>
       <div class="radio-group" id="issue-status-group">
-        <label class="radio-btn active" data-value="open" data-i18n="status.open">Open</label>
-        <label class="radio-btn" data-value="investigating" data-i18n="status.investigating">Investigating</label>
+        <label class="radio-btn active" data-value="open" data-i18n="status.open">Açık</label>
+        <label class="radio-btn" data-value="investigating" data-i18n="status.investigating">İnceleniyor</label>
       </div>
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-issue" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-issue" data-i18n="btn.add_issue">Add Issue</button>
+        <button class="btn-ghost" data-close="modal-issue" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-issue" data-i18n="btn.add_issue">Sorun Ekle</button>
       </div>
     </div>
   </div>
@@ -545,24 +517,24 @@
   <div class="modal-overlay" id="modal-meeting">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modal.add_meeting">Add Meeting</h3>
-        <button class="modal-close" data-close="modal-meeting" aria-label="Close">
+        <h3 data-i18n="modal.add_meeting">Toplantı Ekle</h3>
+        <button class="modal-close" data-close="modal-meeting" aria-label="Kapat">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <label data-i18n="label.title">Title *</label>
+      <label data-i18n="label.title">Başlık *</label>
       <input type="text" id="meeting-title" data-i18n-ph="ph.meeting_title" />
-      <label data-i18n="label.date">Date *</label>
+      <label data-i18n="label.date">Tarih *</label>
       <input type="date" id="meeting-date" />
-      <label data-i18n="label.location_platform">Location / Platform</label>
+      <label data-i18n="label.location_platform">Yer / Platform</label>
       <input type="text" id="meeting-location" data-i18n-ph="ph.meeting_loc" />
-      <label data-i18n="label.attendees">Attendees</label>
+      <label data-i18n="label.attendees">Katılımcılar</label>
       <input type="text" id="meeting-attendees" data-i18n-ph="ph.attendees" />
-      <label data-i18n="label.related">Related Project</label>
+      <label data-i18n="label.related">İlgili Proje</label>
       <input type="text" id="meeting-robot" data-i18n-ph="ph.related_project" />
       <div class="modal-actions">
-        <button class="btn-ghost" data-close="modal-meeting" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn-primary" id="save-meeting" data-i18n="btn.add_meeting">Add Meeting</button>
+        <button class="btn-ghost" data-close="modal-meeting" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-meeting" data-i18n="btn.add_meeting">Toplantı Ekle</button>
       </div>
     </div>
   </div>
