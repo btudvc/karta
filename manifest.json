@@ -1,26 +1,12 @@
 {
-  "name": "B-Less — Project & Task Management",
-  "short_name": "B-Less",
+  "name": "B-Less Planner",
+  "short_name": "B-Less Planner",
   "description": "Personal project and daily life planner",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
-  "icons": [
-    {
-      "src": "assets/b-less-icon-v3-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/b-less-icon-v3-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
+  "background_color": "#fafafa",
+  "theme_color": "#fafafa",
   "categories": ["productivity", "utilities"],
   "lang": "en"
 }

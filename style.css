@@ -109,42 +109,20 @@ header {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-shrink: 0;
 }
-.logo-mark {
-  width: 42px; height: 42px;
-  object-fit: contain;
-  display: block;
-  border-radius: 10px;
-  /* SVG ships white (visible on dark bg). Invert in light mode. */
-}
 .logo-text {
-  font-size: 20px;
-  font-weight: 750;
-  letter-spacing: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.01em;
   color: var(--text);
   white-space: nowrap;
   user-select: none;
 }
-.logo-text strong {
-  color: var(--accent);
-  font-weight: 850;
-}
 
 @media (max-width: 480px) {
   .logo-text {
-    display: inline;
-    font-size: 18px;
-    font-weight: 750;
-  }
-  .logo {
-    gap: 6px;
-    min-width: 0;
-  }
-  .logo-mark {
-    width: 44px;
-    height: 44px;
+    font-size: 16px;
   }
 }
 
@@ -2116,7 +2094,6 @@ main { flex: 1; overflow: hidden; display: flex; }
     justify-content: center;
   }
   .logo { margin: 0 auto; }
-  .logo-mark { width: 44px; height: 44px; }
   .mode-switcher { padding: 2px; }
   .mode-btn { padding: 5px 10px; font-size: 12px; }
 
@@ -3304,21 +3281,6 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     .bnav-btn svg { width: 20px; height: 20px; }
   }
 }
-
-/* ─── settings signature ────────────────────────────────── */
-.blessed-tag {
-  margin: 22px 4px 0;
-  padding-bottom: 8px;
-  font-size: 10.5px;
-  letter-spacing: .4px;
-  color: var(--muted-2);
-  opacity: .55;
-  pointer-events: none;
-  user-select: none;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  text-align: center;
-}
-.blessed-tag:hover { opacity: .85; }
 
 /* ═══════════════════════════════════════════════════════════
    DENSITY PASS — tighter spacing, smaller radii, snappier UI
