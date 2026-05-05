@@ -2239,6 +2239,22 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .sub-add-input:focus { outline: none; border-color: var(--accent); }
 .sub-add-input::placeholder { color: var(--muted-2); }
+.sub-add-btn {
+  flex-shrink: 0;
+  width: 34px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter .15s var(--ease);
+}
+.sub-add-btn:hover  { filter: brightness(1.05); }
+.sub-add-btn:active { filter: brightness(.95); }
 
 /* ─── ATTACHMENTS ──────────────────────────────────────── */
 .att-section {

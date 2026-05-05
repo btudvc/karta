@@ -1168,8 +1168,10 @@ function renderSubtasks(task) {
       ${items ? `<div class="sub-list">${items}</div>` : ''}
       <div class="sub-add-row">
         <input type="text" class="sub-add-input" id="sub-add-${task.id}"
-          placeholder="+ Add a subtask"
+          placeholder="Add a subtask"
+          enterkeyhint="done"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask('${task.id}')}" />
+        <button type="button" class="sub-add-btn" onclick="addSubtask('${task.id}')" aria-label="Add subtask">+</button>
       </div>
     </div>
   `;
