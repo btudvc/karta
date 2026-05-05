@@ -3152,6 +3152,58 @@ function renderJournalList() {
   document.documentElement.setAttribute('data-theme', 'light');
 })();
 
+// ── COLOR PALETTES ─────────────────────────────────────
+// Curated combos. Each defines accent + soft variants so the app stays
+// readable. Surfaces and text colors stay neutral; only the brand swaps.
+const PALETTES = [
+  { id: 'charcoal', name: 'Charcoal', accent: '#27272a', accentH: '#18181b', soft: 'rgba(39,39,42,.07)',  soft2: 'rgba(39,39,42,.14)',  onAccent: '#fafafa' },
+  { id: 'indigo',   name: 'Indigo',   accent: '#4f46e5', accentH: '#4338ca', soft: 'rgba(79,70,229,.10)', soft2: 'rgba(79,70,229,.18)', onAccent: '#ffffff' },
+  { id: 'emerald',  name: 'Emerald',  accent: '#059669', accentH: '#047857', soft: 'rgba(5,150,105,.10)', soft2: 'rgba(5,150,105,.18)', onAccent: '#ffffff' },
+  { id: 'rose',     name: 'Rose',     accent: '#e11d48', accentH: '#be123c', soft: 'rgba(225,29,72,.10)', soft2: 'rgba(225,29,72,.18)', onAccent: '#ffffff' },
+  { id: 'amber',    name: 'Amber',    accent: '#d97706', accentH: '#b45309', soft: 'rgba(217,119,6,.12)', soft2: 'rgba(217,119,6,.20)', onAccent: '#ffffff' },
+  { id: 'ocean',    name: 'Ocean',    accent: '#0891b2', accentH: '#0e7490', soft: 'rgba(8,145,178,.10)', soft2: 'rgba(8,145,178,.18)', onAccent: '#ffffff' },
+];
+const PALETTE_KEY = 'b-less-palette';
+
+function applyPalette(id) {
+  const p = PALETTES.find(x => x.id === id) || PALETTES[0];
+  const r = document.documentElement;
+  r.style.setProperty('--accent',       p.accent);
+  r.style.setProperty('--accent-h',     p.accentH);
+  r.style.setProperty('--accent-soft',  p.soft);
+  r.style.setProperty('--accent-soft2', p.soft2);
+  r.style.setProperty('--on-accent',    p.onAccent);
+  document.querySelectorAll('.palette-swatch').forEach(el => {
+    el.classList.toggle('active', el.dataset.palette === p.id);
+  });
+}
+
+function setPalette(id) {
+  try { localStorage.setItem(PALETTE_KEY, id); } catch {}
+  applyPalette(id);
+}
+
+function renderPaletteGrid() {
+  const grid = document.getElementById('palette-grid');
+  if (!grid) return;
+  const current = (() => { try { return localStorage.getItem(PALETTE_KEY); } catch { return null; } })() || 'charcoal';
+  grid.innerHTML = PALETTES.map(p => `
+    <button type="button" class="palette-swatch ${p.id === current ? 'active' : ''}" data-palette="${p.id}" aria-label="${p.name} theme" title="${p.name}">
+      <span class="palette-dot" style="background:${p.accent}"></span>
+      <span class="palette-name">${p.name}</span>
+    </button>
+  `).join('');
+  grid.querySelectorAll('.palette-swatch').forEach(el => {
+    el.addEventListener('click', () => setPalette(el.dataset.palette));
+  });
+}
+
+(function bootPalette() {
+  let saved = null;
+  try { saved = localStorage.getItem(PALETTE_KEY); } catch {}
+  applyPalette(saved || 'charcoal');
+})();
+
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
 function ensureFinanceState() {
   if (!state.finance || typeof state.finance !== 'object') state.finance = {};
@@ -4318,6 +4370,7 @@ renderAll();
 initJournal();
 BackupManager.initUI();
 BackupManager.init();
+renderPaletteGrid();
 
 // Default landing view: All Tasks
 showCrossView('all-tasks');
