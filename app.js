@@ -1057,25 +1057,25 @@ function renderTask(task) {
       <div class="task-header" onclick="toggleTask('${task.id}')">
         <div class="task-dot ${task.status}"></div>
         <div class="task-title-text">${escapeHtml(task.title)}</div>
-        ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
-        <span class="status-tag ${task.status}">${task.status}</span>
-        ${subs.length > 0 ? `<span class="sub-count">${subDone}/${subs.length}</span>` : ''}
-        ${(task.notebook||[]).length > 0 ? `<span class="nb-count">${task.notebook.length}</span>` : ''}
-        <span class="expand-chevron">${ICO.chevron}</span>
+        <div class="task-header-right">
+          ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
+          <div class="task-header-actions">
+            ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="event.stopPropagation();setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
+            ${task.status === 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
+            ${task.status === 'active'  ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
+            ${task.status === 'pending' ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
+            <button class="btn-sm" onclick="event.stopPropagation();editTask('${task.id}')">Edit</button>
+            <button class="btn-sm danger" onclick="event.stopPropagation();deleteTask('${task.id}')">Delete</button>
+          </div>
+          <span class="status-tag ${task.status}">${task.status}</span>
+          <span class="expand-chevron">${ICO.chevron}</span>
+        </div>
       </div>
       <div class="task-body">
         <div class="task-body-inner">
           ${renderSubtasks(task)}
           ${renderNotebook(task)}
           ${renderAttachments('task', task.id, task.attachments)}
-          <div class="task-actions">
-            ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
-            ${task.status === 'done'    ? `<button class="btn-sm" onclick="setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
-            ${task.status === 'active'  ? `<button class="btn-sm" onclick="setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
-            ${task.status === 'pending' ? `<button class="btn-sm" onclick="setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
-            <button class="btn-sm" onclick="editTask('${task.id}')">Edit</button>
-            <button class="btn-sm danger" onclick="deleteTask('${task.id}')">Delete</button>
-          </div>
         </div>
       </div>
     </div>
