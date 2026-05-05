@@ -135,6 +135,18 @@ header {
   object-fit: contain;
   display: block;
 }
+.logo-text {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: var(--muted);
+  white-space: nowrap;
+  user-select: none;
+}
+.logo-text strong {
+  color: var(--text);
+  font-weight: 700;
+}
 
 /* ── Daily / Job mode switcher ────────────────────────── */
 .mode-switcher {
