@@ -263,11 +263,35 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .tab .ico   { width: 15px; height: 15px; }
 
 .header-right {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 8px;
   margin-left: auto;
   position: relative;
+}
+
+.settings-nav-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.settings-nav-btn:hover,
+.settings-nav-btn.active {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.settings-nav-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* Round icon-only button (theme toggle) */
@@ -676,6 +700,10 @@ main { flex: 1; overflow: hidden; display: flex; }
 
 .section { display: none; height: 100%; flex: 1; min-width: 0; }
 .section.active { display: flex; }
+#more.section.active {
+  display: block;
+  overflow-y: auto;
+}
 #field-visits.active { display: block; overflow-y: auto; }
 
 /* ── v4 Space sidebar (global navigation) ─────────────── */
@@ -2505,6 +2533,7 @@ main { flex: 1; overflow: hidden; display: flex; }
 
 /* ─── BOTTOM NAV (mobile) ──────────────────────────────── */
 .bottom-nav { display: none; }
+.space-drawer-backdrop { display: none; }
 
 /* Master-detail back button — hidden on desktop, re-shown inside the mobile @media block */
 .robot-detail-back { display: none; }
@@ -2578,6 +2607,13 @@ main { flex: 1; overflow: hidden; display: flex; }
   padding: 16px 4px 8px;
 }
 .more-section-title:first-child { padding-top: 4px; }
+.more-section-title[data-i18n="more.section.pages"],
+.more-section-title[data-i18n="more.section.pages"] + .more-card-list {
+  display: none;
+}
+.more-section-title[data-i18n="more.section.settings"] {
+  padding-top: 4px;
+}
 
 /* Mode-scoped visibility for More-page cards */
 body[data-mode="job"]   .more-card.daily-only { display: none; }
@@ -2585,6 +2621,59 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 
 /* ─── MOBILE: bottom nav + collapsed header ───────────── */
 @media (max-width: 800px) {
+  body.space-drawer-open { overflow: hidden; }
+
+  .space-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s var(--ease);
+    z-index: 74;
+  }
+  body.space-drawer-open .space-drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .space-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(340px, 88vw);
+    height: 100dvh;
+    max-height: none;
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-104%);
+    transition: transform .22s var(--ease);
+    z-index: 80;
+  }
+  body.space-drawer-open .space-sidebar { transform: translateX(0); }
+
+  .space-sidebar-header {
+    min-height: 56px;
+    padding: 0 14px;
+  }
+  .space-list {
+    padding: 8px 10px calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+  .space-add-btn,
+  .space-more-btn,
+  .space-sub-add-btn,
+  .space-jrn-today-btn {
+    opacity: 1;
+  }
+
+  main {
+    flex-direction: row;
+    padding-bottom: 64px;
+  }
+
   .bottom-nav {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -2618,18 +2707,14 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     color: var(--accent);
     background: var(--accent-soft);
   }
-  .bnav-btn .job-label,
-  .bnav-btn .daily-label { display: none; }
-  body[data-mode="job"]   .bnav-btn .job-label   { display: inline; }
-  body[data-mode="daily"] .bnav-btn .daily-label { display: inline; }
+  .bnav-btn span { display: inline; }
 
   /* Collapse top tabs and header right-side controls — these live in bottom nav / More now */
   header .tabs        { display: none; }
+  header .cross-nav   { display: none; }
+  header .settings-nav-btn { display: none; }
   header .header-right { display: none; }
   header .mode-switcher { margin-left: auto; }
-
-  /* Reserve space at the bottom for the fixed nav */
-  main { padding-bottom: 64px; }
 
   /* "More" section stays scrollable above the bottom nav */
   #more.section.active { display: block; overflow-y: auto; }

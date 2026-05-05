@@ -444,7 +444,16 @@ function load() {
       }
     }
     if (raw) state = JSON.parse(raw) || state;
-  } catch(e) {}
+  } catch(e) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw && !localStorage.getItem(STORAGE_KEY + '.corrupt')) {
+        localStorage.setItem(STORAGE_KEY + '.corrupt', raw);
+      }
+    } catch(_) {}
+    window.__bLessLoadFailed = true;
+    alert('Saved planner data could not be loaded. The broken local copy was preserved as "b-less.corrupt"; restore from Google Drive or export it before making changes.');
+  }
   migrateLegacyTopics();
 }
 
@@ -465,6 +474,7 @@ function migrateLegacyTopics() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
 function save() {
+  if (window.__bLessLoadFailed) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if (typeof BackupManager !== 'undefined') BackupManager.onDataChange();
 }
@@ -490,10 +500,62 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'calendar')   renderCalendar();
     if (tab.dataset.tab === 'all-tasks')  renderAllTasks();
     if (MORE_SUBTABS.has(tab.dataset.tab)) {
-      const moreBtn = document.querySelector('.bnav-btn[data-tab="more"]');
-      if (moreBtn) moreBtn.classList.add('active');
+      setBottomNavActive('more');
+    } else {
+      setBottomNavActive(tab.dataset.tab);
     }
+    closeSpaceDrawer();
   });
+});
+
+function setBottomNavActive(key) {
+  document.querySelectorAll('.bnav-btn').forEach(btn => {
+    const btnKey = btn.dataset.mobileSpaces ? 'spaces' : (btn.dataset.cross || btn.dataset.tab);
+    btn.classList.toggle('active', btnKey === key);
+  });
+}
+
+function openSpaceDrawer() {
+  document.body.classList.add('space-drawer-open');
+  document.querySelectorAll('[data-mobile-spaces]').forEach(btn => {
+    btn.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
+  });
+}
+
+function closeSpaceDrawer() {
+  document.body.classList.remove('space-drawer-open');
+  document.querySelectorAll('[data-mobile-spaces]').forEach(btn => {
+    btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleSpaceDrawer() {
+  if (document.body.classList.contains('space-drawer-open')) closeSpaceDrawer();
+  else openSpaceDrawer();
+}
+
+document.querySelectorAll('[data-mobile-spaces]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setBottomNavActive('spaces');
+    toggleSpaceDrawer();
+  });
+});
+
+document.querySelectorAll('.bnav-btn[data-cross]').forEach(btn => {
+  btn.addEventListener('click', () => showCrossView(btn.dataset.cross));
+});
+
+document.getElementById('space-drawer-backdrop')?.addEventListener('click', closeSpaceDrawer);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSpaceDrawer();
+});
+
+document.getElementById('settings-nav-btn')?.addEventListener('click', () => {
+  activateSection('more');
+  setBottomNavActive('more');
+  closeSpaceDrawer();
+  document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.add('active'));
 });
 
 // "More" page cards: jump to the corresponding tab / open the corresponding control.
@@ -563,9 +625,9 @@ function renderRobotList() {
       const isSelected = robot.id === state.currentRobotId;
       return `
         <div class="robot-item ${isSelected ? 'active' : ''}" data-id="${robot.id}">
-          <div class="robot-avatar">${robot.name[0].toUpperCase()}</div>
+          <div class="robot-avatar">${escapeHtml((robot.name || '?')[0].toUpperCase())}</div>
           <div class="robot-item-info">
-            <div class="robot-item-name">${robot.name}</div>
+            <div class="robot-item-name">${escapeHtml(robot.name)}</div>
             <div class="robot-item-count">${active === 0 ? t('count.tasks_zero') : (active === 1 ? t('count.tasks_one') : t('count.tasks_other', {n: active}))}</div>
           </div>
         </div>`;
@@ -574,7 +636,7 @@ function renderRobotList() {
       <div class="cat-group ${collapsed ? 'collapsed' : ''}" data-cat="${escapeAttr(cat)}">
         <div class="cat-header">
           <span class="cat-chev">${ICO.chevron}</span>
-          <span class="cat-name">${cat}</span>
+          <span class="cat-name">${escapeHtml(cat)}</span>
           <span class="cat-count">${items.length}</span>
         </div>
         <div class="cat-items">${itemsHtml}</div>
@@ -603,7 +665,7 @@ function renderRobotList() {
 
 // HTML attribute escape (for data-cat)
 function escapeAttr(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');
 }
 
 // Populate the modal's category datalist with existing categories (current mode only)
@@ -655,8 +717,8 @@ function renderRobotDetail() {
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
       <div>
-        <div class="robot-detail-name">${robot.name}</div>
-        ${robot.description ? `<div class="robot-detail-desc">${robot.description}</div>` : ''}
+        <div class="robot-detail-name">${escapeHtml(robot.name)}</div>
+        ${robot.description ? `<div class="robot-detail-desc">${escapeHtml(robot.description)}</div>` : ''}
       </div>
       <div class="btn-group">
         <button class="btn-sm" onclick="editRobot('${robot.id}')">${t('btn.edit')}</button>
@@ -747,7 +809,7 @@ function renderIssue(issue) {
     <div class="task-item ${issue.status} ${issue.expanded ? 'expanded' : ''}" id="issue-${issue.id}">
       <div class="task-header" onclick="toggleIssue('${issue.id}')">
         <div class="issue-dot ${issue.status}"></div>
-        <div class="task-title-text">${issue.title}</div>
+        <div class="task-title-text">${escapeHtml(issue.title)}</div>
         <span class="severity-tag ${issue.severity}">${severityLabel[issue.severity]}</span>
         <span class="issue-status-tag ${issue.status}">${statusLabel[issue.status]}</span>
         ${(issue.notebook||[]).length > 0 ? `<span class="nb-count">${issue.notebook.length}</span>` : ''}
@@ -781,7 +843,7 @@ function renderIssueNotebook(issue) {
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
             <button class="nb-delete-btn" onclick="deleteIssueNoteEntry('${issue.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
           </div>
-          <div class="nb-entry-text">${e.text.replace(/\n/g, '<br>')}</div>
+          <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
         </div>
       `).join('');
   return `
@@ -882,7 +944,7 @@ function renderNotebook(task) {
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
             <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="Sil">${ICO.close}</button>
           </div>
-          <div class="nb-entry-text">${e.text.replace(/\n/g, '<br>')}</div>
+          <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
         </div>
       `).join('');
 
@@ -908,7 +970,7 @@ function renderTask(task) {
     <div class="task-item ${task.status} ${task.expanded ? 'expanded' : ''}" id="task-${task.id}">
       <div class="task-header" onclick="toggleTask('${task.id}')">
         <div class="task-dot ${task.status}"></div>
-        <div class="task-title-text">${task.title}</div>
+        <div class="task-title-text">${escapeHtml(task.title)}</div>
         ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
         <span class="status-tag ${task.status}">${task.status}</span>
         ${subs.length > 0 ? `<span class="sub-count">${subDone}/${subs.length}</span>` : ''}
@@ -1128,9 +1190,9 @@ function renderTopicList() {
     const isSelected = topic.id === state.currentTopicId;
     return `
       <div class="robot-item ${isSelected ? 'active' : ''}" data-id="${topic.id}">
-        <div class="robot-avatar" style="background:var(--surface-3)">${topic.name[0].toUpperCase()}</div>
+        <div class="robot-avatar" style="background:var(--surface-3)">${escapeHtml((topic.name || '?')[0].toUpperCase())}</div>
         <div class="robot-item-info">
-          <div class="robot-item-name">${topic.name}</div>
+          <div class="robot-item-name">${escapeHtml(topic.name)}</div>
           <div class="robot-item-count">${active === 0 ? t('count.tasks_zero') : (active === 1 ? t('count.tasks_one') : t('count.tasks_other', {n: active}))}</div>
         </div>
       </div>
@@ -1168,8 +1230,8 @@ function renderTopicDetail() {
   content.innerHTML = `
     <div class="robot-detail-header">
       <div>
-        <div class="robot-detail-name">${topic.name}</div>
-        ${topic.description ? `<div class="robot-detail-desc">${topic.description}</div>` : ''}
+        <div class="robot-detail-name">${escapeHtml(topic.name)}</div>
+        ${topic.description ? `<div class="robot-detail-desc">${escapeHtml(topic.description)}</div>` : ''}
       </div>
       <div class="btn-group">
         <button class="btn-sm" onclick="editTopic('${topic.id}')">Edit</button>
@@ -1283,6 +1345,9 @@ function attachBrainstorm(entityId) {
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  if (['modal-robot', 'modal-meeting', 'modal-visit'].includes(id) && typeof pendingItemAttach !== 'undefined') {
+    pendingItemAttach = null;
+  }
   // Reset editing state
   editingVisitId = null; editingRobotId = null; editingTaskId = null;
   editingIssueId = null; editingMeetingId = null;
@@ -1516,12 +1581,12 @@ function renderVisits() {
           <div class="visit-year">${d.getFullYear()}</div>
         </div>
         <div class="visit-info">
-          <div class="visit-location">${ICO.pin} <span>${visit.location}</span></div>
+          <div class="visit-location">${ICO.pin} <span>${escapeHtml(visit.location)}</span></div>
           <div class="visit-tags">
-            ${visit.robot ? `<span class="visit-robot-tag">${ICO.bot} ${visit.robot}</span>` : ''}
+            ${visit.robot ? `<span class="visit-robot-tag">${ICO.bot} ${escapeHtml(visit.robot)}</span>` : ''}
             ${badge}
           </div>
-          ${visit.notes ? `<div class="visit-notes-text">${visit.notes}</div>` : ''}
+          ${visit.notes ? `<div class="visit-notes-text">${escapeHtml(visit.notes)}</div>` : ''}
           ${renderAttachments('visit', visit.id, visit.attachments)}
         </div>
         <div class="visit-delete">
@@ -1592,7 +1657,7 @@ function renderMeetingList() {
       <div class="robot-item ${isSelected ? 'active' : ''}" data-meeting-id="${m.id}">
         <div class="robot-avatar mtg-avatar">${ICO.usersAvatar}</div>
         <div class="robot-item-info">
-          <div class="robot-item-name">${m.title}</div>
+          <div class="robot-item-name">${escapeHtml(m.title)}</div>
           <div class="robot-item-count">${dateStr}${openActions ? ` · ${t('count.actions_short', {open: openActions})}` : ''}</div>
         </div>
       </div>`;
@@ -1622,12 +1687,12 @@ function renderMeetingDetail() {
   content.innerHTML = `
     <div class="robot-detail-header">
       <div style="flex:1">
-        <div class="robot-detail-name">${meeting.title}</div>
+        <div class="robot-detail-name">${escapeHtml(meeting.title)}</div>
         <div class="meeting-meta">
           <span>${ICO.calendar} ${dateStr}</span>
-          ${meeting.location   ? `<span>${ICO.pin} ${meeting.location}</span>`              : ''}
-          ${meeting.attendees  ? `<span>${ICO.group} ${meeting.attendees}</span>`             : ''}
-          ${meeting.robot      ? `<span class="visit-robot-tag">${ICO.bot} ${meeting.robot}</span>` : ''}
+          ${meeting.location   ? `<span>${ICO.pin} ${escapeHtml(meeting.location)}</span>`              : ''}
+          ${meeting.attendees  ? `<span>${ICO.group} ${escapeHtml(meeting.attendees)}</span>`             : ''}
+          ${meeting.robot      ? `<span class="visit-robot-tag">${ICO.bot} ${escapeHtml(meeting.robot)}</span>` : ''}
         </div>
       </div>
       <div class="btn-group">
@@ -1643,7 +1708,7 @@ function renderMeetingDetail() {
       </div>
       <textarea class="brainstorm-area" id="mtg-notes-area"
         placeholder="Toplantı notları, kararlar, tartışılan konular..."
-      >${meeting.notes || ''}</textarea>
+      >${escapeHtml(meeting.notes || '')}</textarea>
     </div>
 
     ${renderAttachments('meeting', meeting.id, meeting.attachments)}
@@ -1658,7 +1723,7 @@ function renderMeetingDetail() {
             <button class="action-check ${a.done ? 'checked' : ''}" onclick="toggleMeetingAction('${meeting.id}','${a.id}')" aria-label="Tamamlandı">
               ${a.done ? ICO.checkSm : ''}
             </button>
-            <span class="action-text">${a.text}</span>
+            <span class="action-text">${escapeHtml(a.text)}</span>
             <button class="nb-delete-btn" onclick="deleteMeetingAction('${meeting.id}','${a.id}')" aria-label="Sil">${ICO.close}</button>
           </div>`).join('')}
       </div>
@@ -1808,16 +1873,16 @@ function renderAttachments(type, id, attachments) {
   const items = list.map(a => `
     <div class="att-chip" data-filename="${escapeAttr(a.filename)}">
       <span class="att-ico">${ATT_FILE}</span>
-      <span class="att-name" onclick="openAttachment('${type}','${id}','${escapeAttr(a.filename)}')" title="${escapeAttr(a.originalName)}">${a.originalName}</span>
+      <span class="att-name" onclick="openAttachment('${escapeJsArg(type)}','${escapeJsArg(id)}','${escapeJsArg(a.filename)}')" title="${escapeAttr(a.originalName)}">${escapeHtml(a.originalName)}</span>
       <span class="att-size">${formatSize(a.size)}</span>
-      <button class="att-del" onclick="deleteAttachment('${type}','${id}','${escapeAttr(a.filename)}')" title="${escapeAttr(t('btn.delete'))}">${ICO.close}</button>
+      <button class="att-del" onclick="deleteAttachment('${escapeJsArg(type)}','${escapeJsArg(id)}','${escapeJsArg(a.filename)}')" title="${escapeAttr(t('btn.delete'))}">${ICO.close}</button>
     </div>
   `).join('');
   return `
     <div class="att-section">
       <div class="att-section-head">
         <span class="att-label">${ATT_PAPERCLIP} <span>${t('att.section')}${list.length ? ` <span class="count-pill">${list.length}</span>` : ''}</span></span>
-        <button class="att-add-btn" onclick="attachFiles('${type}','${id}')">${t('att.add')}</button>
+        <button class="att-add-btn" onclick="attachFiles('${escapeJsArg(type)}','${escapeJsArg(id)}')">${t('att.add')}</button>
       </div>
       ${items ? `<div class="att-list">${items}</div>` : ''}
     </div>
@@ -2494,15 +2559,15 @@ function renderAllTasks() {
   list.innerHTML = Object.values(byProject).map(g => `
     <div class="at-group">
       <div class="at-group-label">
-        <span>${g.project.name}</span>
+        <span>${escapeHtml(g.project.name)}</span>
         <span class="count-pill">${g.items.length}</span>
       </div>
       ${g.items.map(it => `
         <div class="at-task ${it.task.status}">
           <span class="at-task-dot ${it.task.status}"></span>
-          <span class="at-task-title">${it.task.title}</span>
-          ${it.task.priority && it.task.priority !== 'normal' ? `<span class="at-task-prio ${it.task.priority}">${it.task.priority}</span>` : ''}
-          <span class="at-task-project">${g.project.name}</span>
+          <span class="at-task-title">${escapeHtml(it.task.title)}</span>
+          ${it.task.priority && it.task.priority !== 'normal' ? `<span class="at-task-prio ${escapeAttr(it.task.priority)}">${escapeHtml(it.task.priority)}</span>` : ''}
+          <span class="at-task-project">${escapeHtml(g.project.name)}</span>
         </div>
       `).join('')}
     </div>
@@ -2610,7 +2675,7 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
                   : ev.kind === 'visit'   ? `data-go-visit="${ev.id}"`
                   : '';
     const tt = escapeAttr(ev.label);
-    return `<div class="cal-day-event ${ev.kind}" data-mode="${ev.mode || 'job'}" title="${tt}" aria-label="${tt}" ${goAttr}><span class="cal-day-event-label">${ev.label}</span></div>`;
+    return `<div class="cal-day-event ${escapeAttr(ev.kind)}" data-mode="${escapeAttr(ev.mode || 'job')}" title="${tt}" aria-label="${tt}" ${goAttr}><span class="cal-day-event-label">${escapeHtml(ev.label)}</span></div>`;
   }).join('');
   const more = events.length > 3 ? `<div class="cal-day-event cal-day-event-more">+${events.length - 3}</div>` : '';
   return `
@@ -2661,16 +2726,16 @@ function renderCalDayPanel() {
     ${meetings.length ? `
       <div>
         <div class="cal-day-section-label">${t('cal.meetings')}</div>
-        ${meetings.map(m => `<div class="cal-day-item clickable" data-go-meeting="${m.id}"><strong>${m.title}</strong>${m.location ? ' · ' + m.location : ''}</div>`).join('')}
+        ${meetings.map(m => `<div class="cal-day-item clickable" data-go-meeting="${m.id}"><strong>${escapeHtml(m.title)}</strong>${m.location ? ' · ' + escapeHtml(m.location) : ''}</div>`).join('')}
       </div>` : ''}
     ${visits.length ? `
       <div>
         <div class="cal-day-section-label">${t('cal.visits')}</div>
-        ${visits.map(v => `<div class="cal-day-item clickable" data-go-visit="${v.id}"><strong>${v.location}</strong>${v.robot ? ' · ' + v.robot : ''}</div>`).join('')}
+        ${visits.map(v => `<div class="cal-day-item clickable" data-go-visit="${v.id}"><strong>${escapeHtml(v.location)}</strong>${v.robot ? ' · ' + escapeHtml(v.robot) : ''}</div>`).join('')}
       </div>` : ''}
     <div>
       <div class="cal-day-section-label">${t('cal.notes')}</div>
-      <textarea class="cal-notes" id="cal-notes-area" placeholder="${t('cal.notes_placeholder')}">${notes}</textarea>
+      <textarea class="cal-notes" id="cal-notes-area" placeholder="${escapeAttr(t('cal.notes_placeholder'))}">${escapeHtml(notes)}</textarea>
     </div>
   `;
   panel.querySelectorAll('[data-go-meeting]').forEach(el => {
@@ -2936,6 +3001,17 @@ const ITEM_ICONS = {
 
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escapeJsArg(s) {
+  return String(s)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/</g, '\\x3C')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
 }
 
 // ── Migration: build state.spaces from legacy collections ──
@@ -3298,6 +3374,7 @@ function selectSpaceItem(spaceId, itemId) {
 
   save();
   renderSidebar();
+  closeSpaceDrawer();
 }
 
 function selectJournalDate(spaceId, date) {
@@ -3314,6 +3391,7 @@ function selectJournalDate(spaceId, date) {
   if (typeof renderJournalList === 'function') renderJournalList();
   save();
   renderSidebar();
+  closeSpaceDrawer();
   setTimeout(() => area && area.focus(), 50);
 }
 
@@ -3321,6 +3399,7 @@ function activateSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
   // Sync the (now-hidden) tab buttons so existing logic that reads activeSection works
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.toggle('active', id === 'more'));
   if (id === 'robots' || id === 'topics') activeSection = id;
 }
 
@@ -3447,6 +3526,8 @@ function showCrossView(name) {
   document.querySelectorAll('.cross-nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.cross === name);
   });
+  setBottomNavActive(name);
+  closeSpaceDrawer();
   renderSidebar();
 }
 document.querySelectorAll('.cross-nav-btn').forEach(b => {

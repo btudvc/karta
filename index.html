@@ -43,6 +43,10 @@
       </button>
     </nav>
 
+    <button class="settings-nav-btn" id="settings-nav-btn" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .58V20a2 2 0 1 1-4 0v-.05a1.7 1.7 0 0 0-1-.58 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-.58-1H4a2 2 0 1 1 0-4h.05a1.7 1.7 0 0 0 .58-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-.58V4a2 2 0 1 1 4 0v.05a1.7 1.7 0 0 0 1 .58 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.2.35.2.65.58 1H20a2 2 0 1 1 0 4h-.05a1.7 1.7 0 0 0-.55 1z"/></svg>
+    </button>
+
     <!-- Legacy tabs (hidden in v4 — sidebar drives navigation now) -->
     <nav class="tabs v4-hidden" hidden>
       <button class="tab active" data-tab="robots">
@@ -109,6 +113,7 @@
       </div>
       <div class="space-list" id="space-list"></div>
     </aside>
+    <div class="space-drawer-backdrop" id="space-drawer-backdrop"></div>
 
     <!-- PROJECTS / LISTS TAB (state.robots — same store, label changes per mode) -->
     <section id="robots" class="section active">
@@ -278,25 +283,25 @@
 
   <!-- Bottom navigation (mobile only) -->
   <nav class="bottom-nav" aria-label="Primary">
-    <button class="tab bnav-btn active" data-tab="robots">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <span class="job-label" data-i18n="tab.projects">Projects</span><span class="daily-label" data-i18n="tab.lists">Lists</span>
+    <button class="bnav-btn active" data-mobile-spaces="true" aria-controls="space-sidebar" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
+      <span>Spaces</span>
     </button>
-    <button class="tab bnav-btn" data-tab="all-tasks">
+    <button class="bnav-btn" data-cross="today">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      <span class="job-label" data-i18n="tab.tasks">Tasks</span><span class="daily-label" data-i18n="tab.today">Today</span>
+      <span data-i18n="cross.today">Today</span>
     </button>
-    <button class="tab bnav-btn" data-tab="calendar">
+    <button class="bnav-btn" data-cross="calendar">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      <span data-i18n="tab.calendar">Calendar</span>
+      <span data-i18n="cross.calendar">Calendar</span>
     </button>
-    <button class="tab bnav-btn" data-tab="field-visits">
+    <button class="bnav-btn" data-cross="visits">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
-      <span data-i18n="tab.visits">Visits</span>
+      <span data-i18n="cross.visits">Visits</span>
     </button>
     <button class="tab bnav-btn" data-tab="more">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-      <span data-i18n="tab.more">More</span>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .58V20a2 2 0 1 1-4 0v-.05a1.7 1.7 0 0 0-1-.58 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-.58-1H4a2 2 0 1 1 0-4h.05a1.7 1.7 0 0 0 .58-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-.58V4a2 2 0 1 1 4 0v.05a1.7 1.7 0 0 0 1 .58 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.2.35.2.65.58 1H20a2 2 0 1 1 0 4h-.05a1.7 1.7 0 0 0-.55 1z"/></svg>
+      <span data-i18n="more.section.settings">Settings</span>
     </button>
   </nav>
 
