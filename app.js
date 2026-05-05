@@ -3050,9 +3050,7 @@ function renderSidebar() {
     const fmt = d => {
       const dt = new Date(d + 'T00:00:00');
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const now = new Date();
-      const sameYear = dt.getFullYear() === now.getFullYear();
-      return `${dt.getDate()} ${months[dt.getMonth()]}${sameYear ? '' : ' ' + dt.getFullYear()}`;
+      return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
     };
     const rows = dates.map(d => {
       const active = (state.currentJournalDate === d && document.getElementById('journal')?.classList.contains('active')) ? 'active' : '';
