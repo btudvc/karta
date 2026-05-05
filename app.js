@@ -3562,7 +3562,11 @@ function escapeJsArg(s) {
 
 // ── First-run seed: sample data so a new user has something to explore ──
 function seedSampleData() {
-  // Only seed when truly empty (no robots/meetings/visits anywhere)
+  // Skip if user has already seen the welcome (they may have deleted samples on purpose)
+  if (state.onboarded) return false;
+  // Only seed when truly empty (no robots/meetings/visits anywhere). This also
+  // catches users who briefly visited before seeding existed: state.spaces will
+  // already have Work/Personal but the actual data collections are still empty.
   const empty = (!state.robots      || state.robots.length === 0)
              && (!state.meetings    || state.meetings.length === 0)
              && (!state.fieldVisits || state.fieldVisits.length === 0);
@@ -3626,6 +3630,7 @@ function seedSampleData() {
   state.meetings.push(sampleMeeting);
   work.items.push({ id: uid(), type: 'meeting', refId: sampleMeeting.id });
 
+  save();
   return true;
 }
 
@@ -4224,9 +4229,8 @@ document.querySelectorAll('.cross-nav-btn').forEach(b => {
 });
 
 // ── Init ──
-const _seededFresh = (!state.spaces || state.spaces.length === 0);
 migrateToSpaces();
-if (_seededFresh) seedSampleData();
+seedSampleData(); // self-gates on state.onboarded + empty data
 renderSidebar();
 const _addSpaceBtn = document.getElementById('add-space-btn');
 if (_addSpaceBtn) _addSpaceBtn.addEventListener('click', addSpace);
