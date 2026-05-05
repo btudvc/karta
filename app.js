@@ -4198,6 +4198,8 @@ function activateSection(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
   document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.toggle('active', id === 'more'));
   if (id === 'robots' || id === 'topics') activeSection = id;
+  // Settings page lazy-renders dynamic widgets so they always re-mount fresh
+  if (id === 'more' && typeof renderPaletteGrid === 'function') renderPaletteGrid();
 }
 
 // ── Add Item picker (Lists / Meetings / Visits / Journal) ──
