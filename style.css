@@ -704,6 +704,14 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .space-item:hover { background: var(--surface-2); color: var(--text); }
 .space-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.space-item[draggable="true"] { cursor: grab; }
+.space-item.dragging { opacity: .35; cursor: grabbing; }
+.space-group.drag-target {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
 .space-item-icon { display: inline-flex; flex-shrink: 0; opacity: .8; }
 .space-item.active .space-item-icon { opacity: 1; }
 .space-item-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -752,6 +760,23 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .space-subitems { padding-left: 18px; }
 .space-subitems .space-item { padding: 5px 9px; font-size: 12.5px; }
+
+/* Sub-group "+" (add Meeting/Visit directly into this group) */
+.space-sub-add-btn {
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all .15s var(--ease);
+  flex-shrink: 0;
+}
+.space-subheader:hover .space-sub-add-btn { opacity: 1; }
+.space-sub-add-btn:hover { background: var(--surface-3); color: var(--text); }
 
 /* Journal "+today" shortcut on the sub-header */
 .space-jrn-today-btn {

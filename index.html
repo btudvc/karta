@@ -37,10 +37,6 @@
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         <span data-i18n="cross.calendar">Calendar</span>
       </button>
-      <button class="cross-nav-btn" data-cross="all-tasks">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span data-i18n="cross.all_tasks">All Tasks</span>
-      </button>
     </nav>
 
     <!-- Legacy tabs (hidden in v4 — sidebar drives navigation now) -->
@@ -345,9 +341,8 @@
       </div>
       <label id="robot-name-label" data-i18n="label.project_name">Project Name *</label>
       <input type="text" id="robot-name" data-i18n-ph="ph.project_name" />
-      <label data-i18n="label.category">Category</label>
-      <input type="text" id="robot-category" data-i18n-ph="ph.category" list="categories-datalist" autocomplete="off" />
-      <datalist id="categories-datalist"></datalist>
+      <label data-i18n="label.space">Space</label>
+      <select id="robot-space"></select>
       <label data-i18n="label.description">Description</label>
       <textarea id="robot-desc" data-i18n-ph="ph.description"></textarea>
       <div class="modal-actions">

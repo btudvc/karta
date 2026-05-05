@@ -125,6 +125,7 @@ const I18N = {
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
     'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks',
     'space.name_prompt': 'Space name:',
+    'label.space': 'Space',
     'bp.sign_in': 'Sign in with Google',
     'bp.sign_out': 'Sign out',
     'bp.signed_in_as': 'Signed in as',
@@ -295,6 +296,7 @@ const I18N = {
     'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
     'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler',
     'space.name_prompt': 'Space adı:',
+    'label.space': 'Space',
     'bp.sign_in': 'Google ile giriş yap',
     'bp.sign_out': 'Çıkış yap',
     'bp.signed_in_as': 'Bağlı hesap',
@@ -1204,6 +1206,11 @@ window.editRobot = function(id) {
   document.getElementById('save-robot').textContent          = t('btn.save_changes');
   document.getElementById('robot-name-label').textContent    = isDaily ? t('label.list_name')  : t('label.project_name');
   refreshCategoryDatalist();
+  // Pre-select the Space that currently holds this list
+  if (typeof refreshSpaceSelect === 'function') {
+    const sp = (typeof findSpaceOfRobot === 'function') ? findSpaceOfRobot(id) : null;
+    refreshSpaceSelect(sp ? sp.id : (state.spaces && state.spaces[0] && state.spaces[0].id));
+  }
   openModal('modal-robot');
   setTimeout(() => document.getElementById('robot-name').focus(), 50);
 };
@@ -1341,6 +1348,14 @@ function openEntityModal(type) {
   document.getElementById('save-robot').textContent          = isDaily ? t('btn.add_list')       : t('btn.add_project');
   document.getElementById('robot-name-label').textContent    = isDaily ? t('label.list_name')    : t('label.project_name');
   refreshCategoryDatalist();
+  // Default the Space dropdown to: pendingItemAttach.spaceId (if user clicked a Space's "+")
+  // → currentSpaceId → first space
+  if (typeof refreshSpaceSelect === 'function') {
+    const targetSpace = (typeof pendingItemAttach !== 'undefined' && pendingItemAttach && pendingItemAttach.spaceId)
+      || state.currentSpaceId
+      || (state.spaces && state.spaces[0] && state.spaces[0].id);
+    refreshSpaceSelect(targetSpace);
+  }
   openModal('modal-robot');
   setTimeout(() => document.getElementById('robot-name').focus(), 50);
 }
@@ -1359,17 +1374,37 @@ document.getElementById('save-robot').addEventListener('click', () => {
   const desc    = document.getElementById('robot-desc').value.trim();
   const catEl   = document.getElementById('robot-category');
   const category = catEl ? catEl.value.trim() : '';
+  const spaceSelEl   = document.getElementById('robot-space');
+  const targetSpaceId = spaceSelEl ? spaceSelEl.value : null;
   if (editingRobotId) {
     const robot = state.robots.find(r => r.id === editingRobotId);
     if (robot) { robot.name = name; robot.description = desc; robot.category = category; }
+    // v4: move list item to selected Space if changed
+    if (targetSpaceId && typeof moveRobotToSpace === 'function') {
+      moveRobotToSpace(editingRobotId, targetSpaceId);
+      state.currentSpaceId = targetSpaceId;
+    }
   } else {
     const robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now() };
     state.robots.push(robot);
     state.currentRobotId = robot.id;
+    // v4: attach list item to selected Space (skip auto-migration default)
+    if (targetSpaceId && typeof findSpace === 'function') {
+      const sp = findSpace(targetSpaceId);
+      if (sp) {
+        const newItem = { id: uid(), type: 'list', refId: robot.id };
+        sp.items.push(newItem);
+        state.currentSpaceId = targetSpaceId;
+        state.currentItemId  = newItem.id;
+        // Clear pendingItemAttach so save() hook doesn't double-add
+        if (typeof pendingItemAttach !== 'undefined') pendingItemAttach = null;
+      }
+    }
   }
   save();
   renderRobotList();
   renderRobotDetail();
+  if (typeof renderSidebar === 'function') renderSidebar();
   closeModal('modal-robot');
 });
 
@@ -2989,6 +3024,31 @@ function findItemAnywhere(itemId) {
   }
   return null;
 }
+// Find which space holds a list item referencing the given robot id
+function findSpaceOfRobot(robotId) {
+  for (const sp of state.spaces) {
+    if (sp.items.some(i => i.type === 'list' && i.refId === robotId)) return sp;
+  }
+  return null;
+}
+// Populate the Space dropdown in modal-robot
+function refreshSpaceSelect(selectedSpaceId) {
+  const sel = document.getElementById('robot-space');
+  if (!sel) return;
+  sel.innerHTML = (state.spaces || []).map(sp =>
+    `<option value="${sp.id}" ${sp.id === selectedSpaceId ? 'selected' : ''}>${escapeHtml(sp.name)}</option>`
+  ).join('');
+}
+// Move a robot's list item between spaces (preserves item id so currentItemId stays valid)
+function moveRobotToSpace(robotId, targetSpaceId) {
+  const src = findSpaceOfRobot(robotId);
+  const dst = findSpace(targetSpaceId);
+  if (!src || !dst || src.id === dst.id) return;
+  const it = src.items.find(i => i.type === 'list' && i.refId === robotId);
+  if (!it) return;
+  src.items = src.items.filter(i => i.id !== it.id);
+  dst.items.push(it);
+}
 function resolveItemData(item) {
   if (!item) return null;
   if (item.type === 'list')    return (state.robots      || []).find(r => r.id === item.refId);
@@ -3035,6 +3095,7 @@ function renderSidebar() {
           <span class="space-item-icon space-subicon">${ITEM_ICONS[type] || ''}</span>
           <span class="space-subname">${escapeHtml(label)}</span>
           <span class="space-subcount">${items.length}</span>
+          <button class="space-sub-add-btn" data-sub-add-type="${type}" data-sub-add-space="${spaceId}" title="Add ${escapeHtml(label.toLowerCase())}" aria-label="Add">+</button>
         </div>
         <div class="space-subitems">${rows}</div>
       </div>`;
@@ -3105,6 +3166,50 @@ function renderSidebar() {
   list.querySelectorAll('.space-item:not(.space-jrn-item)').forEach(el => {
     el.addEventListener('click', () => selectSpaceItem(el.dataset.spaceId, el.dataset.itemId));
   });
+
+  // Drag-drop: items can be moved between Spaces
+  list.querySelectorAll('.space-item:not(.space-jrn-item)').forEach(el => {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/karta-item', JSON.stringify({
+        itemId: el.dataset.itemId,
+        sourceSpaceId: el.dataset.spaceId,
+      }));
+      e.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  });
+  list.querySelectorAll('.space-group').forEach(el => {
+    el.addEventListener('dragover', e => {
+      if (!Array.from(e.dataTransfer.types).includes('text/karta-item')) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('drag-target');
+    });
+    el.addEventListener('dragleave', e => {
+      // Only clear when leaving the group entirely
+      if (e.target === el) el.classList.remove('drag-target');
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-target');
+      let data;
+      try { data = JSON.parse(e.dataTransfer.getData('text/karta-item')); } catch { return; }
+      const targetSpaceId = el.dataset.spaceId;
+      if (!data || !data.itemId || data.sourceSpaceId === targetSpaceId) return;
+      const src = findSpace(data.sourceSpaceId);
+      const dst = findSpace(targetSpaceId);
+      if (!src || !dst) return;
+      const moving = src.items.find(i => i.id === data.itemId);
+      if (!moving) return;
+      src.items = src.items.filter(i => i.id !== data.itemId);
+      dst.items.push(moving);
+      state.currentSpaceId = targetSpaceId;
+      save();
+      renderSidebar();
+    });
+  });
   // Journal date entry click
   list.querySelectorAll('.space-jrn-item').forEach(el => {
     el.addEventListener('click', () => selectJournalDate(el.dataset.spaceId, el.dataset.jrnDate));
@@ -3129,11 +3234,26 @@ function renderSidebar() {
   });
   // Sub-group header click → toggle collapse for Meetings/Visits group
   list.querySelectorAll('.space-subheader').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.space-sub-add-btn') || e.target.closest('.space-jrn-today-btn')) return;
       const key = el.parentElement.dataset.subgroupKey;
       state.collapsedGroups[key] = !state.collapsedGroups[key];
       save();
       renderSidebar();
+    });
+  });
+  // Sub-group "+" → open type-specific add modal targeted at this space
+  list.querySelectorAll('.space-sub-add-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const type    = el.dataset.subAddType;
+      const spaceId = el.dataset.subAddSpace;
+      pendingItemAttach = { spaceId, type };
+      if (type === 'meeting') {
+        document.getElementById('add-meeting-btn')?.click();
+      } else if (type === 'visit') {
+        document.getElementById('add-visit-btn')?.click();
+      }
     });
   });
   // Add item
