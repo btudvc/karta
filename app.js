@@ -2228,29 +2228,7 @@ const DriveAPI = (() => {
     return typeof window.google !== 'undefined' && window.google.accounts && window.google.accounts.oauth2;
   }
 
-  // Lazily inject the GSI client. Loading it eagerly from index.html caused
-  // an accounts.google.com network round-trip on every cold start, even for
-  // users who'd never connected Drive. We only need it once we actually want
-  // to authenticate.
-  let gsiLoadPromise = null;
-  function loadLibrary() {
-    if (isLibraryReady()) return Promise.resolve(true);
-    if (gsiLoadPromise) return gsiLoadPromise;
-    gsiLoadPromise = new Promise(resolve => {
-      const s = document.createElement('script');
-      s.src = 'https://accounts.google.com/gsi/client';
-      s.async = true;
-      s.defer = true;
-      s.onload  = () => resolve(true);
-      s.onerror = () => { gsiLoadPromise = null; resolve(false); };
-      document.head.appendChild(s);
-    });
-    return gsiLoadPromise;
-  }
-
   async function waitForLibrary(timeoutMs = 8000) {
-    if (isLibraryReady()) return true;
-    await loadLibrary();
     if (isLibraryReady()) return true;
     const t0 = Date.now();
     return new Promise(resolve => {
@@ -4411,16 +4389,7 @@ renderAll = function() {
 renderAll();
 initJournal();
 BackupManager.initUI();
-// Defer the Drive silent re-auth until after the first paint. The Google
-// Identity Services iframe momentarily flashes accounts.google.com during
-// prompt:'none' silent auth; running it in idle time means the user is
-// already looking at their data when (and if) that happens.
-const _bootDrive = () => BackupManager.init();
-if ('requestIdleCallback' in window) {
-  requestIdleCallback(_bootDrive, { timeout: 1500 });
-} else {
-  setTimeout(_bootDrive, 300);
-}
+BackupManager.init();
 renderPaletteGrid();
 
 // Default landing view: All Tasks
