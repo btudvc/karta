@@ -4167,3 +4167,6 @@ renderAll();
 initJournal();
 BackupManager.initUI();
 BackupManager.init();
+
+// Default landing view: All Tasks
+showCrossView('all-tasks');

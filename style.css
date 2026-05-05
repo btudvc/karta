@@ -1973,9 +1973,22 @@ main { flex: 1; overflow: hidden; display: flex; }
   /* Field visits / All tasks header stacked */
   .fv-header { flex-direction: column; align-items: stretch; gap: 12px; }
   .fv-container { padding: 18px 14px; }
-  .visit-card { flex-direction: column; }
-  .visit-date-block { min-width: 0; flex-direction: row; gap: 8px; align-items: baseline; padding: 8px 12px; }
-  .visit-day { font-size: 22px; }
+  .visit-card { flex-direction: column; padding: 14px 16px; }
+  .visit-date-block {
+    min-width: 0;
+    flex-direction: row;
+    gap: 6px;
+    align-items: baseline;
+    justify-content: flex-start;
+    align-self: flex-start;
+    padding: 0;
+    background: transparent;
+    text-align: left;
+    margin-bottom: 4px;
+  }
+  .visit-day { font-size: 18px; }
+  .visit-month { margin-top: 0; }
+  .visit-year { margin-top: 0; }
 
   /* Journal — sidebar above main on mobile */
   .jrn-container { flex-direction: column; }
