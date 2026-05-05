@@ -11,11 +11,13 @@ const out512  = path.join(here, 'b-less-icon-v3-512.png');
 const icoPath = path.join(here, 'icon.ico');
 
 (async () => {
-  // Trim whitespace around the source so the icon fills more of the frame.
-  // Then add a small breathing margin and resize.
+  // Trim whitespace around the source so we work from a tight bounding box.
+  // Then add generous padding so the logo lives inside the PWA "safe zone"
+  // (center ~80% circle) — without this, OS round/squircle masks crop the
+  // bottom "B-Less" text out.
   const trimmed = await sharp(srcPath).trim({ threshold: 12 }).toBuffer();
   const meta = await sharp(trimmed).metadata();
-  const pad = Math.round(Math.max(meta.width, meta.height) * 0.06);
+  const pad = Math.round(Math.max(meta.width, meta.height) * 0.22);
   const padded = await sharp(trimmed)
     .extend({ top: pad, bottom: pad, left: pad, right: pad,
               background: { r: 255, g: 255, b: 255, alpha: 1 } })
