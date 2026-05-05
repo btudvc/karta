@@ -77,13 +77,14 @@
 
     <div class="header-right">
     </div>
-
-    <!-- Backup popover (centered modal, dynamic content) -->
-    <div class="backup-backdrop" id="backup-backdrop"></div>
-    <div class="backup-popover" id="backup-popover">
-      <div id="bp-content"></div>
-    </div>
   </header>
+
+  <!-- Backup popover (centered modal, dynamic content) — outside header so it
+       still works when the header is hidden on mobile. -->
+  <div class="backup-backdrop" id="backup-backdrop"></div>
+  <div class="backup-popover" id="backup-popover">
+    <div id="bp-content"></div>
+  </div>
 
   <main>
     <!-- v4 Space sidebar — global navigation tree -->
