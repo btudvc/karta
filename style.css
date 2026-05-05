@@ -28,6 +28,7 @@
   --accent-h:     #f4f4f5;        /* zinc-100 */
   --accent-soft:  rgba(228,228,231,.10);
   --accent-soft2: rgba(228,228,231,.18);
+  --on-accent:    #18181b;        /* dark text on light accent */
 
   /* Status — kept chromatic because the meaning (done/critical/etc) is the point */
   --green:        #22c55e;
@@ -60,6 +61,7 @@
   --accent-h:     #18181b;        /* zinc-900 */
   --accent-soft:  rgba(39,39,42,.07);
   --accent-soft2: rgba(39,39,42,.14);
+  --on-accent:    #fafafa;        /* light text on dark accent */
 
   --green:        #16a34a;
   --orange:       #d97706;
@@ -89,7 +91,10 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
+  /* Use dynamic viewport height so iOS Safari's URL bar doesn't push content
+     below the visible area. Falls back to 100vh on older browsers. */
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -543,7 +548,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 }
 .provider-btn:hover .provider-ico {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .provider-btn .provider-info { flex: 1; min-width: 0; }
 .provider-btn .provider-name { font-size: 13px; font-weight: 600; color: var(--text); display: block; }
@@ -688,8 +693,8 @@ main { flex: 1; overflow: hidden; }
   flex-shrink: 0;
   transition: background .15s var(--ease), color .15s var(--ease);
 }
-.robot-item.active .robot-avatar { background: var(--accent); color: #fff; }
-.robot-item.active .mtg-avatar   { color: #fff; }
+.robot-item.active .robot-avatar { background: var(--accent); color: var(--on-accent); }
+.robot-item.active .mtg-avatar   { color: var(--on-accent); }
 .mtg-avatar svg { color: inherit; }
 
 .robot-item-info { flex: 1; min-width: 0; }
@@ -1029,7 +1034,7 @@ main { flex: 1; overflow: hidden; }
 .nb-add-btn {
   padding: 7px 14px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -1071,7 +1076,7 @@ main { flex: 1; overflow: hidden; }
 .btn-add {
   padding: 5px 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radius-xs);
   cursor: pointer;
@@ -1088,7 +1093,7 @@ main { flex: 1; overflow: hidden; }
   gap: 6px;
   padding: 8px 18px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
@@ -1239,7 +1244,7 @@ main { flex: 1; overflow: hidden; }
   user-select: none;
 }
 .radio-btn:hover  { border-color: var(--accent); color: var(--text); }
-.radio-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.radio-btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 /* ─── FIELD VISITS ─────────────────────────────────────── */
 .fv-container {
@@ -2005,7 +2010,7 @@ main { flex: 1; overflow: hidden; }
 }
 .more-card-actions .lang-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent);
 }
 .more-divider {
@@ -2083,11 +2088,15 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
      Re-enable label spans inside the bottom nav. */
   .bnav-btn span:not(.job-label):not(.daily-label) { display: inline; }
 
-  /* Bug fix: the desktop `.cal-body { grid-template-columns: 1fr 320px }` at line 1690
-     of the file is later than the original mobile override at line 1447, so source-order
-     wins on desktop's behalf even on mobile. Re-assert single column from this late block. */
-  .cal-body      { grid-template-columns: 1fr; }
-  .cal-day-panel { max-height: 50vh; }
+  /* On mobile the calendar becomes a single vertical scroll: month grid first,
+     then the selected-day panel below. The `1fr 320px` desktop layout would
+     squash both into a fixed viewport-height area, so we let #calendar itself
+     scroll instead. */
+  #calendar.active { display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .cal-container   { height: auto; padding: 14px; gap: 12px; }
+  .cal-body        { display: flex; flex-direction: column; gap: 12px; flex: none; min-height: 0; }
+  .cal-grid        { grid-auto-rows: minmax(58px, auto); padding: 8px; }
+  .cal-day-panel   { max-height: none; }
 
   /* Mobile master-detail: when a project is selected, hide the project list and
      give the detail content the full screen. Re-show via the in-detail "back" button. */
@@ -2107,6 +2116,8 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     max-height: none;
     height: calc(100% - 50px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   #robots.section:not([data-detail-open="true"]) .content { display: none; }
   .robot-detail-back {

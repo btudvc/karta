@@ -494,13 +494,9 @@ if (moreThemeBtn) {
     if (real) real.click();
   });
 }
-const moreDriveBtn = document.getElementById('more-drive-trigger');
-if (moreDriveBtn) {
-  moreDriveBtn.addEventListener('click', () => {
-    const real = document.getElementById('backup-btn');
-    if (real) real.click();
-  });
-}
+// More-page Drive trigger is now wired directly in BackupManager.initUI() so the
+// user gesture is preserved (synthetic .click() forwarding here was blocking the
+// OAuth popup on mobile browsers).
 
 // ── HELPERS ────────────────────────────────────────────
 function getCurrentContainer() {
@@ -2251,34 +2247,46 @@ const BackupManager = (() => {
     render();
   }
 
+  // Triggered by a real user click — keeps OAuth popup permission alive.
+  // IMPORTANT: must be invoked synchronously from a user gesture handler (no
+  // synthetic .click() forwarding), otherwise mobile browsers block the popup.
+  async function handleHeaderClick(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!DriveAPI.isSignedIn()) {
+      try {
+        await DriveAPI.signIn();
+        const restored = await tryRestore();
+        if (!restored) await doBackup();
+        scheduleInterval();
+        render();
+      } catch (err) {
+        alert(t('bp.sign_in_failed', { msg: (err && (err.error || err.message)) || 'unknown' }));
+      }
+      return;
+    }
+    // Signed in → toggle popover for actions
+    const popover = document.getElementById('backup-popover');
+    const backdrop = document.getElementById('backup-backdrop');
+    if (popover) {
+      const isOpen = popover.classList.contains('open');
+      popover.classList.toggle('open', !isOpen);
+      if (backdrop) backdrop.classList.toggle('open', !isOpen);
+    }
+  }
+
   function initUI() {
     const btn      = document.getElementById('backup-btn');
+    const moreBtn  = document.getElementById('more-drive-trigger');
     const popover  = document.getElementById('backup-popover');
     const backdrop = document.getElementById('backup-backdrop');
     if (!btn || !popover) return;
 
-    function openPopover()  { popover.classList.add('open');    if (backdrop) backdrop.classList.add('open'); }
     function closePopover() { popover.classList.remove('open'); if (backdrop) backdrop.classList.remove('open'); }
-    function togglePopover(){ popover.classList.contains('open') ? closePopover() : openPopover(); }
 
-    btn.addEventListener('click', async e => {
-      e.stopPropagation();
-      // Not signed in → trigger sign-in directly (no popover)
-      if (!DriveAPI.isSignedIn()) {
-        try {
-          await DriveAPI.signIn();
-          const restored = await tryRestore();
-          if (!restored) await doBackup();
-          scheduleInterval();
-          render();
-        } catch (e) {
-          alert(t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }));
-        }
-        return;
-      }
-      // Signed in → toggle popover for actions
-      togglePopover();
-    });
+    // Attach the SAME real handler to both entry points — no synthetic click forwarding,
+    // because that loses user-gesture context and mobile browsers block the popup.
+    btn.addEventListener('click', handleHeaderClick);
+    if (moreBtn) moreBtn.addEventListener('click', handleHeaderClick);
 
     // Backdrop click closes
     if (backdrop) backdrop.addEventListener('click', closePopover);
@@ -2286,7 +2294,8 @@ const BackupManager = (() => {
     // Outside click closes
     document.addEventListener('click', e => {
       if (!popover.classList.contains('open')) return;
-      if (!popover.contains(e.target) && e.target !== btn && !btn.contains(e.target))
+      if (!popover.contains(e.target) && e.target !== btn && !btn.contains(e.target)
+          && (!moreBtn || (e.target !== moreBtn && !moreBtn.contains(e.target))))
         closePopover();
     });
 
@@ -2300,7 +2309,7 @@ const BackupManager = (() => {
     setInterval(render, 30000); // refresh "X min ago"
   }
 
-  return { init, onDataChange, initUI, tryRestore, refresh: render };
+  return { init, onDataChange, initUI, tryRestore, refresh: render, handleHeaderClick };
 })();
 // ── RENDER ALL ─────────────────────────────────────────
 function renderAll() {
@@ -2739,11 +2748,40 @@ function inMode(item) { return (item.mode || 'job') === getMode(); }
 function projectsByMode()  { return (state.robots || []).filter(inMode); }
 function meetingsByMode()  { return (state.meetings || []).filter(inMode); }
 
-// ── PWA: register service worker (web only — Electron uses file:// and skips) ──
+// ── PWA: register service worker + auto-reload on update ──
+// When a new SW activates (usually after a deploy), reload once so the new
+// app shell starts using the new code instead of running the stale version
+// that's already in memory.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        // Track when a new SW finishes installing and takes over
+        reg.addEventListener('updatefound', () => {
+          const next = reg.installing;
+          if (!next) return;
+          next.addEventListener('statechange', () => {
+            if (next.state === 'activated' && navigator.serviceWorker.controller) {
+              // A previous SW was controlling — this is an update. Reload once.
+              if (!sessionStorage.getItem('karta-sw-reloaded')) {
+                sessionStorage.setItem('karta-sw-reloaded', '1');
+                location.reload();
+              }
+            }
+          });
+        });
+      })
+      .catch(() => {});
+    // If SW changes (e.g., after manual unregister), reload to pick up new shell
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      location.reload();
+    });
   });
+  // Clear the "reloaded" flag once the page is fully shown so future updates trigger again
+  window.addEventListener('pageshow', () => sessionStorage.removeItem('karta-sw-reloaded'));
 }
 
 // ── INIT ───────────────────────────────────────────────
