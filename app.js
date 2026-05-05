@@ -123,7 +123,7 @@ const I18N = {
     'add_item.meeting': 'Meeting', 'add_item.meeting_hint': 'Notes + action items for a single meeting',
     'add_item.visit': 'Visit', 'add_item.visit_hint': 'Plan a place + date',
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
-    'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks',
+    'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
     'space.name_prompt': 'Space name:',
     'label.space': 'Space',
     'bp.sign_in': 'Sign in with Google',
@@ -294,7 +294,7 @@ const I18N = {
     'add_item.meeting': 'Toplantı', 'add_item.meeting_hint': 'Tek bir toplantının notları + aksiyonları',
     'add_item.visit': 'Ziyaret', 'add_item.visit_hint': 'Yer + tarih planla',
     'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
-    'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler',
+    'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler', 'cross.visits': 'Ziyaretler',
     'space.name_prompt': 'Space adı:',
     'label.space': 'Space',
     'bp.sign_in': 'Google ile giriş yap',
@@ -3142,13 +3142,13 @@ function renderSidebar() {
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
 
-    // Lists are flat (each is its own page). Meetings/Visits/Journal group up.
+    // Lists are flat (each is its own page). Meetings/Journal group up.
+    // Visits are now global — accessible from the header cross-nav (not nested in spaces).
     const listsHtml    = lists.map(it => itemRow(it, sp.id)).join('');
     const meetingsHtml = subgroup('Meetings', 'meeting', meetings, sp.id);
-    const visitsHtml   = subgroup('Visits',   'visit',   visits,   sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
-    const body = listsHtml + meetingsHtml + visitsHtml + journalsHtml;
+    const body = listsHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -3433,6 +3433,9 @@ function showCrossView(name) {
   } else if (name === 'calendar') {
     activateSection('calendar');
     if (typeof renderCalendar === 'function') renderCalendar();
+  } else if (name === 'visits') {
+    activateSection('field-visits');
+    if (typeof renderVisits === 'function') renderVisits();
   } else if (name === 'all-tasks') {
     activateSection('all-tasks');
     allTasksFilter = 'open';
