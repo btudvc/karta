@@ -714,6 +714,76 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-style: italic;
 }
 
+/* Collapsible sub-groups inside a space (Meetings / Visits) */
+.space-subgroup { margin: 2px 0; }
+.space-subheader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background .12s var(--ease), color .12s var(--ease);
+}
+.space-subheader:hover { background: var(--surface-2); color: var(--text); }
+.space-subchev {
+  display: inline-flex;
+  width: 12px; height: 12px;
+  color: var(--muted);
+  transition: transform .15s var(--ease);
+  flex-shrink: 0;
+}
+.space-subchev svg { width: 10px; height: 10px; }
+.space-subgroup.collapsed .space-subchev { transform: rotate(-90deg); }
+.space-subgroup.collapsed .space-subitems { display: none; }
+.space-subicon { opacity: .8; }
+.space-subname { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.space-subcount {
+  font-size: 10px;
+  color: var(--muted-2);
+  background: var(--surface-3);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.space-subitems { padding-left: 18px; }
+.space-subitems .space-item { padding: 5px 9px; font-size: 12.5px; }
+
+/* Cross-space top nav (Today / Calendar / All Tasks) */
+.cross-nav {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+}
+.cross-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.cross-nav-btn:hover  { background: var(--surface-2); color: var(--text); }
+.cross-nav-btn.active { background: var(--accent-soft); color: var(--accent); }
+.cross-nav-btn svg { flex-shrink: 0; }
+
+@media (max-width: 800px) {
+  .cross-nav-btn span { display: none; }
+  .cross-nav-btn { padding: 6px 10px; }
+}
+
 /* ── Add Item picker modal ──────────────────────────── */
 .modal-picker { width: 480px; }
 .add-item-grid {

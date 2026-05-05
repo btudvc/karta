@@ -27,6 +27,22 @@
       <button class="mode-btn" data-mode="daily" data-i18n="mode.daily">Daily</button>
     </div>
 
+    <!-- v4 cross-space top nav -->
+    <nav class="cross-nav" id="cross-nav">
+      <button class="cross-nav-btn" data-cross="today">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <span data-i18n="cross.today">Today</span>
+      </button>
+      <button class="cross-nav-btn" data-cross="calendar">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span data-i18n="cross.calendar">Calendar</span>
+      </button>
+      <button class="cross-nav-btn" data-cross="all-tasks">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span data-i18n="cross.all_tasks">All Tasks</span>
+      </button>
+    </nav>
+
     <!-- Legacy tabs (hidden in v4 — sidebar drives navigation now) -->
     <nav class="tabs v4-hidden" hidden>
       <button class="tab active" data-tab="robots">

@@ -118,6 +118,13 @@ const I18N = {
     'att.desktop_only': 'Attachments work in the desktop app only.',
     'att.signin_required': 'Sign in to Google Drive to attach files.',
     'att.failed': 'Could not save: {msg}',
+    'add_item.title': 'Add to space',
+    'add_item.list': 'List', 'add_item.list_hint': 'Tasks grouped under a name',
+    'add_item.meeting': 'Meeting', 'add_item.meeting_hint': 'Notes + action items for a single meeting',
+    'add_item.visit': 'Visit', 'add_item.visit_hint': 'Plan a place + date',
+    'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
+    'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks',
+    'space.name_prompt': 'Space name:',
     'bp.sign_in': 'Sign in with Google',
     'bp.sign_out': 'Sign out',
     'bp.signed_in_as': 'Signed in as',
@@ -281,6 +288,13 @@ const I18N = {
     'att.desktop_only': 'Ekler sadece masaüstü uygulamada çalışır.',
     'att.signin_required': 'Dosya eklemek için Google Drive\'a giriş yap.',
     'att.failed': 'Kaydedilemedi: {msg}',
+    'add_item.title': 'Space\'e ekle',
+    'add_item.list': 'Liste', 'add_item.list_hint': 'Bir başlık altında görevler',
+    'add_item.meeting': 'Toplantı', 'add_item.meeting_hint': 'Tek bir toplantının notları + aksiyonları',
+    'add_item.visit': 'Ziyaret', 'add_item.visit_hint': 'Yer + tarih planla',
+    'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
+    'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler',
+    'space.name_prompt': 'Space adı:',
     'bp.sign_in': 'Google ile giriş yap',
     'bp.sign_out': 'Çıkış yap',
     'bp.signed_in_as': 'Bağlı hesap',
@@ -2995,20 +3009,52 @@ function renderSidebar() {
   if (!list) return;
 
   if (!state.collapsedSpaces) state.collapsedSpaces = {};
+  if (!state.collapsedGroups) state.collapsedGroups = {};
+
+  function itemRow(it, spaceId) {
+    const data = resolveItemData(it);
+    if (!data) return '';
+    const active = it.id === state.currentItemId ? 'active' : '';
+    const name = escapeHtml(itemDisplayName(it));
+    return `
+      <div class="space-item ${active}" data-item-id="${it.id}" data-space-id="${spaceId}">
+        <span class="space-item-icon">${ITEM_ICONS[it.type] || ''}</span>
+        <span class="space-item-name">${name}</span>
+      </div>`;
+  }
+
+  function subgroup(label, type, items, spaceId) {
+    if (!items.length) return '';
+    const key = spaceId + ':' + type;
+    const collapsed = !!state.collapsedGroups[key];
+    const rows = items.map(it => itemRow(it, spaceId)).join('');
+    return `
+      <div class="space-subgroup ${collapsed ? 'collapsed' : ''}" data-subgroup-key="${key}">
+        <div class="space-subheader">
+          <span class="space-subchev">${ICO.chevron}</span>
+          <span class="space-item-icon space-subicon">${ITEM_ICONS[type] || ''}</span>
+          <span class="space-subname">${escapeHtml(label)}</span>
+          <span class="space-subcount">${items.length}</span>
+        </div>
+        <div class="space-subitems">${rows}</div>
+      </div>`;
+  }
 
   list.innerHTML = (state.spaces || []).map(sp => {
     const collapsed = !!state.collapsedSpaces[sp.id];
-    const items = sp.items.map(it => {
-      const data = resolveItemData(it);
-      if (!data) return '';
-      const active = it.id === state.currentItemId ? 'active' : '';
-      const name = escapeHtml(itemDisplayName(it));
-      return `
-        <div class="space-item ${active}" data-item-id="${it.id}" data-space-id="${sp.id}">
-          <span class="space-item-icon">${ITEM_ICONS[it.type] || ''}</span>
-          <span class="space-item-name">${name}</span>
-        </div>`;
-    }).join('');
+    const lists    = sp.items.filter(i => i.type === 'list');
+    const meetings = sp.items.filter(i => i.type === 'meeting');
+    const visits   = sp.items.filter(i => i.type === 'visit');
+    const journals = sp.items.filter(i => i.type === 'journal');
+
+    // Lists are flat (each is its own page). Meetings/Visits group up.
+    const listsHtml    = lists.map(it => itemRow(it, sp.id)).join('');
+    const journalsHtml = journals.map(it => itemRow(it, sp.id)).join('');
+    const meetingsHtml = subgroup('Meetings', 'meeting', meetings, sp.id);
+    const visitsHtml   = subgroup('Visits',   'visit',   visits,   sp.id);
+
+    const body = listsHtml + meetingsHtml + visitsHtml + journalsHtml;
+
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
         <div class="space-header">
@@ -3017,7 +3063,7 @@ function renderSidebar() {
           <button class="space-add-btn" data-add-to-space="${sp.id}" title="Add item" aria-label="Add item">+</button>
           <button class="space-more-btn" data-space-menu="${sp.id}" title="Space options" aria-label="Space options">⋯</button>
         </div>
-        <div class="space-items">${items || '<div class="space-empty">No items</div>'}</div>
+        <div class="space-items">${body || '<div class="space-empty">No items</div>'}</div>
       </div>`;
   }).join('');
 
@@ -3031,6 +3077,15 @@ function renderSidebar() {
       if (e.target.closest('.space-add-btn') || e.target.closest('.space-more-btn')) return;
       const sid = el.parentElement.dataset.spaceId;
       state.collapsedSpaces[sid] = !state.collapsedSpaces[sid];
+      save();
+      renderSidebar();
+    });
+  });
+  // Sub-group header click → toggle collapse for Meetings/Visits group
+  list.querySelectorAll('.space-subheader').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.parentElement.dataset.subgroupKey;
+      state.collapsedGroups[key] = !state.collapsedGroups[key];
       save();
       renderSidebar();
     });
@@ -3181,6 +3236,36 @@ function openSpaceMenu(spaceId) {
     save(); renderSidebar();
   }
 }
+
+// ── Cross-space top nav (Today / Calendar / All Tasks) ──
+function showCrossView(name) {
+  state.currentItemId = null;
+  if (name === 'today') {
+    activateSection('all-tasks');
+    allTasksFilter = 'today';
+    document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === 'today');
+    });
+    if (typeof renderAllTasks === 'function') renderAllTasks();
+  } else if (name === 'calendar') {
+    activateSection('calendar');
+    if (typeof renderCalendar === 'function') renderCalendar();
+  } else if (name === 'all-tasks') {
+    activateSection('all-tasks');
+    allTasksFilter = 'open';
+    document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === 'open');
+    });
+    if (typeof renderAllTasks === 'function') renderAllTasks();
+  }
+  document.querySelectorAll('.cross-nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cross === name);
+  });
+  renderSidebar();
+}
+document.querySelectorAll('.cross-nav-btn').forEach(b => {
+  b.addEventListener('click', () => showCrossView(b.dataset.cross));
+});
 
 // ── Init ──
 migrateToSpaces();
