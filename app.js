@@ -886,6 +886,8 @@ function renderNotebook(task) {
 }
 
 function renderTask(task) {
+  const subs = task.subtasks || [];
+  const subDone = subs.filter(s => s.done).length;
   return `
     <div class="task-item ${task.status} ${task.expanded ? 'expanded' : ''}" id="task-${task.id}">
       <div class="task-header" onclick="toggleTask('${task.id}')">
@@ -893,11 +895,13 @@ function renderTask(task) {
         <div class="task-title-text">${task.title}</div>
         ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
         <span class="status-tag ${task.status}">${task.status}</span>
+        ${subs.length > 0 ? `<span class="sub-count">${subDone}/${subs.length}</span>` : ''}
         ${(task.notebook||[]).length > 0 ? `<span class="nb-count">${task.notebook.length}</span>` : ''}
         <span class="expand-chevron">${ICO.chevron}</span>
       </div>
       <div class="task-body">
         <div class="task-body-inner">
+          ${renderSubtasks(task)}
           ${renderNotebook(task)}
           ${renderAttachments('task', task.id, task.attachments)}
           <div class="task-actions">
@@ -913,6 +917,65 @@ function renderTask(task) {
     </div>
   `;
 }
+
+// ── SUBTASKS ────────────────────────────────────────────
+function renderSubtasks(task) {
+  const subs = task.subtasks || [];
+  const items = subs.map(s => `
+    <div class="subtask ${s.done ? 'done' : ''}" data-sub-id="${s.id}">
+      <button class="subtask-check ${s.done ? 'checked' : ''}" onclick="toggleSubtask('${task.id}','${s.id}')" aria-label="Toggle">
+        ${s.done ? ICO.checkSm : ''}
+      </button>
+      <span class="subtask-text">${escapeHtml(s.title)}</span>
+      <button class="subtask-del" onclick="deleteSubtask('${task.id}','${s.id}')" aria-label="Delete">${ICO.close}</button>
+    </div>
+  `).join('');
+  return `
+    <div class="sub-section">
+      <div class="sub-section-head">
+        <span class="sub-label">Subtasks${subs.length ? ` <span class="count-pill">${subs.filter(s=>s.done).length}/${subs.length}</span>` : ''}</span>
+      </div>
+      ${items ? `<div class="sub-list">${items}</div>` : ''}
+      <div class="sub-add-row">
+        <input type="text" class="sub-add-input" id="sub-add-${task.id}"
+          placeholder="+ Add a subtask"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask('${task.id}')}" />
+      </div>
+    </div>
+  `;
+}
+
+window.addSubtask = function(taskId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const input = document.getElementById('sub-add-' + taskId);
+  const title = input ? input.value.trim() : '';
+  if (!title) { input?.focus(); return; }
+  if (!task.subtasks) task.subtasks = [];
+  task.subtasks.push({ id: uid(), title, done: false, createdAt: Date.now() });
+  save();
+  renderCurrentDetail();
+};
+
+window.toggleSubtask = function(taskId, subId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  const sub = task && (task.subtasks || []).find(s => s.id === subId);
+  if (!sub) return;
+  sub.done = !sub.done;
+  save();
+  renderCurrentDetail();
+};
+
+window.deleteSubtask = function(taskId, subId) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.subtasks = (task.subtasks || []).filter(s => s.id !== subId);
+  save();
+  renderCurrentDetail();
+};
 
 // Task expand/collapse
 window.toggleTask = function(id) {
@@ -2745,9 +2808,11 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 });
 
 // Filter helpers (default missing mode → 'job' for backwards compat)
-function inMode(item) { return (item.mode || 'job') === getMode(); }
-function projectsByMode()  { return (state.robots || []).filter(inMode); }
-function meetingsByMode()  { return (state.meetings || []).filter(inMode); }
+// v4: Spaces replace Job/Daily mode. Filters stay as no-ops so cross-space
+// views (All Tasks, Calendar) include everything.
+function inMode(_item) { return true; }
+function projectsByMode()  { return state.robots      || []; }
+function meetingsByMode()  { return state.meetings    || []; }
 
 // ── PWA: register service worker + auto-reload on update ──
 // When a new SW activates (usually after a deploy), reload once so the new
@@ -2805,6 +2870,306 @@ applyI18n();
     b.classList.toggle('active', b.dataset.filter === allTasksFilter);
   });
 })();
+
+// ═════════════════════════════════════════════════════════
+//  V4 — Spaces (ClickUp-inspired hierarchy)
+//  Sidebar tree of user-defined Spaces. Each space holds typed items
+//  (list / meeting / visit / journal) referencing the existing data
+//  collections. Mode (Job/Daily) is removed; spaces replace it.
+// ═════════════════════════════════════════════════════════
+
+const ITEM_ICONS = {
+  list:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  meeting: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  visit:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
+  journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
+};
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Migration: build state.spaces from legacy collections (one-time) ──
+function migrateToSpaces() {
+  if (state.spaces && Array.isArray(state.spaces) && state.spaces.length > 0) return;
+
+  const work     = { id: uid(), name: 'Work',     items: [] };
+  const personal = { id: uid(), name: 'Personal', items: [] };
+
+  // Lists / projects: split by legacy mode (job → Work, daily → Personal)
+  (state.robots || []).forEach(r => {
+    const target = r.mode === 'daily' ? personal : work;
+    target.items.push({ id: uid(), type: 'list', refId: r.id });
+  });
+
+  // Meetings — all into Work for now (user can reorganize)
+  (state.meetings || []).forEach(m => {
+    work.items.push({ id: uid(), type: 'meeting', refId: m.id });
+  });
+
+  // Visits — all into Work
+  (state.fieldVisits || []).forEach(v => {
+    work.items.push({ id: uid(), type: 'visit', refId: v.id });
+  });
+
+  // Journal — single item in Personal (existing daily entries)
+  if (state.journal && Object.keys(state.journal).length > 0) {
+    personal.items.push({ id: uid(), type: 'journal', refId: 'default' });
+  } else if (state.spaces === undefined) {
+    // Fresh install: still give Personal a journal slot
+    personal.items.push({ id: uid(), type: 'journal', refId: 'default' });
+  }
+
+  state.spaces = [work, personal];
+  state.currentSpaceId = work.id;
+  state.currentItemId  = null;
+  state.collapsedSpaces = state.collapsedSpaces || {};
+  save();
+}
+
+// ── Helpers ────────────────────────────────────────────
+function findSpace(id) { return state.spaces.find(s => s.id === id); }
+function findItem(spaceId, itemId) {
+  const sp = findSpace(spaceId);
+  return sp ? sp.items.find(i => i.id === itemId) : null;
+}
+function findItemAnywhere(itemId) {
+  for (const sp of state.spaces) {
+    const it = sp.items.find(i => i.id === itemId);
+    if (it) return { space: sp, item: it };
+  }
+  return null;
+}
+function resolveItemData(item) {
+  if (!item) return null;
+  if (item.type === 'list')    return (state.robots      || []).find(r => r.id === item.refId);
+  if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
+  if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
+  if (item.type === 'journal') return { name: 'Journal' };
+  return null;
+}
+function itemDisplayName(item) {
+  const d = resolveItemData(item);
+  if (!d) return '(missing)';
+  return d.name || d.title || d.location || 'Untitled';
+}
+
+// ── Sidebar render ─────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('space-list');
+  if (!list) return;
+
+  if (!state.collapsedSpaces) state.collapsedSpaces = {};
+
+  list.innerHTML = (state.spaces || []).map(sp => {
+    const collapsed = !!state.collapsedSpaces[sp.id];
+    const items = sp.items.map(it => {
+      const data = resolveItemData(it);
+      if (!data) return '';
+      const active = it.id === state.currentItemId ? 'active' : '';
+      const name = escapeHtml(itemDisplayName(it));
+      return `
+        <div class="space-item ${active}" data-item-id="${it.id}" data-space-id="${sp.id}">
+          <span class="space-item-icon">${ITEM_ICONS[it.type] || ''}</span>
+          <span class="space-item-name">${name}</span>
+        </div>`;
+    }).join('');
+    return `
+      <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
+        <div class="space-header">
+          <span class="space-chev">${ICO.chevron}</span>
+          <span class="space-name">${escapeHtml(sp.name)}</span>
+          <button class="space-add-btn" data-add-to-space="${sp.id}" title="Add item" aria-label="Add item">+</button>
+          <button class="space-more-btn" data-space-menu="${sp.id}" title="Space options" aria-label="Space options">⋯</button>
+        </div>
+        <div class="space-items">${items || '<div class="space-empty">No items</div>'}</div>
+      </div>`;
+  }).join('');
+
+  // Item click
+  list.querySelectorAll('.space-item').forEach(el => {
+    el.addEventListener('click', () => selectSpaceItem(el.dataset.spaceId, el.dataset.itemId));
+  });
+  // Space header click → toggle collapse
+  list.querySelectorAll('.space-header').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.space-add-btn') || e.target.closest('.space-more-btn')) return;
+      const sid = el.parentElement.dataset.spaceId;
+      state.collapsedSpaces[sid] = !state.collapsedSpaces[sid];
+      save();
+      renderSidebar();
+    });
+  });
+  // Add item
+  list.querySelectorAll('.space-add-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openAddItemPicker(el.dataset.addToSpace);
+    });
+  });
+  // Space menu (rename/delete)
+  list.querySelectorAll('.space-more-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openSpaceMenu(el.dataset.spaceMenu);
+    });
+  });
+}
+
+// ── Click an item: navigate to the matching legacy section ──
+function selectSpaceItem(spaceId, itemId) {
+  const item = findItem(spaceId, itemId);
+  if (!item) return;
+  state.currentSpaceId = spaceId;
+  state.currentItemId  = itemId;
+
+  if (item.type === 'list') {
+    state.currentRobotId = item.refId;
+    activateSection('robots');
+    if (typeof renderRobotList === 'function')   renderRobotList();
+    if (typeof renderRobotDetail === 'function') renderRobotDetail();
+  } else if (item.type === 'meeting') {
+    state.currentMeetingId = item.refId;
+    activateSection('meetings');
+    if (typeof renderMeetingList === 'function')   renderMeetingList();
+    if (typeof renderMeetingDetail === 'function') renderMeetingDetail();
+  } else if (item.type === 'visit') {
+    activateSection('field-visits');
+    if (typeof renderVisits === 'function') renderVisits();
+  } else if (item.type === 'journal') {
+    activateSection('journal');
+  }
+
+  save();
+  renderSidebar();
+}
+
+function activateSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
+  // Sync the (now-hidden) tab buttons so existing logic that reads activeSection works
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  if (id === 'robots' || id === 'topics') activeSection = id;
+}
+
+// ── Add Item picker (Lists / Meetings / Visits / Journal) ──
+function openAddItemPicker(spaceId) {
+  const modal = document.getElementById('modal-add-item');
+  if (!modal) return;
+  modal.dataset.targetSpaceId = spaceId;
+  modal.classList.add('open');
+}
+
+function closeAddItemPicker() {
+  document.getElementById('modal-add-item')?.classList.remove('open');
+}
+
+function handleAddItemPick(type) {
+  const modal = document.getElementById('modal-add-item');
+  const spaceId = modal?.dataset.targetSpaceId;
+  if (!spaceId) return;
+  closeAddItemPicker();
+
+  // Defer space-attach until the underlying entity is created. We listen for
+  // the next save() and pick up newly added robot/meeting/visit ids.
+  pendingItemAttach = { spaceId, type };
+
+  if (type === 'list') {
+    if (typeof openEntityModal === 'function') openEntityModal('robot');
+  } else if (type === 'meeting') {
+    document.getElementById('add-meeting-btn')?.click();
+  } else if (type === 'visit') {
+    document.getElementById('add-visit-btn')?.click();
+  } else if (type === 'journal') {
+    // Journal: single global instance; just attach a ref item if not already there
+    const sp = findSpace(spaceId);
+    if (sp && !sp.items.some(i => i.type === 'journal')) {
+      sp.items.push({ id: uid(), type: 'journal', refId: 'default' });
+      save();
+      renderSidebar();
+    }
+    pendingItemAttach = null;
+    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'journal').id);
+  }
+}
+
+let pendingItemAttach = null;
+
+// Watch for saves; if a new robot/meeting/visit appeared, attach to pending space
+const _origSave = save;
+save = function() {
+  _origSave.apply(this, arguments);
+  if (!pendingItemAttach) return;
+  const { spaceId, type } = pendingItemAttach;
+  const sp = findSpace(spaceId);
+  if (!sp) { pendingItemAttach = null; return; }
+  let newRefId = null;
+  if (type === 'list')    newRefId = state.currentRobotId;
+  if (type === 'meeting') newRefId = state.currentMeetingId;
+  if (type === 'visit')   {
+    // Visits don't have a "current" id; pick the most recent
+    const last = (state.fieldVisits || [])[state.fieldVisits.length - 1];
+    newRefId = last && last.id;
+  }
+  if (newRefId && !sp.items.some(i => i.type === type && i.refId === newRefId)) {
+    const newItem = { id: uid(), type, refId: newRefId };
+    sp.items.push(newItem);
+    state.currentItemId = newItem.id;
+    state.currentSpaceId = spaceId;
+    pendingItemAttach = null;
+    _origSave();
+    renderSidebar();
+  }
+};
+
+// ── Add Space ──
+function addSpace() {
+  const name = prompt(t('space.name_prompt') || 'Space name:');
+  if (!name || !name.trim()) return;
+  const sp = { id: uid(), name: name.trim(), items: [] };
+  state.spaces.push(sp);
+  save();
+  renderSidebar();
+}
+
+function openSpaceMenu(spaceId) {
+  const sp = findSpace(spaceId);
+  if (!sp) return;
+  const choice = prompt('Space "' + sp.name + '"\n\n1: Rename\n2: Delete\n\nType 1 or 2:');
+  if (choice === '1') {
+    const next = prompt('New name:', sp.name);
+    if (next && next.trim()) { sp.name = next.trim(); save(); renderSidebar(); }
+  } else if (choice === '2') {
+    if (state.spaces.length <= 1) { alert('Cannot delete the only space.'); return; }
+    if (!confirm('Delete space "' + sp.name + '"? Items inside are unlinked but their underlying data is kept.')) return;
+    state.spaces = state.spaces.filter(s => s.id !== spaceId);
+    if (state.currentSpaceId === spaceId) state.currentSpaceId = state.spaces[0].id;
+    save(); renderSidebar();
+  }
+}
+
+// ── Init ──
+migrateToSpaces();
+renderSidebar();
+const _addSpaceBtn = document.getElementById('add-space-btn');
+if (_addSpaceBtn) _addSpaceBtn.addEventListener('click', addSpace);
+const _addItemModal = document.getElementById('modal-add-item');
+if (_addItemModal) {
+  _addItemModal.querySelectorAll('[data-add-type]').forEach(b => {
+    b.addEventListener('click', () => handleAddItemPick(b.dataset.addType));
+  });
+  _addItemModal.querySelectorAll('[data-close="modal-add-item"]').forEach(b => {
+    b.addEventListener('click', closeAddItemPicker);
+  });
+  _addItemModal.addEventListener('click', e => { if (e.target === _addItemModal) closeAddItemPicker(); });
+}
+
+// Re-render sidebar whenever data changes
+const _origRenderAll = renderAll;
+renderAll = function() {
+  _origRenderAll.apply(this, arguments);
+  renderSidebar();
+};
+
 renderAll();
 initJournal();
 BackupManager.initUI();
