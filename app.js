@@ -2543,15 +2543,19 @@ const BackupManager = (() => {
       }
     } else {
       pop.innerHTML = `
-        <div class="bp-title">${t('bp.title')}</div>
-        <div class="bp-subtitle">${t('bp.web_subtitle')}</div>
-        <button class="provider-btn" data-act="signin">
-          <span class="provider-ico">${GDRIVE_ICON}</span>
-          <span class="provider-info">
-            <span class="provider-name">${t('bp.sign_in')}</span>
-            <span class="provider-hint">drive.file scope</span>
-          </span>
-          <span class="provider-arrow">${ARROW}</span>
+        <div class="bp-intro">
+          <div class="bp-intro-icon">${GDRIVE_ICON}</div>
+          <div class="bp-intro-title">${t('bp.title')}</div>
+          <div class="bp-intro-sub">${t('bp.web_subtitle')}</div>
+        </div>
+        <ul class="bp-intro-list">
+          <li>Private "B-Less" folder in your Drive</li>
+          <li>Auto-syncs as you make changes</li>
+          <li>Restore everything on a new device</li>
+        </ul>
+        <button class="bp-cta-btn" data-act="signin">
+          <span class="bp-cta-ico">${GDRIVE_ICON}</span>
+          <span>${t('bp.sign_in')}</span>
         </button>
         <div class="bp-hint">${t('bp.web_hint')}</div>
       `;
@@ -2572,6 +2576,7 @@ const BackupManager = (() => {
             if (!restored) await doBackup();
             scheduleInterval();
             render();
+            openPopover(); // tryRestore may have closed/reset things; ensure the connected panel is visible
           } catch (e) {
             alert(t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }));
           }
@@ -2664,21 +2669,19 @@ const BackupManager = (() => {
   // Triggered by a real user click — keeps OAuth popup permission alive.
   // IMPORTANT: must be invoked synchronously from a user gesture handler (no
   // synthetic .click() forwarding), otherwise mobile browsers block the popup.
+  function openPopover() {
+    const popover = document.getElementById('backup-popover');
+    const backdrop = document.getElementById('backup-backdrop');
+    if (popover) popover.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+  }
+
   async function handleHeaderClick(e) {
     if (e && e.stopPropagation) e.stopPropagation();
-    if (!DriveAPI.isSignedIn()) {
-      try {
-        await DriveAPI.signIn();
-        const restored = await tryRestore();
-        if (!restored) await doBackup();
-        scheduleInterval();
-        render();
-      } catch (err) {
-        alert(t('bp.sign_in_failed', { msg: (err && (err.error || err.message)) || 'unknown' }));
-      }
-      return;
-    }
-    // Signed in → toggle popover for actions
+    // Always toggle the popover. The popover's content renders the right
+    // affordance (intro + Sign in button when not connected, account panel
+    // when connected). Going straight to OAuth on first tap was disorienting
+    // because no in-app context was shown before the Google popup appeared.
     const popover = document.getElementById('backup-popover');
     const backdrop = document.getElementById('backup-backdrop');
     if (popover) {
@@ -3693,12 +3696,16 @@ function seedSampleData() {
 
 // ── Easter egg: greet a specific Drive account with hearts ──
 const BELOVED_EMAIL = 'irem.arayan@gmail.com';
+const IREM_FLAG_KEY = 'b-less-irem-celebrated';
 window.celebrateIfBeloved = function(email) {
   if (!email || email.toLowerCase() !== BELOVED_EMAIL) return;
-  // Throttle to once per session: a single connect should celebrate once,
-  // but re-renders / re-init shouldn't re-trigger.
-  if (window.__bLessIremCelebrated) return;
+  // Throttle to once per session: covers SW-triggered reloads and any silent
+  // re-auth bursts that fire fetchUserInfo more than once back-to-back.
+  let already = false;
+  try { already = sessionStorage.getItem(IREM_FLAG_KEY) === '1'; } catch {}
+  if (already || window.__bLessIremCelebrated) return;
   window.__bLessIremCelebrated = true;
+  try { sessionStorage.setItem(IREM_FLAG_KEY, '1'); } catch {}
   showIremWelcome();
 };
 

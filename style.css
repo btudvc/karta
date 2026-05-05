@@ -387,6 +387,75 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
   padding-top: 9px; line-height: 1.55;
 }
 
+/* ── Drive popover: friendlier first-time intro ─────── */
+.bp-intro {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 6px 0 4px;
+}
+.bp-intro-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.bp-intro-icon svg { width: 28px; height: 28px; }
+.bp-intro-title { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+.bp-intro-sub { font-size: 13px; color: var(--muted); line-height: 1.45; max-width: 320px; }
+
+.bp-intro-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 6px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.bp-intro-list li {
+  position: relative;
+  padding: 6px 10px 6px 28px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.bp-intro-list li::before {
+  content: "";
+  position: absolute;
+  left: 11px; top: 50%;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.bp-cta-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter .15s var(--ease), transform .12s var(--ease);
+}
+.bp-cta-btn:hover  { filter: brightness(1.05); }
+.bp-cta-btn:active { transform: scale(.99); }
+.bp-cta-ico {
+  display: inline-flex;
+  background: rgba(255,255,255,.15);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  align-items: center; justify-content: center;
+}
+.bp-cta-ico svg { width: 16px; height: 16px; }
+
 /* Connected card (legacy class kept for back-compat) */
 .bp-connected {
   background: var(--surface-2);
