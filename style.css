@@ -915,6 +915,37 @@ main { flex: 1; overflow: hidden; display: flex; }
 
 /* ── Add Item picker modal ──────────────────────────── */
 .modal-picker { width: 480px; }
+
+/* ── Welcome / onboarding modal ─────────────────────── */
+.modal-welcome { width: 480px; max-width: 92vw; }
+.welcome-lede {
+  margin: 4px 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.welcome-tips {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.welcome-tips li {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.welcome-tips li strong { color: var(--accent); margin-right: 6px; }
+.welcome-tips li em { font-style: normal; font-weight: 600; color: var(--text); }
+.modal-welcome .modal-actions {
+  display: flex; justify-content: flex-end;
+}
 .add-item-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

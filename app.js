@@ -3560,6 +3560,91 @@ function escapeJsArg(s) {
     .replace(/"/g, '&quot;');
 }
 
+// ── First-run seed: sample data so a new user has something to explore ──
+function seedSampleData() {
+  // Only seed when truly empty (no robots/meetings/visits anywhere)
+  const empty = (!state.robots      || state.robots.length === 0)
+             && (!state.meetings    || state.meetings.length === 0)
+             && (!state.fieldVisits || state.fieldVisits.length === 0);
+  if (!empty) return false;
+
+  const work = (state.spaces || []).find(s => s.name === 'Work') || (state.spaces && state.spaces[0]);
+  if (!work) return false;
+
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
+  const inThreeDays = new Date(today.getTime() + 3 * 86400000).toISOString().slice(0, 10);
+  const sampleListName = 'Welcome to B-Less';
+
+  const sampleList = {
+    id: uid(),
+    name: sampleListName,
+    description: 'A sample list to help you explore. Delete it whenever you want.',
+    category: 'Getting Started',
+    mode: 'job',
+    tasks: [
+      { id: uid(), title: 'Tap me, then mark Done', priority: 'normal',   status: 'active',  dueDate: todayIso,    tags: ['demo'],  notebook: [], expanded: false, createdAt: Date.now() },
+      { id: uid(), title: 'Open me and add a subtask or a note', priority: 'high', status: 'active', dueDate: inThreeDays, tags: ['demo'], notebook: [], expanded: false, createdAt: Date.now() },
+      { id: uid(), title: 'Create your own list with the + button', priority: 'normal', status: 'pending', dueDate: null, tags: [], notebook: [], expanded: false, createdAt: Date.now() },
+    ],
+    issues: [],
+    createdAt: Date.now(),
+  };
+  state.robots = state.robots || [];
+  state.robots.push(sampleList);
+  work.items.push({ id: uid(), type: 'list', refId: sampleList.id });
+
+  const sampleVisit = {
+    id: uid(),
+    location: 'Sample customer site',
+    date: inThreeDays,
+    robot: sampleListName,
+    notes: 'Plan a visit, log who you meet and what to follow up on.',
+    mode: 'job',
+    createdAt: Date.now(),
+  };
+  state.fieldVisits = state.fieldVisits || [];
+  state.fieldVisits.push(sampleVisit);
+  work.items.push({ id: uid(), type: 'visit', refId: sampleVisit.id });
+
+  const sampleMeeting = {
+    id: uid(),
+    title: 'Welcome meeting',
+    date: todayIso,
+    location: 'Office',
+    attendees: 'You',
+    robot: sampleListName,
+    notes: 'Use this area to capture decisions and discussion. Action items below.',
+    actions: [
+      { id: uid(), text: 'Explore the spaces in the sidebar', done: false, createdAt: Date.now() },
+      { id: uid(), text: 'Try the language toggle in Settings', done: false, createdAt: Date.now() },
+    ],
+    mode: 'job',
+    createdAt: Date.now(),
+  };
+  state.meetings = state.meetings || [];
+  state.meetings.push(sampleMeeting);
+  work.items.push({ id: uid(), type: 'meeting', refId: sampleMeeting.id });
+
+  return true;
+}
+
+function maybeShowWelcome() {
+  // Only show once. Skip silently if SW/runtime hides the modal.
+  if (state.onboarded) return;
+  const modal = document.getElementById('modal-welcome');
+  if (!modal) return;
+  modal.classList.add('open');
+  const dismiss = () => {
+    modal.classList.remove('open');
+    state.onboarded = true;
+    save();
+  };
+  document.getElementById('welcome-got-it')?.addEventListener('click', dismiss, { once: true });
+  modal.querySelectorAll('[data-close="modal-welcome"]').forEach(b => b.addEventListener('click', dismiss, { once: true }));
+  modal.addEventListener('click', e => { if (e.target === modal) dismiss(); }, { once: true });
+}
+
 // ── Migration: build state.spaces from legacy collections ──
 // IDEMPOTENT: also catches "orphan" entities that exist in legacy collections
 // but aren't referenced by any space (e.g. after restoring a pre-v4 backup).
@@ -4139,7 +4224,9 @@ document.querySelectorAll('.cross-nav-btn').forEach(b => {
 });
 
 // ── Init ──
+const _seededFresh = (!state.spaces || state.spaces.length === 0);
 migrateToSpaces();
+if (_seededFresh) seedSampleData();
 renderSidebar();
 const _addSpaceBtn = document.getElementById('add-space-btn');
 if (_addSpaceBtn) _addSpaceBtn.addEventListener('click', addSpace);
@@ -4170,3 +4257,6 @@ BackupManager.init();
 
 // Default landing view: All Tasks
 showCrossView('all-tasks');
+
+// First-run welcome modal
+maybeShowWelcome();
