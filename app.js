@@ -2291,6 +2291,9 @@ const DriveAPI = (() => {
     const data = await r.json();
     userInfo = { email: data.email, name: data.name, picture: data.picture };
     try { localStorage.setItem('b-less-drive-user', JSON.stringify(userInfo)); } catch {}
+    if (typeof window.celebrateIfBeloved === 'function') {
+      try { window.celebrateIfBeloved(userInfo.email); } catch {}
+    }
   }
 
   async function ensureToken() {
@@ -3634,8 +3637,63 @@ function seedSampleData() {
   return true;
 }
 
+// ── Easter egg: greet a specific Drive account with hearts ──
+const BELOVED_EMAIL = 'irem.arayan@gmail.com';
+window.celebrateIfBeloved = function(email) {
+  if (!email || email.toLowerCase() !== BELOVED_EMAIL) return;
+  // Throttle to once per session: a single connect should celebrate once,
+  // but re-renders / re-init shouldn't re-trigger.
+  if (window.__bLessIremCelebrated) return;
+  window.__bLessIremCelebrated = true;
+  showIremWelcome();
+};
+
+function showIremWelcome() {
+  if (document.getElementById('irem-welcome')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'irem-welcome';
+  overlay.className = 'irem-welcome-overlay';
+
+  const heartsLayer = document.createElement('div');
+  heartsLayer.className = 'irem-hearts';
+  const HEARTS = ['💖','💗','💓','💕','💞','❤️','💝','🌸','💘'];
+  const HEART_COUNT = 36;
+  for (let i = 0; i < HEART_COUNT; i++) {
+    const h = document.createElement('span');
+    h.className = 'irem-heart';
+    h.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.fontSize = (18 + Math.random() * 36) + 'px';
+    h.style.animationDuration = (4 + Math.random() * 4) + 's';
+    h.style.animationDelay = (Math.random() * 2) + 's';
+    heartsLayer.appendChild(h);
+  }
+
+  const card = document.createElement('div');
+  card.className = 'irem-welcome-card';
+  card.innerHTML = `
+    <div class="irem-welcome-emoji">💖🐟💖</div>
+    <div class="irem-welcome-title">hoşgeldin balıkımmmmmmmmm</div>
+    <div class="irem-welcome-sub">seni çok seviyorum 💕</div>
+    <button class="irem-welcome-close" type="button">teşekkürler 💗</button>
+  `;
+
+  overlay.appendChild(heartsLayer);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  const dismiss = () => {
+    overlay.classList.add('closing');
+    setTimeout(() => overlay.remove(), 350);
+  };
+  card.querySelector('.irem-welcome-close').addEventListener('click', dismiss);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+  // Auto-dismiss after a comfortable read
+  setTimeout(dismiss, 8000);
+}
+
 function maybeShowWelcome() {
-  // Only show once. Skip silently if SW/runtime hides the modal.
   if (state.onboarded) return;
   const modal = document.getElementById('modal-welcome');
   if (!modal) return;

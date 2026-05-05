@@ -946,6 +946,117 @@ main { flex: 1; overflow: hidden; display: flex; }
 .modal-welcome .modal-actions {
   display: flex; justify-content: flex-end;
 }
+
+/* ── Easter egg: irem'e hoşgeldin overlay ─────────────── */
+.irem-welcome-overlay {
+  position: fixed; inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background: radial-gradient(ellipse at center, rgba(255, 192, 218, .35), rgba(255, 105, 180, .55));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: iremFadeIn .3s ease-out;
+  overflow: hidden;
+  cursor: pointer;
+}
+.irem-welcome-overlay.closing { animation: iremFadeOut .35s ease-in forwards; }
+
+@keyframes iremFadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes iremFadeOut { from { opacity: 1 } to { opacity: 0 } }
+
+.irem-hearts {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.irem-heart {
+  position: absolute;
+  bottom: -10vh;
+  animation-name: iremFloat;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 2px 4px rgba(255, 105, 180, .35));
+  user-select: none;
+}
+@keyframes iremFloat {
+  0%   { transform: translateY(0) translateX(0)     rotate(0);    opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translateY(-55vh) translateX(20px) rotate(15deg);  opacity: 1; }
+  100% { transform: translateY(-110vh) translateX(-20px) rotate(-10deg); opacity: 0; }
+}
+
+.irem-welcome-card {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #fff0f6, #ffe1ec);
+  border: 2px solid rgba(255, 105, 180, .4);
+  border-radius: 24px;
+  padding: 32px 36px;
+  max-width: 92vw;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(255, 105, 180, .35), 0 0 0 6px rgba(255, 255, 255, .35);
+  animation: iremPop .55s cubic-bezier(.22, 1.2, .36, 1) both;
+  cursor: default;
+}
+@keyframes iremPop {
+  0%   { transform: scale(.6) rotate(-4deg); opacity: 0; }
+  60%  { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.irem-welcome-emoji {
+  font-size: 48px;
+  margin-bottom: 8px;
+  animation: iremBeat 1.2s ease-in-out infinite;
+}
+@keyframes iremBeat {
+  0%, 100% { transform: scale(1); }
+  20%      { transform: scale(1.15); }
+  40%      { transform: scale(1); }
+  60%      { transform: scale(1.1); }
+}
+
+.irem-welcome-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #d6336c;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 8px rgba(255, 105, 180, .25);
+}
+.irem-welcome-sub {
+  font-size: 16px;
+  color: #c2255c;
+  margin-bottom: 22px;
+  font-weight: 500;
+}
+.irem-welcome-close {
+  background: linear-gradient(135deg, #ff6fa8, #ff85c1);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 26px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(214, 51, 108, .35);
+  transition: transform .15s ease, box-shadow .15s ease;
+  font-family: inherit;
+}
+.irem-welcome-close:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 22px rgba(214, 51, 108, .45);
+}
+
+@media (max-width: 480px) {
+  .irem-welcome-card { padding: 26px 22px; border-radius: 20px; }
+  .irem-welcome-emoji { font-size: 40px; }
+  .irem-welcome-title { font-size: 22px; }
+  .irem-welcome-sub { font-size: 14px; }
+}
 .add-item-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
