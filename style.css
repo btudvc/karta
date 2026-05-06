@@ -65,6 +65,53 @@
 /* Date input picker icon turns invisible on dark surfaces in some browsers */
 :root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
 
+/* Glass theme — soft pastel gradient background, surfaces are translucent
+   with backdrop-blur so content underneath bleeds through subtly. */
+:root[data-theme="glass"] {
+  --bg:           #eef1ff;
+  --surface:      rgba(255, 255, 255, .65);
+  --surface-2:    rgba(255, 255, 255, .42);
+  --surface-3:    rgba(255, 255, 255, .8);
+  --border:       rgba(255, 255, 255, .55);
+  --border-2:     rgba(180, 200, 240, .45);
+  --text:         #0d1130;
+  --muted:        #4f5879;
+  --muted-2:      #7d86a3;
+  --shadow-sm:    0 1px 3px rgba(60, 80, 140, .10);
+  --shadow:       0 8px 24px rgba(60, 80, 140, .16);
+  --shadow-lg:    0 20px 50px rgba(60, 80, 140, .24);
+  color-scheme: light;
+}
+:root[data-theme="glass"] body {
+  background:
+    radial-gradient(at 18% 12%, rgba(170, 215, 255, .85) 0%, transparent 45%),
+    radial-gradient(at 82% 22%, rgba(255, 196, 232, .75) 0%, transparent 45%),
+    radial-gradient(at 50% 90%, rgba(208, 220, 255, .85) 0%, transparent 55%),
+    #eef1ff;
+  background-attachment: fixed;
+}
+/* Frosted chrome — pill, modals, sidebar */
+:root[data-theme="glass"] .bottom-nav,
+:root[data-theme="glass"] .modal,
+:root[data-theme="glass"] .space-sidebar,
+:root[data-theme="glass"] .modal-overlay,
+:root[data-theme="glass"] .backup-popover {
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
+:root[data-theme="glass"] .modal-overlay { background: rgba(180, 200, 240, .25); }
+:root[data-theme="glass"] .visit-card,
+:root[data-theme="glass"] .meeting-card,
+:root[data-theme="glass"] .robot-card,
+:root[data-theme="glass"] .at-task,
+:root[data-theme="glass"] .streak-stat,
+:root[data-theme="glass"] .palette-swatch,
+:root[data-theme="glass"] .more-card {
+  background: rgba(255, 255, 255, .55);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
 :root {
   --radius-xs:    5px;
   --radius-sm:    7px;
@@ -108,27 +155,10 @@ body {
 svg { display: inline-block; vertical-align: -0.18em; flex-shrink: 0; }
 
 /* ─── HEADER ────────────────────────────────────────────── */
-header {
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  padding-left: max(18px, env(safe-area-inset-left));
-  padding-right: max(18px, env(safe-area-inset-right));
-  height: 54px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  gap: 24px;
-  flex-shrink: 0;
-  z-index: 10;
-  position: relative;
-}
+/* Hidden everywhere now — all entries (Today/Calendar/Visits/Settings) live
+   in the floating bottom pill on both web and mobile. */
+header { display: none; }
 
-/* Mobile header optimizations */
-@media (max-width: 600px) {
-  header {
-    display: none;
-  }
-}
 
 /* ── Daily / Job mode switcher ────────────────────────── */
 .mode-switcher {
@@ -702,7 +732,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .bp-warn strong { font-weight: 600; }
 
 /* ─── MAIN ──────────────────────────────────────────────── */
-main { flex: 1; overflow: hidden; display: flex; }
+main { flex: 1; overflow: hidden; display: flex; padding-bottom: 76px; }
 
 /* v4: hide legacy navigation that the sidebar replaces */
 .v4-hidden { display: none !important; }
@@ -1010,12 +1040,12 @@ main { flex: 1; overflow: hidden; display: flex; }
   display: flex; justify-content: flex-end;
 }
 
-/* ── Quick-capture FAB (mobile only) ───────────────── */
+/* ── Quick-capture FAB (now visible on every viewport) ───────── */
 .quick-fab {
-  display: none;
+  display: inline-flex;
   position: fixed;
-  right: 16px;
-  bottom: calc(72px + env(safe-area-inset-bottom));
+  right: 18px;
+  bottom: calc(82px + env(safe-area-inset-bottom));
   width: 52px; height: 52px;
   border-radius: 50%;
   background: var(--accent);
@@ -2345,13 +2375,6 @@ main { flex: 1; overflow: hidden; display: flex; }
 
 /* ─── RESPONSIVE / MOBILE ──────────────────────────────── */
 @media (max-width: 800px) {
-  header {
-    padding: 0 12px;
-    gap: 10px;
-    height: 56px;
-    overflow: visible;
-    justify-content: center;
-  }
   .mode-switcher { padding: 2px; }
   .mode-btn { padding: 5px 10px; font-size: 12px; }
 
@@ -3227,8 +3250,45 @@ main { flex: 1; overflow: hidden; display: flex; }
   .subscription-actions { justify-content: flex-start; }
 }
 
-/* ─── BOTTOM NAV (mobile) ──────────────────────────────── */
-.bottom-nav { display: none; }
+/* ─── FLOATING NAV PILL (always visible, both web + mobile) ─────── */
+.bottom-nav {
+  display: inline-flex;
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 6px;
+  gap: 2px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .14), 0 2px 6px rgba(0, 0, 0, .06);
+  z-index: 100;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.bnav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.bnav-btn span { display: none; }
+.bnav-btn svg { width: 20px; height: 20px; stroke-width: 1.7; }
+.bnav-btn:hover { background: var(--surface-2); color: var(--text); }
+.bnav-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .space-drawer-backdrop { display: none; }
 
 /* Master-detail back button — hidden on desktop, re-shown inside the mobile @media block */
@@ -3483,40 +3543,7 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     padding-bottom: 64px;
   }
 
-  .bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 4px 0 calc(4px + env(safe-area-inset-bottom, 0px));
-    z-index: 50;
-  }
-  .bnav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 10.5px;
-    line-height: 1.1;
-    padding: 6px 4px 4px;
-    min-height: 50px;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: color .15s var(--ease), background .15s var(--ease);
-  }
-  .bnav-btn svg { stroke-width: 1.7; }
-  .bnav-btn.active {
-    color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .bnav-btn span { display: inline; }
+  .bnav-btn span:not(.job-label):not(.daily-label) { display: none; }
 
   /* Collapse top tabs and header right-side controls — these live in bottom nav / More now */
   header .tabs        { display: none; }
@@ -3527,11 +3554,6 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 
   /* "More" section stays scrollable above the bottom nav */
   #more.section.active { display: block; overflow-y: auto; }
-
-  /* Bug fix: an earlier mobile rule (`.tab span:not(.job-label):not(.daily-label) { display:none }`)
-     was hiding our bottom-nav text labels for Calendar/Visits/More because they have no mode class.
-     Re-enable label spans inside the bottom nav. */
-  .bnav-btn span:not(.job-label):not(.daily-label) { display: inline; }
 
   /* On mobile the calendar becomes a single vertical scroll: month grid first,
      then the selected-day panel below. The `1fr 320px` desktop layout would
