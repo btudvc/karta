@@ -9,42 +9,40 @@
    brand color. Status colors (green/red/yellow/etc.) are kept because
    they carry semantic meaning (priority, severity, completion state). */
 :root {
-  /* Single theme: dark liquid glass. Everything else (light, the previous
-     glass variant, palette overrides) was removed to keep one consistent
-     look. Surfaces are translucent rgba whites stacked on top of a dark
-     gradient body so backdrop-filter can produce the frosted look. */
-  --bg:           #0a0c14;
-  --surface:      rgba(255, 255, 255, .06);
-  --surface-2:    rgba(255, 255, 255, .04);
-  --surface-3:    rgba(255, 255, 255, .10);
-  --border:       rgba(255, 255, 255, .09);
-  --border-2:     rgba(255, 255, 255, .16);
+  /* Single theme: light liquid glass. Surfaces are translucent rgba whites
+     stacked on a soft white-tinted background so backdrop-filter produces
+     the frosted look without sacrificing legibility. */
+  --bg:           #f3f5fb;
+  --surface:      rgba(255, 255, 255, .60);
+  --surface-2:    rgba(255, 255, 255, .42);
+  --surface-3:    rgba(255, 255, 255, .85);
+  --border:       rgba(20, 30, 60, .08);
+  --border-2:     rgba(20, 30, 60, .14);
 
-  --text:         #f0f3fa;
-  --muted:        #98a0b3;
-  --muted-2:      #6b7185;
+  --text:         #0c1224;
+  --muted:        #555c75;
+  --muted-2:      #8089a5;
 
-  --accent:       #a4b6ff;
-  --accent-h:     #c0cfff;
-  --accent-soft:  rgba(164, 182, 255, .14);
-  --accent-soft2: rgba(164, 182, 255, .26);
-  --on-accent:    #0a0c14;
+  --accent:       #4f46e5;
+  --accent-h:     #4338ca;
+  --accent-soft:  rgba(79, 70, 229, .10);
+  --accent-soft2: rgba(79, 70, 229, .20);
+  --on-accent:    #ffffff;
 
-  --green:        #4ade80;
-  --orange:       #fb923c;
-  --red:          #f87171;
-  --purple:       #c4b5fd;
-  --yellow:       #fcd34d;
-  --rose:         #fb7185;
+  --green:        #16a34a;
+  --orange:       #d97706;
+  --red:          #dc2626;
+  --purple:       #7c3aed;
+  --yellow:       #ca8a04;
+  --rose:         #e11d48;
 
-  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .35);
-  --shadow:       0 8px 24px rgba(0, 0, 0, .45);
-  --shadow-lg:    0 20px 60px rgba(0, 0, 0, .55);
-  color-scheme: dark;
+  --shadow-sm:    0 1px 2px rgba(20, 30, 60, .06);
+  --shadow:       0 8px 24px rgba(20, 30, 60, .12);
+  --shadow-lg:    0 20px 50px rgba(20, 30, 60, .18);
+  color-scheme: light;
 }
 
-input[type="date"] { color-scheme: dark; }
-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
+input[type="date"] { color-scheme: light; }
 
 :root {
   --radius-xs:    5px;
@@ -60,16 +58,9 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* Dark gradient backdrop for the liquid-glass aesthetic — three soft
-     radial color washes over a near-black base so frosted surfaces have
-     something interesting to bleed through. Fixed so it doesn't shift
-     while content scrolls. */
-  background:
-    radial-gradient(at 18% 8%,  rgba(80, 110, 200, .35) 0%, transparent 50%),
-    radial-gradient(at 80% 20%, rgba(160, 70, 150, .30) 0%, transparent 50%),
-    radial-gradient(at 50% 92%, rgba(40, 80, 160, .35) 0%, transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  /* Plain off-white background — no gradient. Frosted surfaces still feel
+     glassy thanks to backdrop-filter and the translucent rgba whites. */
+  background: var(--bg);
   color: var(--text);
   /* Use dynamic viewport height so iOS Safari's URL bar doesn't push content
      below the visible area. Falls back to 100vh on older browsers. */
@@ -701,10 +692,10 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   width: 240px;
   flex-shrink: 0;
   /* Frosted glass — content behind reads through but stays legible */
-  background: rgba(20, 22, 32, .55);
+  background: rgba(255, 255, 255, .55);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid rgba(255, 255, 255, .08);
+  border-right: 1px solid rgba(20, 30, 60, .08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -999,18 +990,18 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   width: 52px; height: 52px;
   border-radius: 50%;
   /* Match the pill's frosted-glass look instead of a solid accent block */
-  background: rgba(20, 22, 32, .28);
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, .10);
+  background: rgba(255, 255, 255, .55);
+  color: var(--accent);
+  border: 1px solid rgba(255, 255, 255, .65);
   cursor: pointer;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
+  box-shadow: 0 12px 32px rgba(20, 30, 60, .14), 0 2px 6px rgba(20, 30, 60, .08);
   z-index: 90;
   align-items: center; justify-content: center;
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   transition: transform .12s var(--ease), background .12s var(--ease);
 }
-.quick-fab:hover  { background: rgba(40, 44, 60, .4); }
+.quick-fab:hover  { background: rgba(255, 255, 255, .75); }
 .quick-fab:active { transform: scale(.96); }
 @media (max-width: 800px) {
   .quick-fab { display: inline-flex; }
@@ -2838,9 +2829,22 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .cal-day.today .cal-day-num { color: var(--accent); font-weight: 700; }
 .cal-day.selected  { border-color: var(--accent); background: var(--accent-soft2); }
 
+.cal-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cal-day-dow-inline {
+  display: none;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 .cal-day-num {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
 }
 
@@ -3222,12 +3226,12 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   left: 50%;
   transform: translateX(-50%);
   /* Heavy frosting — barely there until content scrolls underneath */
-  background: rgba(20, 22, 32, .28);
-  border: 1px solid rgba(255, 255, 255, .10);
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .65);
   border-radius: 999px;
   padding: 5px 6px;
   gap: 2px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
+  box-shadow: 0 12px 32px rgba(20, 30, 60, .14), 0 2px 6px rgba(20, 30, 60, .08);
   z-index: 100;
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
@@ -3416,10 +3420,10 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     max-height: none;
     /* Heavier opacity on the drawer than on the desktop sidebar — it overlays
        full content, so legibility wins over translucency. */
-    background: rgba(15, 17, 26, .82);
+    background: rgba(255, 255, 255, .82);
     backdrop-filter: blur(32px) saturate(180%);
     -webkit-backdrop-filter: blur(32px) saturate(180%);
-    border-right: 1px solid rgba(255, 255, 255, .08);
+    border-right: 1px solid rgba(20, 30, 60, .08);
     border-bottom: none;
     box-shadow: var(--shadow-lg);
     transform: translateX(-104%);
@@ -3489,7 +3493,31 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 .draft-content textarea:focus {
   border-color: var(--accent);
 }
-  .cal-grid        { grid-auto-rows: minmax(58px, auto); padding: 8px; }
+  /* Stack the week vertically on phones — 7 narrow columns can't fit
+     event labels readably side-by-side. */
+  .cal-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    padding: 8px;
+    gap: 6px;
+  }
+  .cal-dow { display: none; }
+  .cal-day {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    min-height: 0;
+    padding: 10px 12px;
+  }
+  .cal-day-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 44px;
+  }
+  .cal-day-dow-inline { display: inline; }
+  .cal-day-events { flex: 1; gap: 4px; }
   .cal-day-panel   { max-height: none; }
 
   /* Mobile master-detail: when a project is selected, hide the project list and

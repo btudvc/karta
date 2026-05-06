@@ -3040,6 +3040,9 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
   if (otherMonth)         classes.push('other-mo');
   if (dStr === todayStr)  classes.push('today');
   if (dStr === calSelected) classes.push('selected');
+  // Pre-compute the weekday label for the inline mobile layout
+  const dowIdx = (d.getDay() + 6) % 7;
+  const dowLabel = DOW[dowIdx];
   const eventsHtml = events.slice(0, 3).map(ev => {
     const goAttr = ev.kind === 'meeting' ? `data-go-meeting="${ev.id}"`
                   : ev.kind === 'visit'   ? `data-go-visit="${ev.id}"`
@@ -3050,7 +3053,10 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
   const more = events.length > 3 ? `<div class="cal-day-event cal-day-event-more">+${events.length - 3}</div>` : '';
   return `
     <div class="${classes.join(' ')}" data-date="${dStr}">
-      <div class="cal-day-num">${d.getDate()}</div>
+      <div class="cal-day-head">
+        <span class="cal-day-dow-inline">${dowLabel}</span>
+        <span class="cal-day-num">${d.getDate()}</span>
+      </div>
       <div class="cal-day-events">${eventsHtml}${more}</div>
     </div>`;
 }
@@ -3376,12 +3382,12 @@ function renderJournalList() {
   });
 }
 
-// Single fixed theme: dark liquid glass. CSS in style.css owns the actual
+// Single fixed theme: light liquid glass. CSS in style.css owns the actual
 // look; we just set the meta theme-color for the Android address bar so
-// the OS chrome blends with the dark gradient body.
+// the OS chrome blends with the soft white body.
 (function initTheme() {
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', '#0a0c14');
+  if (meta) meta.setAttribute('content', '#f3f5fb');
 })();
 
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
@@ -5109,7 +5115,7 @@ document.getElementById('bnav-search-btn')?.addEventListener('click', () => open
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.12.1';
+const APP_VERSION = '4.13.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
