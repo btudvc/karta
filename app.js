@@ -5193,9 +5193,9 @@ setTimeout(() => BackupManager.init(), 800);
 renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 
-// Show app version in Settings. Kept as a single string so bumps stay
-// trivial (this should match the sw.js cache VERSION).
-const APP_VERSION = '4.9.3';
+// Version is rendered straight into index.html so it shows even if app.js
+// errors out. JS-side override kept here as a safety net for future bumps.
+const APP_VERSION = '4.9.4';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 

@@ -3239,7 +3239,9 @@ main { flex: 1; overflow: hidden; display: flex; }
   padding: 28px 32px;
 }
 @media (max-width: 800px) {
-  .more-page { max-width: 560px; margin: 0 auto; padding: 18px 14px 24px; }
+  /* Add bottom-nav clearance so the version line at the foot of the page
+     isn't trapped under the fixed nav. */
+  .more-page { max-width: 560px; margin: 0 auto; padding: 18px 14px 96px; }
 }
 .more-card-list {
   display: grid;
