@@ -2497,9 +2497,20 @@ const DriveAPI = (() => {
 // ── BACKUP MANAGER (PWA, Drive API only) ───────────────
 const BackupManager = (() => {
   const INTERVAL   = 5 * 60 * 1000;
+  const SYNC_KEY   = 'b-less-last-backup-at';
   let intervalId   = null;
   let debounceId   = null;
-  let lastBackup   = null;
+  // lastBackup is the wall-clock time of the most-recent push we know about
+  // (or pull, after we accept Drive's timestamp). Persist it to localStorage
+  // so we can compare against the Drive backup on next launch and avoid
+  // re-uploading a stale local copy that would clobber another device.
+  let lastBackup   = (() => {
+    try { const v = localStorage.getItem(SYNC_KEY); return v ? parseInt(v, 10) || null : null; } catch { return null; }
+  })();
+  function setLastBackup(ts) {
+    lastBackup = ts;
+    try { localStorage.setItem(SYNC_KEY, String(ts)); } catch {}
+  }
   let filename     = (() => {
     try { return localStorage.getItem('b-less-backup-filename') || 'b-less-backup.json'; }
     catch { return 'b-less-backup.json'; }
@@ -2613,6 +2624,7 @@ const BackupManager = (() => {
         } else if (act === 'signout') {
           DriveAPI.signOut();
           lastBackup = null;
+          try { localStorage.removeItem(SYNC_KEY); } catch {}
           clearInterval(intervalId);
           render();
         } else if (act === 'backup-now') {
@@ -2640,9 +2652,28 @@ const BackupManager = (() => {
     const json = JSON.stringify({ exportedAt: new Date().toISOString(), data: state }, null, 2);
     try {
       await DriveAPI.saveBackup(json, filename);
-      lastBackup = Date.now();
+      setLastBackup(Date.now());
       render();
     } catch (e) { console.warn('Backup failed:', e); }
+  }
+
+  // Quietly fetch the Drive backup and apply it if it's newer than the most
+  // recent push we performed from this device. No prompt — this is the
+  // multi-device sync path. Returns true when a restore happened.
+  async function pullIfNewer() {
+    const backup = await readBackupFromDrive();
+    if (!backup || !backup.data) return false;
+    const driveTime = new Date(backup.exportedAt).getTime();
+    if (!Number.isFinite(driveTime)) return false;
+    // Grace window so our own just-pushed backup (timestamp jitter) doesn't
+    // immediately bounce back through this path on the same device.
+    const GRACE = 5000;
+    if (lastBackup && driveTime <= lastBackup + GRACE) return false;
+    Object.assign(state, backup.data);
+    setLastBackup(driveTime);
+    save();
+    if (typeof renderAll === 'function') renderAll();
+    return true;
   }
 
   async function readBackupFromDrive() {
@@ -2666,6 +2697,8 @@ const BackupManager = (() => {
       : t('bp.restore_load',      { date: backupDate, n: projectCount });
     if (!hasData || confirm(msg)) {
       Object.assign(state, backup.data);
+      const driveTime = new Date(backup.exportedAt).getTime();
+      if (Number.isFinite(driveTime)) setLastBackup(driveTime);
       save();
       renderAll();
       return true;
@@ -2675,7 +2708,12 @@ const BackupManager = (() => {
 
   function scheduleInterval() {
     clearInterval(intervalId);
-    intervalId = setInterval(doBackup, INTERVAL);
+    intervalId = setInterval(async () => {
+      // Pull first so we don't push an outdated local copy that would
+      // overwrite changes another device made while we were idle.
+      await pullIfNewer().catch(() => {});
+      doBackup();
+    }, INTERVAL);
   }
 
   function onDataChange() {
@@ -2697,10 +2735,18 @@ const BackupManager = (() => {
     }
     const ok = await DriveAPI.trySilentSignIn().catch(() => false);
     if (ok) {
+      // Always check Drive for a newer backup before we start pushing — this
+      // is what makes web ↔ mobile two-way sync actually work. Without this,
+      // the device that opens last would silently overwrite the other's
+      // changes with its stale local snapshot.
+      await pullIfNewer().catch(() => {});
+      // First-time user with no local data and no Drive watermark? Fall back
+      // to the existing prompt-based restore so they don't lose anything by
+      // accident.
       const hasData = (state.robots || []).length > 0 ||
                       (state.fieldVisits || []).length > 0 ||
                       (state.meetings || []).length > 0;
-      if (!hasData) await tryRestore();
+      if (!hasData && !lastBackup) await tryRestore();
       scheduleInterval();
       doBackup();
     }
