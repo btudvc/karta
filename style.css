@@ -9,108 +9,42 @@
    brand color. Status colors (green/red/yellow/etc.) are kept because
    they carry semantic meaning (priority, severity, completion state). */
 :root {
-  /* Surfaces — zinc/neutral */
-  --bg:           #fafafa;
-  --surface:      #ffffff;
-  --surface-2:    #f4f4f5;
-  --surface-3:    #e4e4e7;
-  --border:       #e4e4e7;
-  --border-2:     #d4d4d8;
+  /* Single theme: dark liquid glass. Everything else (light, the previous
+     glass variant, palette overrides) was removed to keep one consistent
+     look. Surfaces are translucent rgba whites stacked on top of a dark
+     gradient body so backdrop-filter can produce the frosted look. */
+  --bg:           #0a0c14;
+  --surface:      rgba(255, 255, 255, .06);
+  --surface-2:    rgba(255, 255, 255, .04);
+  --surface-3:    rgba(255, 255, 255, .10);
+  --border:       rgba(255, 255, 255, .09);
+  --border-2:     rgba(255, 255, 255, .16);
 
-  /* Text */
-  --text:         #18181b;
-  --muted:        #71717a;
-  --muted-2:      #a1a1aa;
+  --text:         #f0f3fa;
+  --muted:        #98a0b3;
+  --muted-2:      #6b7185;
 
-  /* Brand — monochrome on light: dark gray serves as the "active" tone */
-  --accent:       #27272a;        /* zinc-800 */
-  --accent-h:     #18181b;        /* zinc-900 */
-  --accent-soft:  rgba(39,39,42,.07);
-  --accent-soft2: rgba(39,39,42,.14);
-  --on-accent:    #fafafa;        /* light text on dark accent */
+  --accent:       #a4b6ff;
+  --accent-h:     #c0cfff;
+  --accent-soft:  rgba(164, 182, 255, .14);
+  --accent-soft2: rgba(164, 182, 255, .26);
+  --on-accent:    #0a0c14;
 
-  --green:        #16a34a;
-  --orange:       #d97706;
-  --red:          #dc2626;
-  --purple:       #71717a;        /* visits, neutral gray */
-  --yellow:       #ca8a04;
-  --rose:         #e11d48;
+  --green:        #4ade80;
+  --orange:       #fb923c;
+  --red:          #f87171;
+  --purple:       #c4b5fd;
+  --yellow:       #fcd34d;
+  --rose:         #fb7185;
 
-  --shadow-sm:    0 1px 2px rgba(0,0,0,.06);
-  --shadow:       0 4px 16px rgba(0,0,0,.08);
-  --shadow-lg:    0 16px 48px rgba(0,0,0,.18);
-}
-
-/* Dark theme — keep accent vars alone (they're set by the palette picker
-   and work on either background) and just flip surfaces, borders, text
-   so legibility stays correct. */
-:root[data-theme="dark"] {
-  --bg:           #0b0b0f;
-  --surface:      #16161b;
-  --surface-2:    #1f1f25;
-  --surface-3:    #2a2a31;
-  --border:       #26262d;
-  --border-2:     #34343c;
-
-  --text:         #f4f4f5;
-  --muted:        #a1a1aa;
-  --muted-2:      #71717a;
-
-  --shadow-sm:    0 1px 2px rgba(0,0,0,.5);
-  --shadow:       0 4px 16px rgba(0,0,0,.55);
-  --shadow-lg:    0 16px 48px rgba(0,0,0,.7);
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .35);
+  --shadow:       0 8px 24px rgba(0, 0, 0, .45);
+  --shadow-lg:    0 20px 60px rgba(0, 0, 0, .55);
   color-scheme: dark;
 }
-:root[data-theme="dark"] .quick-meta input[type="date"] { color-scheme: dark; }
-/* Date input picker icon turns invisible on dark surfaces in some browsers */
-:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
 
-/* Glass theme — soft pastel gradient background, surfaces are translucent
-   with backdrop-blur so content underneath bleeds through subtly. */
-:root[data-theme="glass"] {
-  --bg:           #eef1ff;
-  --surface:      rgba(255, 255, 255, .65);
-  --surface-2:    rgba(255, 255, 255, .42);
-  --surface-3:    rgba(255, 255, 255, .8);
-  --border:       rgba(255, 255, 255, .55);
-  --border-2:     rgba(180, 200, 240, .45);
-  --text:         #0d1130;
-  --muted:        #4f5879;
-  --muted-2:      #7d86a3;
-  --shadow-sm:    0 1px 3px rgba(60, 80, 140, .10);
-  --shadow:       0 8px 24px rgba(60, 80, 140, .16);
-  --shadow-lg:    0 20px 50px rgba(60, 80, 140, .24);
-  color-scheme: light;
-}
-:root[data-theme="glass"] body {
-  background:
-    radial-gradient(at 18% 12%, rgba(170, 215, 255, .85) 0%, transparent 45%),
-    radial-gradient(at 82% 22%, rgba(255, 196, 232, .75) 0%, transparent 45%),
-    radial-gradient(at 50% 90%, rgba(208, 220, 255, .85) 0%, transparent 55%),
-    #eef1ff;
-  background-attachment: fixed;
-}
-/* Frosted chrome — pill, modals, sidebar */
-:root[data-theme="glass"] .bottom-nav,
-:root[data-theme="glass"] .modal,
-:root[data-theme="glass"] .space-sidebar,
-:root[data-theme="glass"] .modal-overlay,
-:root[data-theme="glass"] .backup-popover {
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-}
-:root[data-theme="glass"] .modal-overlay { background: rgba(180, 200, 240, .25); }
-:root[data-theme="glass"] .visit-card,
-:root[data-theme="glass"] .meeting-card,
-:root[data-theme="glass"] .robot-card,
-:root[data-theme="glass"] .at-task,
-:root[data-theme="glass"] .streak-stat,
-:root[data-theme="glass"] .palette-swatch,
-:root[data-theme="glass"] .more-card {
-  background: rgba(255, 255, 255, .55);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-}
+input[type="date"] { color-scheme: dark; }
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
 
 :root {
   --radius-xs:    5px;
@@ -126,7 +60,16 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
+  /* Dark gradient backdrop for the liquid-glass aesthetic — three soft
+     radial color washes over a near-black base so frosted surfaces have
+     something interesting to bleed through. Fixed so it doesn't shift
+     while content scrolls. */
+  background:
+    radial-gradient(at 18% 8%,  rgba(80, 110, 200, .35) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(160, 70, 150, .30) 0%, transparent 50%),
+    radial-gradient(at 50% 92%, rgba(40, 80, 160, .35) 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   /* Use dynamic viewport height so iOS Safari's URL bar doesn't push content
      below the visible area. Falls back to 100vh on older browsers. */
@@ -732,7 +675,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .bp-warn strong { font-weight: 600; }
 
 /* ─── MAIN ──────────────────────────────────────────────── */
-main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
+main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 
 /* v4: hide legacy navigation that the sidebar replaces */
 .v4-hidden { display: none !important; }
@@ -1048,16 +991,19 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
   bottom: calc(82px + env(safe-area-inset-bottom));
   width: 52px; height: 52px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
-  border: none;
+  /* Match the pill's frosted-glass look instead of a solid accent block */
+  background: rgba(20, 22, 32, .28);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, .10);
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
   z-index: 90;
   align-items: center; justify-content: center;
-  transition: transform .12s var(--ease), filter .12s var(--ease);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  transition: transform .12s var(--ease), background .12s var(--ease);
 }
-.quick-fab:hover  { filter: brightness(1.05); }
+.quick-fab:hover  { background: rgba(40, 44, 60, .4); }
 .quick-fab:active { transform: scale(.96); }
 @media (max-width: 800px) {
   .quick-fab { display: inline-flex; }
@@ -2838,7 +2784,7 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
   /* minmax(0, 1fr) prevents long event labels from blowing up column width
      and forcing the whole grid to scroll horizontally. */
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
+  grid-template-rows: auto 1fr;
   gap: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -3257,21 +3203,16 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  /* Translucent so content scrolling underneath is visible through the bar */
-  background: rgba(255, 255, 255, .55);
-  border: 1px solid rgba(255, 255, 255, .55);
+  /* Heavy frosting — barely there until content scrolls underneath */
+  background: rgba(20, 22, 32, .28);
+  border: 1px solid rgba(255, 255, 255, .10);
   border-radius: 999px;
   padding: 5px 6px;
   gap: 2px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .14), 0 2px 6px rgba(0, 0, 0, .06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
   z-index: 100;
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-}
-:root[data-theme="dark"] .bottom-nav {
-  background: rgba(30, 30, 35, .55);
-  border-color: rgba(255, 255, 255, .08);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
 }
 .bnav-btn {
   display: inline-flex;
@@ -3368,78 +3309,6 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
 .more-card-static { cursor: default; }
 .more-card-static:hover { border-color: var(--border); background: var(--surface); }
 
-/* ── Palette picker (Settings → Theme) ─────────────── */
-.palette-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-@media (max-width: 480px) {
-  .palette-grid { grid-template-columns: repeat(2, 1fr); }
-}
-.palette-swatch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text);
-  transition: border-color .15s var(--ease), background .15s var(--ease), transform .12s var(--ease);
-  text-align: left;
-}
-.palette-swatch:hover { border-color: var(--border-2); background: var(--surface-2); }
-.palette-swatch.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-.palette-dot {
-  display: inline-block;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px var(--border-2), 0 1px 3px rgba(0,0,0,.12);
-  flex-shrink: 0;
-}
-.palette-name { font-weight: 500; }
-
-/* Light/dark toggle */
-.theme-toggle {
-  display: inline-flex;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 3px;
-  gap: 2px;
-  margin-bottom: 12px;
-}
-.theme-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent;
-  border: none;
-  border-radius: calc(var(--radius-sm) - 2px);
-  color: var(--muted);
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background .15s var(--ease), color .15s var(--ease);
-}
-.theme-toggle-btn:hover { color: var(--text); }
-.theme-toggle-btn.active {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-sm);
-}
 
 .more-version {
   margin: 22px 4px 8px;

@@ -2955,7 +2955,10 @@ document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
 });
 
 // ── CALENDAR ───────────────────────────────────────────
-let calMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })();
+// Calendar is anchored on the Monday of the displayed week. Showing one full
+// week at a time keeps each day cell tall enough to actually read events,
+// instead of squashing 30+ days into one viewport.
+let calWeekStart = (() => { const d = new Date(); d.setHours(0,0,0,0); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d; })();
 let calSelected = null; // 'YYYY-MM-DD'
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2969,11 +2972,15 @@ function renderCalendar() {
   const grid = document.getElementById('cal-grid');
   const title = document.getElementById('cal-title');
   if (!grid || !title) return;
-  title.textContent = `${MONTH_NAMES[calMonth.m]} ${calMonth.y}`;
 
-  const first = new Date(calMonth.y, calMonth.m, 1);
-  const startDow = (first.getDay() + 6) % 7; // Mon=0
-  const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
+  const weekEnd = new Date(calWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  const sameMonth = calWeekStart.getMonth() === weekEnd.getMonth() && calWeekStart.getFullYear() === weekEnd.getFullYear();
+  const fmt = (d) => `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
+  title.textContent = sameMonth
+    ? `${fmt(calWeekStart)} – ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`
+    : `${fmt(calWeekStart)} – ${fmt(weekEnd)}, ${weekEnd.getFullYear()}`;
+
   const todayStr = ymd(new Date());
 
   // Pre-index events by date — calendar is mode-agnostic, show everything
@@ -2997,29 +3004,11 @@ function renderCalendar() {
     (eventsByDate[ev.date] = eventsByDate[ev.date] || []).push({ kind: 'event', mode: 'job', label: ev.title || 'Event', id: ev.id });
   });
 
-  // Build cells: 7 dow headers + leading blanks + days + trailing blanks
   let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
-
-  // Previous month tail
-  const prevMonthDays = new Date(calMonth.y, calMonth.m, 0).getDate();
-  for (let i = startDow - 1; i >= 0; i--) {
-    const dn = prevMonthDays - i;
-    const d = new Date(calMonth.y, calMonth.m - 1, dn);
-    html += renderCalDay(d, eventsByDate, todayStr, true);
-  }
-
-  // Current month
-  for (let dn = 1; dn <= daysInMonth; dn++) {
-    const d = new Date(calMonth.y, calMonth.m, dn);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(calWeekStart);
+    d.setDate(d.getDate() + i);
     html += renderCalDay(d, eventsByDate, todayStr, false);
-  }
-
-  // Trailing blanks (fill to multiple of 7)
-  const total = startDow + daysInMonth;
-  const trailing = (7 - (total % 7)) % 7;
-  for (let i = 1; i <= trailing; i++) {
-    const d = new Date(calMonth.y, calMonth.m + 1, i);
-    html += renderCalDay(d, eventsByDate, todayStr, true);
   }
 
   grid.innerHTML = html;
@@ -3282,12 +3271,15 @@ function renderCalDayPanel() {
   const prev  = document.getElementById('cal-prev');
   const next  = document.getElementById('cal-next');
   const today = document.getElementById('cal-today');
-  if (prev)  prev.addEventListener('click',  () => { calMonth.m--; if (calMonth.m < 0)  { calMonth.m = 11; calMonth.y--; } renderCalendar(); });
-  if (next)  next.addEventListener('click',  () => { calMonth.m++; if (calMonth.m > 11) { calMonth.m = 0;  calMonth.y++; } renderCalendar(); });
+  const shift = (days) => { calWeekStart = new Date(calWeekStart); calWeekStart.setDate(calWeekStart.getDate() + days); renderCalendar(); };
+  if (prev)  prev.addEventListener('click',  () => shift(-7));
+  if (next)  next.addEventListener('click',  () => shift(7));
   if (today) today.addEventListener('click', () => {
-    const d = new Date();
-    calMonth = { y: d.getFullYear(), m: d.getMonth() };
-    calSelected = ymd(d);
+    const d = new Date(); d.setHours(0,0,0,0);
+    const dow = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dow);
+    calWeekStart = d;
+    calSelected = ymd(new Date());
     renderCalendar();
   });
 })();
@@ -3384,82 +3376,12 @@ function renderJournalList() {
   });
 }
 
-// ── THEME TOGGLE (light / dark) ────────────────────────
-const THEME_KEY = 'b-less-theme';
-function applyTheme(name) {
-  const allowed = { light: 1, dark: 1, glass: 1 };
-  const t = allowed[name] ? name : 'light';
-  document.documentElement.setAttribute('data-theme', t);
-  document.querySelectorAll('.theme-toggle-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.themeSet === t);
-  });
-  // Theme color helps Android Chrome paint the address bar to match.
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    const color = t === 'dark' ? '#0b0b0f' : t === 'glass' ? '#dde6fb' : '#fafafa';
-    meta.setAttribute('content', color);
-  }
-}
-function setTheme(name) {
-  try { localStorage.setItem(THEME_KEY, name); } catch {}
-  applyTheme(name);
-}
+// Single fixed theme: dark liquid glass. CSS in style.css owns the actual
+// look; we just set the meta theme-color for the Android address bar so
+// the OS chrome blends with the dark gradient body.
 (function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem(THEME_KEY); } catch {}
-  applyTheme(saved || 'light');
-})();
-
-// ── COLOR PALETTES ─────────────────────────────────────
-// Curated combos. Each defines accent + soft variants so the app stays
-// readable. Surfaces and text colors stay neutral; only the brand swaps.
-const PALETTES = [
-  { id: 'charcoal', name: 'Charcoal', accent: '#27272a', accentH: '#18181b', soft: 'rgba(39,39,42,.07)',  soft2: 'rgba(39,39,42,.14)',  onAccent: '#fafafa' },
-  { id: 'indigo',   name: 'Indigo',   accent: '#4f46e5', accentH: '#4338ca', soft: 'rgba(79,70,229,.10)', soft2: 'rgba(79,70,229,.18)', onAccent: '#ffffff' },
-  { id: 'emerald',  name: 'Emerald',  accent: '#059669', accentH: '#047857', soft: 'rgba(5,150,105,.10)', soft2: 'rgba(5,150,105,.18)', onAccent: '#ffffff' },
-  { id: 'rose',     name: 'Rose',     accent: '#e11d48', accentH: '#be123c', soft: 'rgba(225,29,72,.10)', soft2: 'rgba(225,29,72,.18)', onAccent: '#ffffff' },
-  { id: 'amber',    name: 'Amber',    accent: '#d97706', accentH: '#b45309', soft: 'rgba(217,119,6,.12)', soft2: 'rgba(217,119,6,.20)', onAccent: '#ffffff' },
-  { id: 'ocean',    name: 'Ocean',    accent: '#0891b2', accentH: '#0e7490', soft: 'rgba(8,145,178,.10)', soft2: 'rgba(8,145,178,.18)', onAccent: '#ffffff' },
-];
-const PALETTE_KEY = 'b-less-palette';
-
-function applyPalette(id) {
-  const p = PALETTES.find(x => x.id === id) || PALETTES[0];
-  const r = document.documentElement;
-  r.style.setProperty('--accent',       p.accent);
-  r.style.setProperty('--accent-h',     p.accentH);
-  r.style.setProperty('--accent-soft',  p.soft);
-  r.style.setProperty('--accent-soft2', p.soft2);
-  r.style.setProperty('--on-accent',    p.onAccent);
-  document.querySelectorAll('.palette-swatch').forEach(el => {
-    el.classList.toggle('active', el.dataset.palette === p.id);
-  });
-}
-
-function setPalette(id) {
-  try { localStorage.setItem(PALETTE_KEY, id); } catch {}
-  applyPalette(id);
-}
-
-function renderPaletteGrid() {
-  const grid = document.getElementById('palette-grid');
-  if (!grid) return;
-  const current = (() => { try { return localStorage.getItem(PALETTE_KEY); } catch { return null; } })() || 'charcoal';
-  grid.innerHTML = PALETTES.map(p => `
-    <button type="button" class="palette-swatch ${p.id === current ? 'active' : ''}" data-palette="${p.id}" aria-label="${p.name} theme" title="${p.name}">
-      <span class="palette-dot" style="background:${p.accent}"></span>
-      <span class="palette-name">${p.name}</span>
-    </button>
-  `).join('');
-  grid.querySelectorAll('.palette-swatch').forEach(el => {
-    el.addEventListener('click', () => setPalette(el.dataset.palette));
-  });
-}
-
-(function bootPalette() {
-  let saved = null;
-  try { saved = localStorage.getItem(PALETTE_KEY); } catch {}
-  applyPalette(saved || 'charcoal');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', '#0a0c14');
 })();
 
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
@@ -5010,8 +4932,6 @@ function activateSection(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
   document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.toggle('active', id === 'more'));
   if (id === 'robots' || id === 'topics') activeSection = id;
-  // Settings page lazy-renders dynamic widgets so they always re-mount fresh
-  if (id === 'more' && typeof renderPaletteGrid === 'function') renderPaletteGrid();
 }
 
 // ── Add Item picker (Lists / Meetings / Visits / Journal) ──
@@ -5184,16 +5104,12 @@ renderAll();
 initJournal();
 BackupManager.initUI();
 BackupManager.init();
-renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
-document.querySelectorAll('.theme-toggle-btn').forEach(b => {
-  b.addEventListener('click', () => setTheme(b.dataset.themeSet));
-});
 document.getElementById('bnav-search-btn')?.addEventListener('click', () => openSearchModal());
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.11.1';
+const APP_VERSION = '4.12.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
