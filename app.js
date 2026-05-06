@@ -5193,6 +5193,12 @@ setTimeout(() => BackupManager.init(), 800);
 renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 
+// Show app version in Settings. Kept as a single string so bumps stay
+// trivial (this should match the sw.js cache VERSION).
+const APP_VERSION = '4.9.3';
+const _verEl = document.getElementById('more-version');
+if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
+
 // Default landing view: All Tasks
 showCrossView('all-tasks');
 

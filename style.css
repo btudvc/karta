@@ -3331,6 +3331,15 @@ main { flex: 1; overflow: hidden; display: flex; }
   flex-shrink: 0;
 }
 .palette-name { font-weight: 500; }
+
+.more-version {
+  margin: 22px 4px 8px;
+  font-size: 11px;
+  letter-spacing: .4px;
+  color: var(--muted-2);
+  text-align: center;
+  user-select: none;
+}
 .more-card-actions {
   display: flex;
   gap: 3px;
