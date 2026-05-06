@@ -732,7 +732,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 .bp-warn strong { font-weight: 600; }
 
 /* ─── MAIN ──────────────────────────────────────────────── */
-main { flex: 1; overflow: hidden; display: flex; padding-bottom: 76px; }
+main { flex: 1; overflow: hidden; display: flex; padding-bottom: 24px; }
 
 /* v4: hide legacy navigation that the sidebar replaces */
 .v4-hidden { display: none !important; }
@@ -3257,15 +3257,21 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 76px; }
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  /* Translucent so content scrolling underneath is visible through the bar */
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .55);
   border-radius: 999px;
   padding: 5px 6px;
   gap: 2px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, .14), 0 2px 6px rgba(0, 0, 0, .06);
   z-index: 100;
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+}
+:root[data-theme="dark"] .bottom-nav {
+  background: rgba(30, 30, 35, .55);
+  border-color: rgba(255, 255, 255, .08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
 }
 .bnav-btn {
   display: inline-flex;
@@ -3287,6 +3293,12 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 76px; }
 .bnav-btn.active {
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+/* Spaces is reachable from the always-open sidebar on desktop, no need
+   to duplicate it in the floating pill. */
+@media (min-width: 801px) {
+  .bnav-btn[data-mobile-spaces] { display: none; }
 }
 
 .space-drawer-backdrop { display: none; }
@@ -3540,7 +3552,7 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 
   main {
     flex-direction: row;
-    padding-bottom: 64px;
+    padding-bottom: 24px;
   }
 
   .bnav-btn span:not(.job-label):not(.daily-label) { display: none; }
