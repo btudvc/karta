@@ -1006,6 +1006,122 @@ main { flex: 1; overflow: hidden; display: flex; }
   display: flex; justify-content: flex-end;
 }
 
+/* ── Quick-capture FAB (mobile only) ───────────────── */
+.quick-fab {
+  display: none;
+  position: fixed;
+  right: 16px;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.12);
+  z-index: 90;
+  align-items: center; justify-content: center;
+  transition: transform .12s var(--ease), filter .12s var(--ease);
+}
+.quick-fab:hover  { filter: brightness(1.05); }
+.quick-fab:active { transform: scale(.96); }
+@media (max-width: 800px) {
+  .quick-fab { display: inline-flex; }
+}
+
+.modal-quick { width: 480px; max-width: 92vw; }
+.modal-quick .search-bar { border-bottom: 1px solid var(--border); margin-bottom: 12px; padding: 12px 14px; }
+.quick-meta {
+  display: flex; align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+.quick-meta select {
+  flex: 1; min-width: 120px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+.quick-today { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+
+/* ── Morning brief modal ───────────────────────────── */
+.modal-brief { width: 480px; max-width: 92vw; }
+.brief-body { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.brief-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.brief-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.brief-list li {
+  display: flex; align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  min-width: 0;
+}
+.brief-list li > span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brief-meta { font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
+.brief-more { background: transparent; border: none; color: var(--muted); font-size: 12px; padding: 4px 10px; }
+.brief-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+.brief-dot.meeting { background: var(--purple); }
+.brief-dot.visit   { background: var(--green); }
+.brief-empty { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin: 4px 0; }
+
+/* ── Streak / weekly stats widget ──────────────────── */
+.streak-widget {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+.streak-stat {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex; flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.streak-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.streak-lbl {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 480px) {
+  .streak-stat { padding: 10px 11px; }
+  .streak-num  { font-size: 19px; }
+  .streak-lbl  { font-size: 10.5px; }
+}
+
 /* ── Global search modal ───────────────────────────── */
 .search-overlay { align-items: flex-start; padding-top: 12vh; }
 .search-overlay.open { display: flex; }
@@ -1742,9 +1858,22 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-size: 13.5px;
   line-height: 1.65;
   color: var(--text);
-  white-space: pre-wrap;
+  white-space: normal;
   word-break: break-word;
 }
+.nb-entry-text code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.nb-entry-text a { color: var(--accent); text-decoration: underline; word-break: break-all; }
+.nb-entry-text strong { font-weight: 700; color: var(--text); }
+.nb-entry-text em     { font-style: italic; }
+.nb-entry-text .md-list { margin: 6px 0; padding-left: 20px; }
+.nb-entry-text .md-list li { margin: 2px 0; }
 
 .nb-input-row {
   display: flex;

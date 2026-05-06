@@ -935,7 +935,7 @@ function renderIssueNotebook(issue) {
             <span class="nb-entry-time">${formatNoteTime(e.createdAt)}</span>
             <button class="nb-delete-btn" onclick="deleteIssueNoteEntry('${issue.id}','${e.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
           </div>
-          <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
+          <div class="nb-entry-text">${renderMarkdown(e.text)}</div>
         </div>
       `).join('');
   return `
@@ -1052,7 +1052,7 @@ function renderNotebook(task) {
               <button class="nb-delete-btn" onclick="deleteNoteEntry('${task.id}','${e.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
             </span>
           </div>
-          <div class="nb-entry-text">${escapeHtml(e.text).replace(/\n/g, '<br>')}</div>
+          <div class="nb-entry-text">${renderMarkdown(e.text)}</div>
         </div>
       `).join('');
 
@@ -1077,6 +1077,25 @@ function isToday(iso) {
   const t = new Date(); t.setHours(0,0,0,0);
   return d.getTime() === t.getTime();
 }
+window.snoozeTask = function(taskId, days) {
+  const robot = getCurrentContainer();
+  const task = robot && robot.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  // Anchor on existing due date if it's in the future, otherwise on today —
+  // so a "+1d" on an overdue task moves it to tomorrow, not still-overdue.
+  const today = new Date(); today.setHours(0,0,0,0);
+  let base = today;
+  if (task.dueDate) {
+    const d = new Date(task.dueDate + 'T00:00:00');
+    if (d > today) base = d;
+  }
+  const next = new Date(base.getTime() + days * 86400000);
+  task.dueDate = next.toISOString().slice(0, 10);
+  if (task.status === 'pending') task.status = 'active';
+  save();
+  renderCurrentDetail();
+};
+
 window.assignToday = function(taskId) {
   const robot = getCurrentContainer();
   const task = robot && robot.tasks.find(t => t.id === taskId);
@@ -1134,6 +1153,8 @@ function renderTask(task) {
             ${task.status !== 'done'    ? `<button class="btn-sm success" onclick="event.stopPropagation();setStatus('${task.id}','done')">${ICO.check}<span>Done</span></button>` : ''}
             ${task.status === 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.undo}<span>Reopen</span></button>` : ''}
             ${task.status !== 'done'    ? `<button class="btn-sm ${isToday(task.dueDate) ? 'active-toggle' : ''}" onclick="event.stopPropagation();assignToday('${task.id}')" title="${isToday(task.dueDate) ? t('btn.remove_today_title') : t('btn.start_today_title')}">${isToday(task.dueDate) ? t('btn.today_star') : t('btn.add_to_today')}</button>` : ''}
+            ${task.status !== 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();snoozeTask('${task.id}',1)" title="Push to tomorrow">+1d</button>` : ''}
+            ${task.status !== 'done'    ? `<button class="btn-sm" onclick="event.stopPropagation();snoozeTask('${task.id}',7)" title="Push by a week">+1w</button>` : ''}
             ${task.status === 'active'  ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','pending')">${ICO.pause}<span>Pending</span></button>` : ''}
             ${task.status === 'pending' ? `<button class="btn-sm" onclick="event.stopPropagation();setStatus('${task.id}','active')">${ICO.play}<span>Activate</span></button>` : ''}
             <button class="btn-sm" onclick="event.stopPropagation();editTask('${task.id}')">Edit</button>
@@ -1315,6 +1336,10 @@ window.setStatus = function(id, status) {
   const robot = getCurrentContainer();
   const task = robot.tasks.find(t => t.id === id);
   task.status = status;
+  // Stamp completion time on transitions into done so the streak widget can
+  // count what was finished in the last N days. Cleared on reopen.
+  if (status === 'done') task.completedAt = Date.now();
+  else delete task.completedAt;
   save();
   renderCurrentDetail();
   if (activeSection === 'topics') renderTopicList(); else renderRobotList();
@@ -2768,6 +2793,7 @@ function renderWorkHours() {} // removed
 let allTasksFilter = 'open'; // 'open' | 'today' | 'all'
 
 function renderAllTasks() {
+  renderStreakWidget();
   const list = document.getElementById('all-tasks-list');
   if (!list) return;
 
@@ -3625,6 +3651,40 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Tiny markdown renderer for notebook entries. Plain-text is escaped first so
+// the input is never trusted; we only re-introduce a small whitelist of
+// inline tags (bold, italic, code, link). Lists and line breaks come last.
+function renderMarkdown(s) {
+  if (!s) return '';
+  let h = escapeHtml(s);
+  // Inline code first so its contents don't get re-processed
+  h = h.replace(/`([^`\n]+)`/g, (_, t) => `<code>${t}</code>`);
+  // Bold then italic — bold tested first to avoid stealing italic stars
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/(^|[\s(_~])\*([^*\n]+)\*(?=[\s),.!?_~]|$)/g, '$1<em>$2</em>');
+  // Bare URLs
+  h = h.replace(/\bhttps?:\/\/[^\s<]+/g, m => `<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
+  // Bullet list lines: "- item" or "* item" at start of a line
+  const lines = h.split('\n');
+  const buf = [];
+  let inList = false;
+  for (const line of lines) {
+    const m = line.match(/^\s*[-*]\s+(.*)$/);
+    if (m) {
+      if (!inList) { buf.push('<ul class="md-list">'); inList = true; }
+      buf.push(`<li>${m[1]}</li>`);
+    } else {
+      if (inList) { buf.push('</ul>'); inList = false; }
+      buf.push(line);
+    }
+  }
+  if (inList) buf.push('</ul>');
+  h = buf.join('\n').replace(/\n/g, '<br>');
+  // Collapse <br> immediately after </ul> to keep spacing tight
+  h = h.replace(/<\/ul><br>/g, '</ul>');
+  return h;
+}
+
 function escapeJsArg(s) {
   return String(s)
     .replace(/\\/g, '\\\\')
@@ -3768,6 +3828,323 @@ function showIremWelcome() {
   overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
   // Auto-dismiss after a comfortable read
   setTimeout(dismiss, 8000);
+}
+
+// ── Quick-capture FAB ──────────────────────────────────
+const QUICK_LAST_LIST_KEY = 'b-less-quick-last-list';
+
+function openQuickCapture() {
+  const modal  = document.getElementById('modal-quick');
+  const input  = document.getElementById('quick-input');
+  const select = document.getElementById('quick-list-select');
+  const todayFlag = document.getElementById('quick-today-flag');
+  if (!modal || !input || !select) return;
+
+  // Populate list select with all robots, preferring the currently-open one
+  const lists = (state.robots || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  let lastUsed = null;
+  try { lastUsed = localStorage.getItem(QUICK_LAST_LIST_KEY); } catch {}
+  const preferred = state.currentRobotId || lastUsed || (lists[0] && lists[0].id);
+  select.innerHTML = lists.map(r => `<option value="${escapeAttr(r.id)}" ${r.id === preferred ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('');
+
+  if (!lists.length) {
+    // No lists yet — surface a helpful hint and bail
+    select.innerHTML = '<option>(no lists yet — create one first)</option>';
+    select.disabled = true;
+    document.getElementById('quick-save').disabled = true;
+  } else {
+    select.disabled = false;
+    document.getElementById('quick-save').disabled = false;
+  }
+
+  if (todayFlag) todayFlag.checked = true;
+  input.value = '';
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeQuickCapture() {
+  document.getElementById('modal-quick')?.classList.remove('open');
+}
+
+function saveQuickTask() {
+  const input  = document.getElementById('quick-input');
+  const select = document.getElementById('quick-list-select');
+  const todayFlag = document.getElementById('quick-today-flag');
+  const title = (input?.value || '').trim();
+  const listId = select?.value;
+  if (!title || !listId) { input?.focus(); return; }
+  const robot = (state.robots || []).find(r => r.id === listId);
+  if (!robot) return;
+  if (!robot.tasks) robot.tasks = [];
+  const dueDate = todayFlag?.checked ? new Date().toISOString().slice(0, 10) : null;
+  robot.tasks.push({
+    id: uid(), title, priority: 'normal', status: 'active',
+    dueDate, tags: [], notebook: [], expanded: false, createdAt: Date.now(),
+  });
+  try { localStorage.setItem(QUICK_LAST_LIST_KEY, listId); } catch {}
+  save();
+  closeQuickCapture();
+  // Re-render whatever is currently visible
+  if (typeof renderAllTasks === 'function') renderAllTasks();
+  if (typeof renderRobotList === 'function') renderRobotList();
+  if (typeof renderRobotDetail === 'function') renderRobotDetail();
+}
+
+(function wireQuick() {
+  const wire = () => {
+    const fab = document.getElementById('quick-fab');
+    const overlay = document.getElementById('modal-quick');
+    const saveBtn = document.getElementById('quick-save');
+    const input = document.getElementById('quick-input');
+    if (fab && !fab.dataset.bound) {
+      fab.dataset.bound = '1';
+      fab.addEventListener('click', openQuickCapture);
+    }
+    if (overlay && !overlay.dataset.bound) {
+      overlay.dataset.bound = '1';
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeQuickCapture(); });
+      overlay.querySelectorAll('[data-close="modal-quick"]').forEach(b => b.addEventListener('click', closeQuickCapture));
+    }
+    if (saveBtn && !saveBtn.dataset.bound) { saveBtn.dataset.bound = '1'; saveBtn.addEventListener('click', saveQuickTask); }
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = '1';
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); saveQuickTask(); }
+        if (e.key === 'Escape') closeQuickCapture();
+      });
+    }
+  };
+  wire();
+  if (document.readyState !== 'complete') document.addEventListener('DOMContentLoaded', wire);
+})();
+
+// ── Morning brief ──────────────────────────────────────
+// Show a small "today at a glance" card on the first app open of each day.
+// Gated by a per-day flag in localStorage so it never re-appears on reloads
+// or SW restarts within the same calendar day.
+const BRIEF_KEY = 'b-less-brief-day';
+
+function todaysAgenda() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const tasks = [];
+  (state.robots || []).forEach(r => {
+    (r.tasks || []).forEach(task => {
+      if (task.status === 'done' || !task.dueDate) return;
+      const d = new Date(task.dueDate + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      if (d <= today) tasks.push({ task, project: r });
+    });
+  });
+  const meetings = (state.meetings || []).filter(m => m.date === todayIso);
+  const visits   = (state.fieldVisits || []).filter(v => v.date === todayIso);
+  return { tasks, meetings, visits, todayIso };
+}
+
+function maybeShowBrief() {
+  let lastShown = null;
+  try { lastShown = localStorage.getItem(BRIEF_KEY); } catch {}
+  const todayIso = new Date().toISOString().slice(0, 10);
+  if (lastShown === todayIso) return;
+  // Don't show on a brand-new install where there's nothing to brief about.
+  if ((state.robots || []).length === 0 && (state.meetings || []).length === 0 && (state.fieldVisits || []).length === 0) return;
+  // Don't crowd a first-time user who's still on the welcome modal.
+  if (!state.onboarded) return;
+
+  const a = todaysAgenda();
+  if (!a.tasks.length && !a.meetings.length && !a.visits.length) {
+    // Even an empty agenda is worth confirming once — but stay minimal.
+  }
+
+  const modal = document.getElementById('modal-brief');
+  const body  = document.getElementById('brief-body');
+  const title = document.getElementById('brief-title');
+  if (!modal || !body || !title) return;
+
+  const hour = new Date().getHours();
+  title.textContent = hour < 5 ? 'Late night ahead' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
+  const sections = [];
+  if (a.tasks.length) {
+    sections.push(`
+      <div class="brief-section">
+        <div class="brief-section-title">Tasks for today (${a.tasks.length})</div>
+        <ul class="brief-list">${a.tasks.slice(0, 8).map(it =>
+          `<li><span class="brief-dot ${it.task.status}"></span><span>${escapeHtml(it.task.title)}</span><span class="brief-meta">${escapeHtml(it.project.name)}</span></li>`
+        ).join('')}${a.tasks.length > 8 ? `<li class="brief-more">+${a.tasks.length - 8} more</li>` : ''}</ul>
+      </div>`);
+  }
+  if (a.meetings.length) {
+    sections.push(`
+      <div class="brief-section">
+        <div class="brief-section-title">Meetings (${a.meetings.length})</div>
+        <ul class="brief-list">${a.meetings.map(m =>
+          `<li><span class="brief-dot meeting"></span><span>${escapeHtml(m.title || 'Meeting')}</span>${m.location ? `<span class="brief-meta">${escapeHtml(m.location)}</span>` : ''}</li>`
+        ).join('')}</ul>
+      </div>`);
+  }
+  if (a.visits.length) {
+    sections.push(`
+      <div class="brief-section">
+        <div class="brief-section-title">Visits (${a.visits.length})</div>
+        <ul class="brief-list">${a.visits.map(v =>
+          `<li><span class="brief-dot visit"></span><span>${escapeHtml(v.location || 'Visit')}</span>${v.robot ? `<span class="brief-meta">${escapeHtml(v.robot)}</span>` : ''}</li>`
+        ).join('')}</ul>
+      </div>`);
+  }
+  if (!sections.length) {
+    sections.push('<p class="brief-empty">Nothing scheduled for today. Have a calm day.</p>');
+  }
+  body.innerHTML = sections.join('');
+
+  modal.classList.add('open');
+  const dismiss = () => {
+    modal.classList.remove('open');
+    try { localStorage.setItem(BRIEF_KEY, todayIso); } catch {}
+  };
+  document.getElementById('brief-got-it')?.addEventListener('click', dismiss, { once: true });
+  modal.querySelectorAll('[data-close="modal-brief"]').forEach(b => b.addEventListener('click', dismiss, { once: true }));
+  modal.addEventListener('click', e => { if (e.target === modal) dismiss(); }, { once: true });
+}
+
+// ── Streak / weekly stats ──────────────────────────────
+function computeStreakStats() {
+  const allTasks = [];
+  (state.robots || []).forEach(r => (r.tasks || []).forEach(t => allTasks.push(t)));
+  const startOfDay = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
+  const today = startOfDay(new Date());
+  const dayMs = 86400000;
+
+  // Bucket completions per day
+  const perDay = new Map();
+  allTasks.forEach(t => {
+    if (t.status !== 'done' || !t.completedAt) return;
+    const day = startOfDay(new Date(t.completedAt));
+    perDay.set(day, (perDay.get(day) || 0) + 1);
+  });
+
+  // 7-day total
+  let last7 = 0;
+  for (let i = 0; i < 7; i++) last7 += (perDay.get(today - i * dayMs) || 0);
+
+  // Streak: consecutive days ending today (or yesterday if nothing today yet)
+  let streak = 0;
+  let cursor = today;
+  if (!perDay.get(cursor)) cursor -= dayMs; // give the user grace if they haven't checked anything off today
+  while (perDay.get(cursor)) { streak++; cursor -= dayMs; }
+
+  // Today + tomorrow due counts
+  const overdueOrToday = allTasks.filter(t => {
+    if (t.status === 'done' || !t.dueDate) return false;
+    const d = startOfDay(new Date(t.dueDate + 'T00:00:00'));
+    return d <= today;
+  }).length;
+
+  return { last7, streak, overdueOrToday };
+}
+
+function renderStreakWidget() {
+  const el = document.getElementById('streak-widget');
+  if (!el) return;
+  const s = computeStreakStats();
+  // Hide entirely until there's something to show — avoids visual noise on a
+  // brand-new install.
+  if (s.last7 === 0 && s.streak === 0 && s.overdueOrToday === 0) {
+    el.innerHTML = '';
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="streak-stat">
+      <span class="streak-num">${s.last7}</span>
+      <span class="streak-lbl">done in 7 days</span>
+    </div>
+    <div class="streak-stat">
+      <span class="streak-num">${s.streak}</span>
+      <span class="streak-lbl">day streak${s.streak ? ' 🔥' : ''}</span>
+    </div>
+    <div class="streak-stat">
+      <span class="streak-num">${s.overdueOrToday}</span>
+      <span class="streak-lbl">due today / overdue</span>
+    </div>
+  `;
+}
+
+// ── iCal export ────────────────────────────────────────
+// Generate a single .ics file containing all upcoming + recent meetings and
+// field visits. Meetings become VEVENTs with a 1-hour default duration;
+// visits become full-day events. Spec-minimum fields only — most calendar
+// apps (Google, Apple, Outlook) accept this.
+function escapeIcs(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+function icsDateAllDay(iso)  { return iso.replace(/-/g, ''); }                 // 20260415
+function icsDateTime(iso, hh = '09', mm = '00') {                              // 20260415T090000
+  return iso.replace(/-/g, '') + 'T' + hh + mm + '00';
+}
+function buildIcs() {
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//B-Less Planner//EN',
+    'CALSCALE:GREGORIAN',
+  ];
+  const now = new Date();
+  const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+
+  (state.meetings || []).forEach(m => {
+    if (!m.date) return;
+    const startIso = icsDateTime(m.date, '09', '00');
+    // +1h
+    const d = new Date(m.date + 'T09:00:00');
+    d.setHours(d.getHours() + 1);
+    const endIso = d.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, '').replace(/T(\d{6}).*$/, 'T$1');
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:meeting-' + m.id + '@b-less');
+    lines.push('DTSTAMP:' + stamp);
+    lines.push('DTSTART:' + startIso);
+    lines.push('DTEND:'   + endIso);
+    lines.push('SUMMARY:' + escapeIcs(m.title || 'Meeting'));
+    if (m.location)  lines.push('LOCATION:'    + escapeIcs(m.location));
+    const desc = [m.attendees && ('Attendees: ' + m.attendees), m.robot && ('Project: ' + m.robot), m.notes].filter(Boolean).join('\n');
+    if (desc)        lines.push('DESCRIPTION:' + escapeIcs(desc));
+    lines.push('END:VEVENT');
+  });
+
+  (state.fieldVisits || []).forEach(v => {
+    if (!v.date) return;
+    const start = icsDateAllDay(v.date);
+    const endDate = new Date(v.date + 'T00:00:00');
+    endDate.setDate(endDate.getDate() + 1);
+    const endIso = endDate.toISOString().slice(0, 10).replace(/-/g, '');
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:visit-' + v.id + '@b-less');
+    lines.push('DTSTAMP:' + stamp);
+    lines.push('DTSTART;VALUE=DATE:' + start);
+    lines.push('DTEND;VALUE=DATE:'   + endIso);
+    lines.push('SUMMARY:' + escapeIcs('Visit: ' + (v.location || '')));
+    if (v.location) lines.push('LOCATION:'    + escapeIcs(v.location));
+    const desc = [v.robot && ('Project: ' + v.robot), v.notes].filter(Boolean).join('\n');
+    if (desc)        lines.push('DESCRIPTION:' + escapeIcs(desc));
+    lines.push('END:VEVENT');
+  });
+
+  lines.push('END:VCALENDAR');
+  // RFC 5545 requires CRLF line endings
+  return lines.join('\r\n');
+}
+function downloadIcs() {
+  const ics = buildIcs();
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'b-less-calendar.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ── Global search ─────────────────────────────────────
@@ -4589,9 +4966,11 @@ initJournal();
 BackupManager.initUI();
 BackupManager.init();
 renderPaletteGrid();
+document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 
 // Default landing view: All Tasks
 showCrossView('all-tasks');
 
 // First-run welcome modal
 maybeShowWelcome();
+maybeShowBrief();

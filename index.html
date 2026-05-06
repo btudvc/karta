@@ -171,6 +171,7 @@
             <button class="at-filter-btn" data-filter="all" data-i18n="filter.all">Hepsi</button>
           </div>
         </div>
+        <div id="streak-widget" class="streak-widget"></div>
         <div id="all-tasks-list"></div>
       </div>
     </section>
@@ -226,6 +227,13 @@
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05M12 22.08V12"/></svg>
             </span>
             <span class="more-card-label" data-i18n="more.drive">Google Drive</span>
+            <span class="more-card-arrow">›</span>
+          </button>
+          <button class="more-card more-card-link" id="export-ics-btn">
+            <span class="more-card-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>
+            </span>
+            <span class="more-card-label">Export calendar (.ics)</span>
             <span class="more-card-arrow">›</span>
           </button>
         </div>
@@ -289,6 +297,33 @@
       </div>
     </section>
   </main>
+
+  <!-- Quick-capture floating action button (mobile only) -->
+  <button class="quick-fab" id="quick-fab" type="button" aria-label="Quick add task">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- MODAL: Quick-capture (one-line task add) -->
+  <div class="modal-overlay" id="modal-quick">
+    <div class="modal modal-quick">
+      <div class="search-bar">
+        <svg class="search-bar-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <input type="text" id="quick-input" class="search-input" placeholder="What do you need to do?" autocomplete="off" />
+        <button class="modal-close" data-close="modal-quick" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="quick-meta">
+        <span>Adding to:</span>
+        <select id="quick-list-select"></select>
+        <label class="quick-today"><input type="checkbox" id="quick-today-flag" checked /> Due today</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" data-close="modal-quick">Cancel</button>
+        <button class="btn-primary" id="quick-save">Add task</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Bottom navigation (mobile only) -->
   <nav class="bottom-nav" aria-label="Primary">
@@ -567,6 +602,22 @@
       </ul>
       <div class="modal-actions">
         <button class="btn-primary" id="welcome-got-it">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Morning brief — shown once per day on first launch -->
+  <div class="modal-overlay" id="modal-brief">
+    <div class="modal modal-brief">
+      <div class="modal-header">
+        <h3 id="brief-title">Good morning</h3>
+        <button class="modal-close" data-close="modal-brief" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="brief-body" class="brief-body"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="brief-got-it">Let's go</button>
       </div>
     </div>
   </div>
