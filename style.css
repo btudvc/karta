@@ -106,26 +106,6 @@ header {
   }
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  color: var(--text);
-  white-space: nowrap;
-  user-select: none;
-}
-
-@media (max-width: 480px) {
-  .logo-text {
-    font-size: 16px;
-  }
-}
-
 /* ── Daily / Job mode switcher ────────────────────────── */
 .mode-switcher {
   display: inline-flex;
@@ -935,7 +915,7 @@ main { flex: 1; overflow: hidden; display: flex; }
   display: flex;
   gap: 2px;
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .cross-nav-btn {
   display: inline-flex;
@@ -2348,7 +2328,6 @@ main { flex: 1; overflow: hidden; display: flex; }
     overflow: visible;
     justify-content: center;
   }
-  .logo { margin: 0 auto; }
   .mode-switcher { padding: 2px; }
   .mode-btn { padding: 5px 10px; font-size: 12px; }
 
