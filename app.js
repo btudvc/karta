@@ -3767,40 +3767,18 @@ function inMode(_item) { return true; }
 function projectsByMode()  { return state.robots      || []; }
 function meetingsByMode()  { return state.meetings    || []; }
 
-// ── PWA: register service worker + auto-reload on update ──
-// When a new SW activates (usually after a deploy), reload once so the new
-// app shell starts using the new code instead of running the stale version
-// that's already in memory.
+// ── PWA: register service worker ───────────────────────
+// We deliberately do NOT auto-reload on SW activation. The earlier auto-reload
+// logic raced with BackupManager.init(): on a fresh deploy the page kicked
+// off silent Drive re-auth (one accounts.google.com flash), then the SW
+// activation handler fired location.reload(), and the freshly-loaded page
+// kicked off silent re-auth again (a second flash). The network-first SW
+// already serves fresh app.js / index.html / style.css on every cold start,
+// so a manual refresh is enough when the user does want the latest behavior.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => {
-        // Track when a new SW finishes installing and takes over
-        reg.addEventListener('updatefound', () => {
-          const next = reg.installing;
-          if (!next) return;
-          next.addEventListener('statechange', () => {
-            if (next.state === 'activated' && navigator.serviceWorker.controller) {
-              // A previous SW was controlling — this is an update. Reload once.
-              if (!sessionStorage.getItem('karta-sw-reloaded')) {
-                sessionStorage.setItem('karta-sw-reloaded', '1');
-                location.reload();
-              }
-            }
-          });
-        });
-      })
-      .catch(() => {});
-    // If SW changes (e.g., after manual unregister), reload to pick up new shell
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      location.reload();
-    });
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
-  // Clear the "reloaded" flag once the page is fully shown so future updates trigger again
-  window.addEventListener('pageshow', () => sessionStorage.removeItem('karta-sw-reloaded'));
 }
 
 // ── INIT ───────────────────────────────────────────────
@@ -5184,18 +5162,13 @@ renderAll = function() {
 renderAll();
 initJournal();
 BackupManager.initUI();
-// Delay Drive auth slightly so a pending service-worker update gets to
-// reload the page first. Without this, on cold start right after a deploy
-// the user sometimes sees the GSI accounts.google.com iframe flash twice:
-// once for this run's silent re-auth, then again after the SW-triggered
-// reload re-runs init.
-setTimeout(() => BackupManager.init(), 800);
+BackupManager.init();
 renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.9.4';
+const APP_VERSION = '4.9.5';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
