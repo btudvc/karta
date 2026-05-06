@@ -5184,7 +5184,12 @@ renderAll = function() {
 renderAll();
 initJournal();
 BackupManager.initUI();
-BackupManager.init();
+// Delay Drive auth slightly so a pending service-worker update gets to
+// reload the page first. Without this, on cold start right after a deploy
+// the user sometimes sees the GSI accounts.google.com iframe flash twice:
+// once for this run's silent re-auth, then again after the SW-triggered
+// reload re-runs init.
+setTimeout(() => BackupManager.init(), 800);
 renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 
