@@ -3382,12 +3382,25 @@ function renderJournalList() {
   });
 }
 
-// Single fixed theme: light liquid glass. CSS in style.css owns the actual
-// look; we just set the meta theme-color for the Android address bar so
-// the OS chrome blends with the soft white body.
-(function initTheme() {
+// ── THEME TOGGLE (light / dark liquid glass) ──────────
+const THEME_KEY = 'b-less-theme';
+function applyTheme(name) {
+  const t = name === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.themeSet === t);
+  });
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', '#f3f5fb');
+  if (meta) meta.setAttribute('content', t === 'dark' ? '#000000' : '#f3f5fb');
+}
+function setTheme(name) {
+  try { localStorage.setItem(THEME_KEY, name); } catch {}
+  applyTheme(name);
+}
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch {}
+  applyTheme(saved || 'light');
 })();
 
 // ── DAILY / JOB MODE SWITCHER ──────────────────────────
@@ -5112,10 +5125,13 @@ BackupManager.initUI();
 BackupManager.init();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 document.getElementById('bnav-search-btn')?.addEventListener('click', () => openSearchModal());
+document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.themeSet));
+});
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.13.0';
+const APP_VERSION = '4.14.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 

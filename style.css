@@ -44,6 +44,65 @@
 
 input[type="date"] { color-scheme: light; }
 
+/* Dark liquid glass — full black base, translucent dark surfaces. */
+:root[data-theme="dark"] {
+  --bg:           #000000;
+  --surface:      rgba(255, 255, 255, .06);
+  --surface-2:    rgba(255, 255, 255, .04);
+  --surface-3:    rgba(255, 255, 255, .10);
+  --border:       rgba(255, 255, 255, .09);
+  --border-2:     rgba(255, 255, 255, .16);
+
+  --text:         #f0f3fa;
+  --muted:        #98a0b3;
+  --muted-2:      #6b7185;
+
+  --accent:       #a4b6ff;
+  --accent-h:     #c0cfff;
+  --accent-soft:  rgba(164, 182, 255, .14);
+  --accent-soft2: rgba(164, 182, 255, .26);
+  --on-accent:    #0a0c14;
+
+  --green:        #4ade80;
+  --orange:       #fb923c;
+  --red:          #f87171;
+  --purple:       #c4b5fd;
+  --yellow:       #fcd34d;
+  --rose:         #fb7185;
+
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .35);
+  --shadow:       0 8px 24px rgba(0, 0, 0, .45);
+  --shadow-lg:    0 20px 60px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] input[type="date"] { color-scheme: dark; }
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
+
+/* Dark variants for the frosted chrome — keep the same blur, swap the
+   white-tinted rgba for a dark-tinted one. */
+:root[data-theme="dark"] .bottom-nav {
+  background: rgba(20, 22, 32, .35);
+  border-color: rgba(255, 255, 255, .08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
+}
+:root[data-theme="dark"] .quick-fab {
+  background: rgba(20, 22, 32, .35);
+  border-color: rgba(255, 255, 255, .08);
+  color: var(--accent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
+}
+:root[data-theme="dark"] .quick-fab:hover { background: rgba(40, 44, 60, .45); }
+:root[data-theme="dark"] .space-sidebar {
+  background: rgba(20, 22, 32, .55);
+  border-right-color: rgba(255, 255, 255, .08);
+}
+@media (max-width: 800px) {
+  :root[data-theme="dark"] .space-sidebar {
+    background: rgba(15, 17, 26, .82);
+    border-right-color: rgba(255, 255, 255, .08);
+  }
+}
+
 :root {
   --radius-xs:    5px;
   --radius-sm:    7px;
@@ -3330,6 +3389,38 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 }
 .more-card-static { cursor: default; }
 .more-card-static:hover { border-color: var(--border); background: var(--surface); }
+
+/* Light/Dark theme toggle (Settings → Theme) */
+.theme-toggle {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.theme-toggle-btn:hover { color: var(--text); }
+.theme-toggle-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
 
 
 .more-version {
