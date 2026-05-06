@@ -2986,6 +2986,16 @@ function renderCalendar() {
     if (!v.date) return;
     (eventsByDate[v.date] = eventsByDate[v.date] || []).push({ kind: 'visit', mode: v.mode || 'job', label: v.location || 'Visit', id: v.id });
   });
+  (state.robots || []).forEach(r => {
+    (r.tasks || []).forEach(task => {
+      if (!task.dueDate || task.status === 'done') return;
+      (eventsByDate[task.dueDate] = eventsByDate[task.dueDate] || []).push({ kind: 'task', mode: r.mode || 'job', label: task.title, id: task.id, refId: r.id });
+    });
+  });
+  (state.calendarEvents || []).forEach(ev => {
+    if (!ev.date) return;
+    (eventsByDate[ev.date] = eventsByDate[ev.date] || []).push({ kind: 'event', mode: 'job', label: ev.title || 'Event', id: ev.id });
+  });
 
   // Build cells: 7 dow headers + leading blanks + days + trailing blanks
   let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
@@ -3056,6 +3066,103 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
     </div>`;
 }
 
+window.goToTask = function(projectId, taskId) {
+  // Locate the space-item for this list (mirrors All-Tasks click flow)
+  let spaceId = null, itemId = null;
+  (state.spaces || []).forEach(sp => {
+    (sp.items || []).forEach(it => {
+      if (it.type === 'list' && it.refId === projectId) { spaceId = sp.id; itemId = it.id; }
+    });
+  });
+  if (spaceId && itemId && typeof selectSpaceItem === 'function') selectSpaceItem(spaceId, itemId);
+  else { state.currentRobotId = projectId; activateSection('robots'); renderRobotList(); renderRobotDetail(); }
+  const robot = (state.robots || []).find(r => r.id === projectId);
+  const task = robot && (robot.tasks || []).find(t => t.id === taskId);
+  if (task) { task.expanded = true; renderRobotDetail(); }
+};
+
+// ── Calendar event picker ─────────────────────────────
+function openCalAddPicker(date) {
+  const modal = document.getElementById('modal-cal-add');
+  if (!modal) return;
+  modal.dataset.date = date;
+  modal.classList.add('open');
+}
+function closeCalAddPicker() {
+  document.getElementById('modal-cal-add')?.classList.remove('open');
+}
+function handleCalAddPick(kind) {
+  const modal = document.getElementById('modal-cal-add');
+  const date = modal?.dataset.date;
+  closeCalAddPicker();
+  if (!date) return;
+  if (kind === 'task') {
+    // Reuse the quick-capture modal pre-filled with this date
+    openQuickCapture();
+    setTimeout(() => {
+      const dueInput = document.getElementById('quick-due-input');
+      if (dueInput) dueInput.value = date;
+    }, 60);
+  } else if (kind === 'meeting') {
+    document.getElementById('meeting-title').value     = '';
+    document.getElementById('meeting-date').value      = date;
+    document.getElementById('meeting-location').value  = '';
+    document.getElementById('meeting-attendees').value = '';
+    document.getElementById('meeting-robot').value     = '';
+    editingMeetingId = null;
+    openModal('modal-meeting');
+    setTimeout(() => document.getElementById('meeting-title').focus(), 50);
+  } else if (kind === 'event') {
+    openCalEventModal(date);
+  }
+}
+
+function openCalEventModal(date) {
+  const modal = document.getElementById('modal-cal-event');
+  if (!modal) return;
+  modal.dataset.date = date;
+  document.getElementById('cal-event-title').value = '';
+  document.getElementById('cal-event-time').value  = '';
+  document.getElementById('cal-event-notes').value = '';
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('cal-event-title').focus(), 50);
+}
+function closeCalEventModal() { document.getElementById('modal-cal-event')?.classList.remove('open'); }
+function saveCalEvent() {
+  const modal = document.getElementById('modal-cal-event');
+  const date = modal?.dataset.date;
+  const title = document.getElementById('cal-event-title').value.trim();
+  const time  = document.getElementById('cal-event-time').value.trim();
+  const notes = document.getElementById('cal-event-notes').value.trim();
+  if (!title || !date) { document.getElementById('cal-event-title').focus(); return; }
+  if (!state.calendarEvents) state.calendarEvents = [];
+  state.calendarEvents.push({ id: uid(), date, title, time: time || null, notes: notes || '', createdAt: Date.now() });
+  save();
+  closeCalEventModal();
+  renderCalendar();
+}
+
+(function wireCalAdd() {
+  const wire = () => {
+    const overlay1 = document.getElementById('modal-cal-add');
+    const overlay2 = document.getElementById('modal-cal-event');
+    if (overlay1 && !overlay1.dataset.bound) {
+      overlay1.dataset.bound = '1';
+      overlay1.addEventListener('click', e => { if (e.target === overlay1) closeCalAddPicker(); });
+      overlay1.querySelectorAll('[data-close="modal-cal-add"]').forEach(b => b.addEventListener('click', closeCalAddPicker));
+      overlay1.querySelectorAll('[data-cal-pick]').forEach(b => b.addEventListener('click', () => handleCalAddPick(b.dataset.calPick)));
+    }
+    if (overlay2 && !overlay2.dataset.bound) {
+      overlay2.dataset.bound = '1';
+      overlay2.addEventListener('click', e => { if (e.target === overlay2) closeCalEventModal(); });
+      overlay2.querySelectorAll('[data-close="modal-cal-event"]').forEach(b => b.addEventListener('click', closeCalEventModal));
+      document.getElementById('cal-event-save')?.addEventListener('click', saveCalEvent);
+    }
+  };
+  wire();
+  if (document.readyState !== 'complete') document.addEventListener('DOMContentLoaded', wire);
+})();
+
 window.goToMeeting = function(id) {
   state.currentMeetingId = id;
   const tab = document.querySelector('.tab[data-tab="meetings"]');
@@ -3090,10 +3197,23 @@ function renderCalDayPanel() {
 
   const meetings = (state.meetings || []).filter(m => m.date === calSelected);
   const visits   = (state.fieldVisits || []).filter(v => v.date === calSelected);
+  const events   = (state.calendarEvents || []).filter(ev => ev.date === calSelected);
+  const tasks    = [];
+  (state.robots || []).forEach(r => (r.tasks || []).forEach(task => {
+    if (task.dueDate === calSelected && task.status !== 'done') tasks.push({ task, project: r });
+  }));
   const notes    = (state.calendarNotes || {})[calSelected] || '';
 
   panel.innerHTML = `
-    <div class="cal-day-title">${dateStr}</div>
+    <div class="cal-day-header">
+      <div class="cal-day-title">${dateStr}</div>
+      <button class="btn-ghost cal-add-event-btn" id="cal-add-event-btn" type="button">+ Add</button>
+    </div>
+    ${tasks.length ? `
+      <div>
+        <div class="cal-day-section-label">Tasks</div>
+        ${tasks.map(it => `<div class="cal-day-item clickable" data-go-task="${escapeAttr(it.project.id)}|${escapeAttr(it.task.id)}"><strong>${escapeHtml(it.task.title)}</strong> · ${escapeHtml(it.project.name)}</div>`).join('')}
+      </div>` : ''}
     ${meetings.length ? `
       <div>
         <div class="cal-day-section-label">${t('cal.meetings')}</div>
@@ -3103,6 +3223,15 @@ function renderCalDayPanel() {
       <div>
         <div class="cal-day-section-label">${t('cal.visits')}</div>
         ${visits.map(v => `<div class="cal-day-item clickable" data-go-visit="${v.id}"><strong>${escapeHtml(v.location)}</strong>${v.robot ? ' · ' + escapeHtml(v.robot) : ''}</div>`).join('')}
+      </div>` : ''}
+    ${events.length ? `
+      <div>
+        <div class="cal-day-section-label">Events</div>
+        ${events.map(ev => `<div class="cal-day-item cal-event-item">
+          <div><strong>${escapeHtml(ev.title)}</strong>${ev.time ? ' · ' + escapeHtml(ev.time) : ''}</div>
+          ${ev.notes ? `<div class="cal-event-notes">${escapeHtml(ev.notes)}</div>` : ''}
+          <button class="cal-event-del" data-del-event="${escapeAttr(ev.id)}" type="button" aria-label="Delete">×</button>
+        </div>`).join('')}
       </div>` : ''}
     <div>
       <div class="cal-day-section-label">${t('cal.notes')}</div>
@@ -3115,6 +3244,23 @@ function renderCalDayPanel() {
   panel.querySelectorAll('[data-go-visit]').forEach(el => {
     el.addEventListener('click', () => goToVisit(el.dataset.goVisit));
   });
+  panel.querySelectorAll('[data-go-task]').forEach(el => {
+    el.addEventListener('click', () => {
+      const [pid, tid] = el.dataset.goTask.split('|');
+      goToTask(pid, tid);
+    });
+  });
+  panel.querySelectorAll('[data-del-event]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = el.dataset.delEvent;
+      if (!confirm('Delete this event?')) return;
+      state.calendarEvents = (state.calendarEvents || []).filter(ev => ev.id !== id);
+      save();
+      renderCalendar();
+    });
+  });
+  document.getElementById('cal-add-event-btn')?.addEventListener('click', () => openCalAddPicker(calSelected));
 
   const ta = document.getElementById('cal-notes-area');
   if (ta) {

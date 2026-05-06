@@ -2883,6 +2883,8 @@ main { flex: 1; overflow: hidden; display: flex; }
 }
 .cal-day-event.meeting { background: var(--accent-soft); color: var(--accent); }
 .cal-day-event.visit   { background: var(--surface-3); color: var(--muted); border: 1px dashed var(--border-2); }
+.cal-day-event.task    { background: rgba(63,185,80,.10);  color: var(--green); }
+.cal-day-event.event   { background: rgba(163,113,247,.14); color: var(--purple); }
 .cal-day-event[data-mode="daily"] { border-left: 2px solid var(--muted); padding-left: 3px; }
 .cal-day-event.cal-day-event-more {
   background: transparent;
@@ -2909,9 +2911,37 @@ main { flex: 1; overflow: hidden; display: flex; }
   text-align: center;
   padding: 32px 0;
 }
+.cal-day-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
 .cal-day-title {
   font-size: 16px; font-weight: 700; letter-spacing: -.01em;
 }
+.cal-add-event-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+.cal-event-item {
+  position: relative;
+  padding-right: 28px;
+}
+.cal-event-notes {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.cal-event-del {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px;
+  border: none; background: transparent;
+  color: var(--muted-2);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 16px; line-height: 1;
+}
+.cal-event-del:hover { background: var(--surface-2); color: var(--red); }
 .cal-day-section-label {
   font-size: 10.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .9px;

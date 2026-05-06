@@ -629,6 +629,57 @@
     </div>
   </div>
 
+  <!-- MODAL: Calendar add picker -->
+  <div class="modal-overlay" id="modal-cal-add">
+    <div class="modal modal-picker">
+      <div class="modal-header">
+        <h3>Add to this day</h3>
+        <button class="modal-close" data-close="modal-cal-add" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="add-item-grid">
+        <button class="add-item-card" data-cal-pick="task">
+          <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+          <span class="add-item-label">Task</span>
+          <span class="add-item-hint">Add to a list, due this day</span>
+        </button>
+        <button class="add-item-card" data-cal-pick="meeting">
+          <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="add-item-label">Meeting</span>
+          <span class="add-item-hint">Title, attendees, notes</span>
+        </button>
+        <button class="add-item-card" data-cal-pick="event">
+          <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+          <span class="add-item-label">Event</span>
+          <span class="add-item-hint">Birthday, reminder, anything</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Custom calendar event -->
+  <div class="modal-overlay" id="modal-cal-event">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>New event</h3>
+        <button class="modal-close" data-close="modal-cal-event" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <label>Title *</label>
+      <input type="text" id="cal-event-title" placeholder="What is it?" />
+      <label>Time</label>
+      <input type="text" id="cal-event-time" placeholder="e.g. 14:30 or All day" />
+      <label>Notes</label>
+      <textarea id="cal-event-notes" rows="3" placeholder="Optional details..."></textarea>
+      <div class="modal-actions">
+        <button class="btn-ghost" data-close="modal-cal-event">Cancel</button>
+        <button class="btn-primary" id="cal-event-save">Save event</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: Global search -->
   <div class="modal-overlay search-overlay" id="modal-search">
     <div class="modal search-modal">
