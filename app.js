@@ -3384,9 +3384,26 @@ function renderJournalList() {
   });
 }
 
-// ── THEME TOGGLE ───────────────────────────────────────
+// ── THEME TOGGLE (light / dark) ────────────────────────
+const THEME_KEY = 'b-less-theme';
+function applyTheme(name) {
+  const t = name === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.themeSet === t);
+  });
+  // Theme color helps Android Chrome paint the address bar to match.
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'dark' ? '#0b0b0f' : '#fafafa');
+}
+function setTheme(name) {
+  try { localStorage.setItem(THEME_KEY, name); } catch {}
+  applyTheme(name);
+}
 (function initTheme() {
-  document.documentElement.setAttribute('data-theme', 'light');
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch {}
+  applyTheme(saved || 'light');
 })();
 
 // ── COLOR PALETTES ─────────────────────────────────────
@@ -5165,10 +5182,13 @@ BackupManager.initUI();
 BackupManager.init();
 renderPaletteGrid();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
+document.querySelectorAll('.theme-toggle-btn').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.themeSet));
+});
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.9.6';
+const APP_VERSION = '4.10.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
