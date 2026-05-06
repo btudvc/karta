@@ -3837,30 +3837,56 @@ function openQuickCapture() {
   const modal  = document.getElementById('modal-quick');
   const input  = document.getElementById('quick-input');
   const select = document.getElementById('quick-list-select');
-  const todayFlag = document.getElementById('quick-today-flag');
+  const dueInput = document.getElementById('quick-due-input');
   if (!modal || !input || !select) return;
 
-  // Populate list select with all robots, preferring the currently-open one
+  populateQuickListSelect();
+
+  if (dueInput) dueInput.value = new Date().toISOString().slice(0, 10);
+  input.value = '';
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 50);
+}
+
+function populateQuickListSelect() {
+  const select = document.getElementById('quick-list-select');
+  if (!select) return;
   const lists = (state.robots || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   let lastUsed = null;
   try { lastUsed = localStorage.getItem(QUICK_LAST_LIST_KEY); } catch {}
   const preferred = state.currentRobotId || lastUsed || (lists[0] && lists[0].id);
-  select.innerHTML = lists.map(r => `<option value="${escapeAttr(r.id)}" ${r.id === preferred ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('');
-
   if (!lists.length) {
-    // No lists yet — surface a helpful hint and bail
-    select.innerHTML = '<option>(no lists yet — create one first)</option>';
-    select.disabled = true;
-    document.getElementById('quick-save').disabled = true;
+    select.innerHTML = '<option value="">(no lists yet — create one)</option>';
   } else {
-    select.disabled = false;
-    document.getElementById('quick-save').disabled = false;
+    select.innerHTML = lists.map(r => `<option value="${escapeAttr(r.id)}" ${r.id === preferred ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('');
   }
+}
 
-  if (todayFlag) todayFlag.checked = true;
-  input.value = '';
-  modal.classList.add('open');
-  setTimeout(() => input.focus(), 50);
+function quickCreateList() {
+  const name = (prompt('New list name:') || '').trim();
+  if (!name) return;
+  // Pick a target space: use current, or fall back to first
+  const targetSpace = (state.spaces || []).find(s => s.id === state.currentSpaceId) || (state.spaces || [])[0];
+  if (!targetSpace) return;
+  const robot = { id: uid(), name, description: '', category: '', mode: 'job', tasks: [], issues: [], createdAt: Date.now() };
+  state.robots.push(robot);
+  targetSpace.items.push({ id: uid(), type: 'list', refId: robot.id });
+  save();
+  populateQuickListSelect();
+  const select = document.getElementById('quick-list-select');
+  if (select) select.value = robot.id;
+  // Sidebar/list views need to pick up the new list
+  if (typeof renderSidebar === 'function') renderSidebar();
+  if (typeof renderRobotList === 'function') renderRobotList();
+}
+
+function setQuickDateShortcut(kind) {
+  const dueInput = document.getElementById('quick-due-input');
+  if (!dueInput) return;
+  if (kind === 'clear') { dueInput.value = ''; return; }
+  const d = new Date();
+  if (kind === 'tomorrow') d.setDate(d.getDate() + 1);
+  dueInput.value = d.toISOString().slice(0, 10);
 }
 
 function closeQuickCapture() {
@@ -3870,14 +3896,14 @@ function closeQuickCapture() {
 function saveQuickTask() {
   const input  = document.getElementById('quick-input');
   const select = document.getElementById('quick-list-select');
-  const todayFlag = document.getElementById('quick-today-flag');
+  const dueInput = document.getElementById('quick-due-input');
   const title = (input?.value || '').trim();
   const listId = select?.value;
   if (!title || !listId) { input?.focus(); return; }
   const robot = (state.robots || []).find(r => r.id === listId);
   if (!robot) return;
   if (!robot.tasks) robot.tasks = [];
-  const dueDate = todayFlag?.checked ? new Date().toISOString().slice(0, 10) : null;
+  const dueDate = (dueInput && dueInput.value) ? dueInput.value : null;
   robot.tasks.push({
     id: uid(), title, priority: 'normal', status: 'active',
     dueDate, tags: [], notebook: [], expanded: false, createdAt: Date.now(),
@@ -3885,7 +3911,6 @@ function saveQuickTask() {
   try { localStorage.setItem(QUICK_LAST_LIST_KEY, listId); } catch {}
   save();
   closeQuickCapture();
-  // Re-render whatever is currently visible
   if (typeof renderAllTasks === 'function') renderAllTasks();
   if (typeof renderRobotList === 'function') renderRobotList();
   if (typeof renderRobotDetail === 'function') renderRobotDetail();
@@ -3897,6 +3922,7 @@ function saveQuickTask() {
     const overlay = document.getElementById('modal-quick');
     const saveBtn = document.getElementById('quick-save');
     const input = document.getElementById('quick-input');
+    const newListBtn = document.getElementById('quick-new-list-btn');
     if (fab && !fab.dataset.bound) {
       fab.dataset.bound = '1';
       fab.addEventListener('click', openQuickCapture);
@@ -3905,8 +3931,10 @@ function saveQuickTask() {
       overlay.dataset.bound = '1';
       overlay.addEventListener('click', e => { if (e.target === overlay) closeQuickCapture(); });
       overlay.querySelectorAll('[data-close="modal-quick"]').forEach(b => b.addEventListener('click', closeQuickCapture));
+      overlay.querySelectorAll('[data-quick-date]').forEach(b => b.addEventListener('click', () => setQuickDateShortcut(b.dataset.quickDate)));
     }
     if (saveBtn && !saveBtn.dataset.bound) { saveBtn.dataset.bound = '1'; saveBtn.addEventListener('click', saveQuickTask); }
+    if (newListBtn && !newListBtn.dataset.bound) { newListBtn.dataset.bound = '1'; newListBtn.addEventListener('click', quickCreateList); }
     if (input && !input.dataset.bound) {
       input.dataset.bound = '1';
       input.addEventListener('keydown', e => {

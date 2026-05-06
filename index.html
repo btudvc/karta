@@ -314,9 +314,16 @@
         </button>
       </div>
       <div class="quick-meta">
-        <span>Adding to:</span>
+        <span>List:</span>
         <select id="quick-list-select"></select>
-        <label class="quick-today"><input type="checkbox" id="quick-today-flag" checked /> Due today</label>
+        <button class="quick-new-list-btn" id="quick-new-list-btn" type="button" title="New list" aria-label="New list">+</button>
+      </div>
+      <div class="quick-meta">
+        <span>Due:</span>
+        <input type="date" id="quick-due-input" />
+        <button class="quick-date-quick" type="button" data-quick-date="today">Today</button>
+        <button class="quick-date-quick" type="button" data-quick-date="tomorrow">Tomorrow</button>
+        <button class="quick-date-quick" type="button" data-quick-date="clear">No date</button>
       </div>
       <div class="modal-actions">
         <button class="btn-ghost" data-close="modal-quick">Cancel</button>

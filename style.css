@@ -1040,7 +1040,8 @@ main { flex: 1; overflow: hidden; display: flex; }
   margin-bottom: 14px;
   padding: 0 4px;
 }
-.quick-meta select {
+.quick-meta select,
+.quick-meta input[type="date"] {
   flex: 1; min-width: 120px;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -1050,7 +1051,33 @@ main { flex: 1; overflow: hidden; display: flex; }
   font-size: 13px;
   color: var(--text);
 }
-.quick-today { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.quick-meta input[type="date"] { color-scheme: light; }
+.quick-new-list-btn {
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 16px; line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all .15s var(--ease);
+}
+.quick-new-list-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.quick-date-quick {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: all .15s var(--ease);
+}
+.quick-date-quick:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
 /* ── Morning brief modal ───────────────────────────── */
 .modal-brief { width: 480px; max-width: 92vw; }
