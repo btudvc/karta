@@ -2869,40 +2869,55 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   grid-row: 1;
 }
 
+/* Compact month-grid day cell — date number on top, up to 3 thin colored
+   bars at the bottom indicating event types for that day. Tap to expand
+   the day panel below. */
 .cal-day {
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .06);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  padding: 8px 6px 6px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-height: 110px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 56px;
   transition: all .12s var(--ease);
   position: relative;
 }
-.cal-day:hover     { border-color: rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .08); }
-.cal-day.other-mo  { opacity: .45; }
-.cal-day.today     { background: var(--accent-soft); border-color: var(--accent-soft2); }
-.cal-day.today .cal-day-num { color: var(--accent); font-weight: 700; }
-.cal-day.selected  { border-color: var(--accent); background: var(--accent-soft2); }
+.cal-day:hover     { border-color: var(--border-2); background: var(--surface); }
+.cal-day.other-mo  { opacity: .35; }
+.cal-day.today .cal-day-num {
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 999px;
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.cal-day.selected  { border-color: var(--text); background: var(--surface); }
 
-.cal-day-head {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-shrink: 0;
+.cal-bars {
+  display: flex; flex-direction: column;
+  gap: 2px;
+  width: 80%;
+  min-height: 8px;
 }
-.cal-day-dow-inline {
-  display: none;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  color: var(--muted);
+.cal-bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
 }
+.cal-bar.meeting { background: var(--accent); }
+.cal-bar.task    { background: var(--green); }
+.cal-bar.visit   { background: var(--orange); }
+.cal-bar.event   { background: var(--purple); }
+
 .cal-day-num {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
@@ -3584,31 +3599,12 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
 .draft-content textarea:focus {
   border-color: var(--accent);
 }
-  /* Stack the week vertically on phones — 7 narrow columns can't fit
-     event labels readably side-by-side. */
-  .cal-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    grid-auto-rows: auto;
-    padding: 8px;
-    gap: 6px;
-  }
-  .cal-dow { display: none; }
-  .cal-day {
-    flex-direction: row;
-    align-items: stretch;
-    gap: 12px;
-    min-height: 0;
-    padding: 10px 12px;
-  }
-  .cal-day-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    min-width: 44px;
-  }
-  .cal-day-dow-inline { display: inline; }
-  .cal-day-events { flex: 1; gap: 4px; }
+  /* Compact month grid stays 7 columns on mobile — cells just shrink.
+     Bars (no labels) make this readable even on narrow screens. */
+  .cal-grid    { padding: 8px; gap: 4px; grid-auto-rows: minmax(54px, auto); }
+  .cal-day     { min-height: 54px; padding: 6px 4px 5px; }
+  .cal-day-num { font-size: 13px; }
+  .cal-day.today .cal-day-num { width: 24px; height: 24px; font-size: 12.5px; }
   .cal-day-panel   { max-height: none; }
 
   /* Mobile master-detail: when a project is selected, hide the project list and

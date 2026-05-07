@@ -2955,10 +2955,11 @@ document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
 });
 
 // ── CALENDAR ───────────────────────────────────────────
-// Calendar is anchored on the Monday of the displayed week. Showing one full
-// week at a time keeps each day cell tall enough to actually read events,
-// instead of squashing 30+ days into one viewport.
-let calWeekStart = (() => { const d = new Date(); d.setHours(0,0,0,0); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d; })();
+// Compact month grid: each day cell renders the date number plus 1–3 thin
+// colored bars indicating event types for that day. Tapping a cell pops
+// the existing day panel below for full details. Trades readable inline
+// labels for a calendar-app-style overview that fits a phone width.
+let calMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })();
 let calSelected = null; // 'YYYY-MM-DD'
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2972,15 +2973,11 @@ function renderCalendar() {
   const grid = document.getElementById('cal-grid');
   const title = document.getElementById('cal-title');
   if (!grid || !title) return;
+  title.textContent = `${MONTH_NAMES[calMonth.m]} ${calMonth.y}`;
 
-  const weekEnd = new Date(calWeekStart);
-  weekEnd.setDate(weekEnd.getDate() + 6);
-  const sameMonth = calWeekStart.getMonth() === weekEnd.getMonth() && calWeekStart.getFullYear() === weekEnd.getFullYear();
-  const fmt = (d) => `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
-  title.textContent = sameMonth
-    ? `${fmt(calWeekStart)} – ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`
-    : `${fmt(calWeekStart)} – ${fmt(weekEnd)}, ${weekEnd.getFullYear()}`;
-
+  const first = new Date(calMonth.y, calMonth.m, 1);
+  const startDow = (first.getDay() + 6) % 7; // Mon=0
+  const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
   const todayStr = ymd(new Date());
 
   // Pre-index events by date — calendar is mode-agnostic, show everything
@@ -3005,10 +3002,25 @@ function renderCalendar() {
   });
 
   let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(calWeekStart);
-    d.setDate(d.getDate() + i);
+
+  // Previous month tail
+  const prevMonthDays = new Date(calMonth.y, calMonth.m, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    const dn = prevMonthDays - i;
+    const d = new Date(calMonth.y, calMonth.m - 1, dn);
+    html += renderCalDay(d, eventsByDate, todayStr, true);
+  }
+  // Current month
+  for (let dn = 1; dn <= daysInMonth; dn++) {
+    const d = new Date(calMonth.y, calMonth.m, dn);
     html += renderCalDay(d, eventsByDate, todayStr, false);
+  }
+  // Trailing blanks (fill to multiple of 7)
+  const total = startDow + daysInMonth;
+  const trailing = (7 - (total % 7)) % 7;
+  for (let i = 1; i <= trailing; i++) {
+    const d = new Date(calMonth.y, calMonth.m + 1, i);
+    html += renderCalDay(d, eventsByDate, todayStr, true);
   }
 
   grid.innerHTML = html;
@@ -3040,24 +3052,21 @@ function renderCalDay(d, eventsByDate, todayStr, otherMonth) {
   if (otherMonth)         classes.push('other-mo');
   if (dStr === todayStr)  classes.push('today');
   if (dStr === calSelected) classes.push('selected');
-  // Pre-compute the weekday label for the inline mobile layout
-  const dowIdx = (d.getDay() + 6) % 7;
-  const dowLabel = DOW[dowIdx];
-  const eventsHtml = events.slice(0, 3).map(ev => {
-    const goAttr = ev.kind === 'meeting' ? `data-go-meeting="${ev.id}"`
-                  : ev.kind === 'visit'   ? `data-go-visit="${ev.id}"`
-                  : '';
-    const tt = escapeAttr(ev.label);
-    return `<div class="cal-day-event ${escapeAttr(ev.kind)}" data-mode="${escapeAttr(ev.mode || 'job')}" title="${tt}" aria-label="${tt}" ${goAttr}><span class="cal-day-event-label">${escapeHtml(ev.label)}</span></div>`;
-  }).join('');
-  const more = events.length > 3 ? `<div class="cal-day-event cal-day-event-more">+${events.length - 3}</div>` : '';
+  // Up to 3 thin colored bars representing the event types present this
+  // day. Order: meeting → task → visit → event. Duplicates collapsed.
+  const kinds = [];
+  const seen = {};
+  for (const ev of events) {
+    if (seen[ev.kind]) continue;
+    seen[ev.kind] = true;
+    kinds.push(ev.kind);
+    if (kinds.length >= 3) break;
+  }
+  const barsHtml = kinds.map(k => `<span class="cal-bar ${escapeAttr(k)}"></span>`).join('');
   return `
     <div class="${classes.join(' ')}" data-date="${dStr}">
-      <div class="cal-day-head">
-        <span class="cal-day-dow-inline">${dowLabel}</span>
-        <span class="cal-day-num">${d.getDate()}</span>
-      </div>
-      <div class="cal-day-events">${eventsHtml}${more}</div>
+      <div class="cal-day-num">${d.getDate()}</div>
+      <div class="cal-bars">${barsHtml}</div>
     </div>`;
 }
 
@@ -3277,15 +3286,12 @@ function renderCalDayPanel() {
   const prev  = document.getElementById('cal-prev');
   const next  = document.getElementById('cal-next');
   const today = document.getElementById('cal-today');
-  const shift = (days) => { calWeekStart = new Date(calWeekStart); calWeekStart.setDate(calWeekStart.getDate() + days); renderCalendar(); };
-  if (prev)  prev.addEventListener('click',  () => shift(-7));
-  if (next)  next.addEventListener('click',  () => shift(7));
+  if (prev)  prev.addEventListener('click',  () => { calMonth.m--; if (calMonth.m < 0)  { calMonth.m = 11; calMonth.y--; } renderCalendar(); });
+  if (next)  next.addEventListener('click',  () => { calMonth.m++; if (calMonth.m > 11) { calMonth.m = 0;  calMonth.y++; } renderCalendar(); });
   if (today) today.addEventListener('click', () => {
-    const d = new Date(); d.setHours(0,0,0,0);
-    const dow = (d.getDay() + 6) % 7;
-    d.setDate(d.getDate() - dow);
-    calWeekStart = d;
-    calSelected = ymd(new Date());
+    const d = new Date();
+    calMonth = { y: d.getFullYear(), m: d.getMonth() };
+    calSelected = ymd(d);
     renderCalendar();
   });
 })();
@@ -5131,7 +5137,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.14.0';
+const APP_VERSION = '4.15.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
