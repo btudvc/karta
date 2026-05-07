@@ -2849,7 +2849,12 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   /* minmax(0, 1fr) prevents long event labels from blowing up column width
      and forcing the whole grid to scroll horizontally. */
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  grid-template-rows: auto 1fr;
+  /* DOW headers stay compact, every day row is an equal share of the
+     remaining height. Without this an old `auto 1fr` rule (left over from
+     the week view) was giving the first day row all the leftover space
+     and squashing every later row to its min-height. */
+  grid-template-rows: auto;
+  grid-auto-rows: 1fr;
   gap: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
