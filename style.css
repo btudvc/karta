@@ -4125,17 +4125,24 @@ body::before {
       The conic-gradient ring is masked to a ~1.5px stroke so it reads
       as a faint rainbow edge — most visible at the rounded corners,
       exactly the effect from the reference image. */
-.bottom-nav,
-.quick-fab,
-.calc-fab,
+/* Hide the SVG <defs> element (it only exists to be referenced by url()) */
+.lg-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
+
+/* Lower-strength refraction for big surfaces: modal + sidebar */
 .modal,
 .space-sidebar {
-  /* DO NOT set `position` here — bottom-nav / quick-fab / calc-fab are
-     already fixed; overriding them flushes the FAB into the document
-     flow. Only .modal needs an explicit position:relative for ::before
-     anchoring; handled in a dedicated rule below. */
-  backdrop-filter: blur(34px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(34px) saturate(190%) !important;
+  backdrop-filter: blur(18px) saturate(180%) url(#lg-light) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+}
+
+/* Strong, lens-like refraction for small floating elements where the
+   curvature reads clearly. The url() filter actually displaces the
+   pixels behind the element so background content bends. */
+.bottom-nav,
+.quick-fab,
+.calc-fab {
+  backdrop-filter: blur(8px) saturate(190%) url(#lg-strong) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
 }
 /* Ensure ::before rim has a positioned ancestor without breaking
    existing positioning. .modal is normally static inside .modal-overlay. */
