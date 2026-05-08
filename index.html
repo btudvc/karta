@@ -329,6 +329,37 @@
       </div>
     </section>
 
+    <section id="reviews" class="section">
+      <div class="reviews-container">
+        <div class="fv-header">
+          <div>
+            <h2 data-i18n="reviews.title">Özetler</h2>
+            <p class="fv-subtitle" data-i18n="reviews.subtitle">Haftalık ve aylık özet notlar</p>
+          </div>
+          <div class="finance-header-actions">
+            <div class="reviews-period-toggle" id="reviews-period-toggle" role="tablist">
+              <button class="rev-period-btn active" data-rev-period="week" type="button"><span data-i18n="reviews.tab.week">Haftalık</span></button>
+              <button class="rev-period-btn" data-rev-period="month" type="button"><span data-i18n="reviews.tab.month">Aylık</span></button>
+            </div>
+            <button class="btn-primary" id="rev-current-btn"><span data-i18n="reviews.current_week">+ Bu hafta</span></button>
+          </div>
+        </div>
+        <div class="reviews-layout">
+          <aside class="reviews-list" id="reviews-list"></aside>
+          <div class="reviews-editor">
+            <div class="reviews-editor-head">
+              <div class="reviews-editor-period" id="rev-period-label">—</div>
+              <button class="btn-ghost rev-delete-btn" id="rev-delete-btn" type="button" data-i18n="btn.delete">Sil</button>
+            </div>
+            <textarea class="reviews-textarea" id="rev-textarea" placeholder=""></textarea>
+            <div class="reviews-editor-foot">
+              <span class="reviews-saved" id="rev-saved-label"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Quick-capture floating action button (mobile only) -->
@@ -449,6 +480,11 @@
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
           <span class="add-item-label" data-i18n="add_item.purchases">Satın Alımlar</span>
           <span class="add-item-hint" data-i18n="add_item.purchases_hint">İstek listesi ve satın alım takibi</span>
+        </button>
+        <button class="add-item-card" data-add-type="review">
+          <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <span class="add-item-label" data-i18n="add_item.review">Özetler</span>
+          <span class="add-item-hint" data-i18n="add_item.review_hint">Haftalık ve aylık notlar</span>
         </button>
       </div>
     </div>

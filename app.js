@@ -126,6 +126,19 @@ const I18N = {
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
     'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
     'add_item.purchases': 'Purchases', 'add_item.purchases_hint': 'Wishlist & procurement tracking',
+    'add_item.review': 'Reviews', 'add_item.review_hint': 'Weekly & monthly summary notes',
+    'reviews.title':         'Reviews',
+    'reviews.subtitle':      'Weekly & monthly summary notes',
+    'reviews.tab.week':      'Weekly',
+    'reviews.tab.month':     'Monthly',
+    'reviews.current_week':  '+ This week',
+    'reviews.current_month': '+ This month',
+    'reviews.empty':         'No entries yet. Click the button above to start one.',
+    'reviews.no_entry':      'No entry selected',
+    'reviews.confirm_delete':'Delete this summary?',
+    'reviews.saved':         'Saved',
+    'reviews.week_label':    'Week',
+    'reviews.placeholder':   'Wins, blockers, things to revisit, lessons…',
     'more.section.tools': 'Tools',
     'tools.title': 'Calculators',
     'tools.subtitle': 'Engineering calculators',
@@ -428,6 +441,20 @@ Object.assign(I18N.tr, {
   'add_item.finance_hint': 'Abonelikler ve aylik giderler',
   'add_item.purchases': 'Satin Alimlar',
   'add_item.purchases_hint': 'Istek listesi ve satin alim takibi',
+  'add_item.review': 'Ozetler',
+  'add_item.review_hint': 'Haftalik ve aylik ozet notlar',
+  'reviews.title':         'Ozetler',
+  'reviews.subtitle':      'Haftalik ve aylik ozet notlar',
+  'reviews.tab.week':      'Haftalik',
+  'reviews.tab.month':     'Aylik',
+  'reviews.current_week':  '+ Bu hafta',
+  'reviews.current_month': '+ Bu ay',
+  'reviews.empty':         'Henuz kayit yok. Yukaridaki butonla baslat.',
+  'reviews.no_entry':      'Kayit secili degil',
+  'reviews.confirm_delete':'Bu ozet silinsin mi?',
+  'reviews.saved':         'Kaydedildi',
+  'reviews.week_label':    'Hafta',
+  'reviews.placeholder':   'Kazanimlar, takiliklar, dersler, bir sonraki adim…',
   'more.section.tools': 'Araclar',
   'tools.title': 'Hesaplar',
   'tools.subtitle': 'Muhendislik hesap araclari',
@@ -568,7 +595,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], reviews: { week: {}, month: {} }, currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -582,6 +609,8 @@ let editingSubscriptionId = null;
 let editingExpenseId = null;
 let editingPurchaseId = null;
 let purchasesFilter = 'all'; // 'all' | 'wishlist' | 'buying' | 'done'
+let reviewPeriod = 'week';   // 'week' | 'month'
+let currentReviewKey = null; // e.g. '2026-W19' or '2026-05'
 let financeSelectedMonth = ymd(new Date()).slice(0, 7);
 
 const STORAGE_KEY = 'b-less';
@@ -2896,6 +2925,7 @@ function renderAll() {
   renderMeetingDetail();
   renderFinance();
   if (typeof renderPurchases === 'function') renderPurchases();
+  if (typeof renderReviews === 'function') renderReviews();
 }
 
 function renderWorkHours() {} // removed
@@ -4200,6 +4230,188 @@ function openCalculatorsModal() {
 document.getElementById('calc-fab')?.addEventListener('click', openCalculatorsModal);
 document.getElementById('calc-back-btn')?.addEventListener('click', () => renderToolsList());
 
+// ── REVIEWS (weekly + monthly summaries) ────────────────
+// Two parallel maps: state.reviews.week['2026-W19'], state.reviews.month['2026-05'].
+// Notes are plain text; the editor autosaves on input (debounced).
+
+function ensureReviewsState() {
+  if (!state.reviews || typeof state.reviews !== 'object') state.reviews = { week: {}, month: {} };
+  if (!state.reviews.week)  state.reviews.week  = {};
+  if (!state.reviews.month) state.reviews.month = {};
+}
+
+// ISO 8601 week number — Monday-based, week 1 contains Jan 4th.
+function isoWeek(d) {
+  const t = new Date(d);
+  t.setHours(0, 0, 0, 0);
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+  const week1 = new Date(t.getFullYear(), 0, 4);
+  return {
+    year: t.getFullYear(),
+    week: 1 + Math.round(((t - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7),
+  };
+}
+
+function reviewWeekKey(d = new Date())  { const w = isoWeek(d); return `${w.year}-W${String(w.week).padStart(2, '0')}`; }
+function reviewMonthKey(d = new Date()) { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}`; }
+
+// Convert a key back to a Date pointing to the start of that period
+function reviewKeyToStart(key) {
+  if (/^\d{4}-W\d{2}$/.test(key)) {
+    const [y, w] = key.split('-W').map(Number);
+    // ISO week 1: contains Jan 4th. Start = Monday of that week.
+    const jan4 = new Date(y, 0, 4);
+    const jan4Day = (jan4.getDay() + 6) % 7; // 0 = Mon
+    const week1Mon = new Date(y, 0, 4 - jan4Day);
+    const start = new Date(week1Mon);
+    start.setDate(week1Mon.getDate() + (w - 1) * 7);
+    return start;
+  }
+  if (/^\d{4}-\d{2}$/.test(key)) {
+    const [y, m] = key.split('-').map(Number);
+    return new Date(y, m - 1, 1);
+  }
+  return null;
+}
+
+function formatReviewLabel(period, key) {
+  const start = reviewKeyToStart(key);
+  if (!start) return key;
+  const months = currentLang === 'tr'
+    ? ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+    : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  if (period === 'week') {
+    const end = new Date(start); end.setDate(start.getDate() + 6);
+    const sameMonth = start.getMonth() === end.getMonth();
+    const w = key.slice(-2);
+    if (sameMonth) {
+      return `${t('reviews.week_label') || 'Hafta'} ${w} · ${start.getDate()}–${end.getDate()} ${months[start.getMonth()]}`;
+    }
+    return `${t('reviews.week_label') || 'Hafta'} ${w} · ${start.getDate()} ${months[start.getMonth()]} – ${end.getDate()} ${months[end.getMonth()]}`;
+  }
+  // Month
+  return `${months[start.getMonth()]} ${start.getFullYear()}`;
+}
+
+function renderReviews() {
+  ensureReviewsState();
+  const listEl   = document.getElementById('reviews-list');
+  const taEl     = document.getElementById('rev-textarea');
+  const labelEl  = document.getElementById('rev-period-label');
+  const delBtn   = document.getElementById('rev-delete-btn');
+  const curBtn   = document.getElementById('rev-current-btn');
+  const savedLbl = document.getElementById('rev-saved-label');
+  if (!listEl || !taEl) return;
+
+  // Reflect period toggle state
+  document.querySelectorAll('#reviews-period-toggle [data-rev-period]').forEach(b => {
+    b.classList.toggle('active', b.dataset.revPeriod === reviewPeriod);
+  });
+
+  // "+ Bu hafta" / "+ Bu ay" button label
+  if (curBtn) {
+    const span = curBtn.querySelector('span');
+    if (span) span.textContent = reviewPeriod === 'week'
+      ? (t('reviews.current_week')  || '+ Bu hafta')
+      : (t('reviews.current_month') || '+ Bu ay');
+  }
+
+  const map = state.reviews[reviewPeriod] || {};
+  const keys = Object.keys(map).sort().reverse(); // newest first
+
+  // Auto-select the most recent if nothing selected (or selected isn't in this period)
+  if (!currentReviewKey || !(currentReviewKey in map)) {
+    currentReviewKey = keys[0] || null;
+  }
+
+  if (!keys.length) {
+    listEl.innerHTML = `<div class="reviews-empty">${escapeHtml(t('reviews.empty') || 'Henüz kayıt yok. Yukarıdaki butonla başlat.')}</div>`;
+  } else {
+    listEl.innerHTML = keys.map(k => {
+      const isActive = k === currentReviewKey;
+      const preview = (map[k] || '').replace(/\s+/g, ' ').slice(0, 60);
+      return `
+        <button class="rev-row ${isActive ? 'active' : ''}" data-rev-key="${escapeHtml(k)}" type="button">
+          <span class="rev-row-label">${escapeHtml(formatReviewLabel(reviewPeriod, k))}</span>
+          ${preview ? `<span class="rev-row-preview">${escapeHtml(preview)}</span>` : ''}
+        </button>`;
+    }).join('');
+    listEl.querySelectorAll('.rev-row').forEach(b => {
+      b.addEventListener('click', () => {
+        currentReviewKey = b.dataset.revKey;
+        renderReviews();
+      });
+    });
+  }
+
+  taEl.placeholder = t('reviews.placeholder') || '';
+  if (currentReviewKey) {
+    if (labelEl) labelEl.textContent = formatReviewLabel(reviewPeriod, currentReviewKey);
+    taEl.value = map[currentReviewKey] || '';
+    taEl.disabled = false;
+    if (delBtn) delBtn.style.display = '';
+  } else {
+    if (labelEl) labelEl.textContent = t('reviews.no_entry') || 'Kayıt yok';
+    taEl.value = '';
+    taEl.disabled = true;
+    if (delBtn) delBtn.style.display = 'none';
+  }
+  if (savedLbl) savedLbl.textContent = '';
+}
+
+let _revSaveTimer = null;
+function scheduleReviewSave() {
+  if (!currentReviewKey) return;
+  clearTimeout(_revSaveTimer);
+  const taEl = document.getElementById('rev-textarea');
+  const savedLbl = document.getElementById('rev-saved-label');
+  if (savedLbl) savedLbl.textContent = '…';
+  _revSaveTimer = setTimeout(() => {
+    ensureReviewsState();
+    state.reviews[reviewPeriod][currentReviewKey] = taEl.value;
+    save();
+    if (savedLbl) {
+      savedLbl.textContent = t('reviews.saved') || 'Kaydedildi';
+      setTimeout(() => { if (savedLbl.textContent === (t('reviews.saved') || 'Kaydedildi')) savedLbl.textContent = ''; }, 1500);
+    }
+    // Refresh list preview
+    const li = document.querySelector(`#reviews-list .rev-row.active .rev-row-preview`);
+    if (li) li.textContent = (taEl.value || '').replace(/\s+/g, ' ').slice(0, 60);
+  }, 350);
+}
+
+function startCurrentReviewPeriod() {
+  ensureReviewsState();
+  const key = reviewPeriod === 'week' ? reviewWeekKey() : reviewMonthKey();
+  if (!(key in state.reviews[reviewPeriod])) {
+    state.reviews[reviewPeriod][key] = '';
+    save();
+  }
+  currentReviewKey = key;
+  renderReviews();
+  setTimeout(() => document.getElementById('rev-textarea')?.focus(), 60);
+}
+
+function deleteCurrentReview() {
+  if (!currentReviewKey) return;
+  if (!confirm(t('reviews.confirm_delete') || 'Bu özet silinsin mi?')) return;
+  delete state.reviews[reviewPeriod][currentReviewKey];
+  save();
+  currentReviewKey = null;
+  renderReviews();
+}
+
+document.querySelectorAll('#reviews-period-toggle [data-rev-period]').forEach(b => {
+  b.addEventListener('click', () => {
+    reviewPeriod = b.dataset.revPeriod;
+    currentReviewKey = null;
+    renderReviews();
+  });
+});
+document.getElementById('rev-current-btn')?.addEventListener('click', startCurrentReviewPeriod);
+document.getElementById('rev-delete-btn')?.addEventListener('click', deleteCurrentReview);
+document.getElementById('rev-textarea')?.addEventListener('input', scheduleReviewSave);
+
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
@@ -4293,6 +4505,7 @@ const ITEM_ICONS = {
   journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
   finance: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>',
   purchases: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  review:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>',
 };
 
 function escapeHtml(s) {
@@ -5090,9 +5303,13 @@ function migrateToSpaces() {
 
   // Ensure purchases collection exists (older saves may not have it)
   if (!Array.isArray(state.purchases)) state.purchases = [];
+  // Ensure reviews exists
+  if (!state.reviews || typeof state.reviews !== 'object') state.reviews = { week: {}, month: {} };
+  if (!state.reviews.week)  state.reviews.week  = {};
+  if (!state.reviews.month) state.reviews.month = {};
 
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set(), review: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -5141,6 +5358,7 @@ function migrateToSpaces() {
     journal: new Set(['default']),
     finance: new Set(['default']),
     purchases: new Set(['default']),
+    review: new Set(['default']),
   };
   let removed = false;
   state.spaces.forEach(sp => {
@@ -5202,6 +5420,7 @@ function resolveItemData(item) {
   if (item.type === 'journal') return { name: t('add_item.journal') || 'Journal' };
   if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
   if (item.type === 'purchases') return { name: t('purchases.title') || 'Purchases' };
+  if (item.type === 'review')    return { name: t('reviews.title') || 'Reviews' };
   return null;
 }
 function itemDisplayName(item) {
@@ -5295,6 +5514,7 @@ function renderSidebar() {
     const journals = sp.items.filter(i => i.type === 'journal');
     const finances = sp.items.filter(i => i.type === 'finance');
     const purchases = sp.items.filter(i => i.type === 'purchases');
+    const reviews   = sp.items.filter(i => i.type === 'review');
 
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
@@ -5304,7 +5524,8 @@ function renderSidebar() {
 
     const financeHtml   = finances.map(it => itemRow(it, sp.id)).join('');
     const purchasesHtml = purchases.map(it => itemRow(it, sp.id)).join('');
-    const body = listsHtml + financeHtml + purchasesHtml + meetingsHtml + journalsHtml;
+    const reviewsHtml   = reviews.map(it => itemRow(it, sp.id)).join('');
+    const body = listsHtml + financeHtml + purchasesHtml + reviewsHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -5487,6 +5708,9 @@ function selectSpaceItem(spaceId, itemId) {
   } else if (item.type === 'purchases') {
     activateSection('purchases');
     if (typeof renderPurchases === 'function') renderPurchases();
+  } else if (item.type === 'review') {
+    activateSection('reviews');
+    if (typeof renderReviews === 'function') renderReviews();
   }
 
   save();
@@ -5576,6 +5800,15 @@ function handleAddItemPick(type) {
     }
     pendingItemAttach = null;
     selectSpaceItem(spaceId, sp.items.find(i => i.type === 'purchases').id);
+  } else if (type === 'review') {
+    const sp = findSpace(spaceId);
+    if (sp && !sp.items.some(i => i.type === 'review')) {
+      sp.items.push({ id: uid(), type: 'review', refId: 'default' });
+      save();
+      renderSidebar();
+    }
+    pendingItemAttach = null;
+    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'review').id);
   }
 }
 
