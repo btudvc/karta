@@ -329,6 +329,24 @@
       </div>
     </section>
 
+    <section id="links" class="section">
+      <div class="links-container">
+        <div class="fv-header">
+          <div>
+            <h2 data-i18n="links.title">Linkler</h2>
+            <p class="fv-subtitle" data-i18n="links.subtitle">Kaybolmasın istediğin linkler</p>
+          </div>
+          <div class="finance-header-actions">
+            <button class="btn-primary" id="add-link-btn"><span data-i18n="links.add">+ Link Ekle</span></button>
+          </div>
+        </div>
+        <div class="links-toolbar">
+          <input type="text" id="links-search" class="links-search" placeholder="" />
+        </div>
+        <div id="links-list"></div>
+      </div>
+    </section>
+
     <section id="reviews" class="section">
       <div class="reviews-container">
         <div class="fv-header">
@@ -371,6 +389,31 @@
   <button class="quick-fab calc-fab owner-only" id="calc-fab" type="button" aria-label="Hesaplar" title="Hesaplar">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8"/></svg>
   </button>
+
+  <!-- MODAL: Add / Edit Link -->
+  <div class="modal-overlay" id="modal-link">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-link-title" data-i18n="links.modal_add">Link Ekle</h3>
+        <button class="modal-close" data-close="modal-link" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <label data-i18n="links.f.url">URL</label>
+      <input type="url" id="link-url" placeholder="https://..." />
+      <label data-i18n="links.f.title">Başlık</label>
+      <input type="text" id="link-title" placeholder="" />
+      <label data-i18n="links.f.tag">Etiket</label>
+      <input type="text" id="link-tag" placeholder="e.g. iş, okuma, referans" />
+      <label data-i18n="links.f.notes">Notlar</label>
+      <textarea id="link-notes" rows="3" placeholder=""></textarea>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="link-delete-btn" style="display:none" data-i18n="btn.delete">Sil</button>
+        <button class="btn-ghost" data-close="modal-link" data-i18n="btn.cancel">İptal</button>
+        <button class="btn-primary" id="save-link" data-i18n="btn.save">Kaydet</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: Calculators (picker + detail in one overlay) -->
   <div class="modal-overlay" id="modal-calc">
@@ -485,6 +528,11 @@
           <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
           <span class="add-item-label" data-i18n="add_item.review">Özetler</span>
           <span class="add-item-hint" data-i18n="add_item.review_hint">Haftalık ve aylık notlar</span>
+        </button>
+        <button class="add-item-card" data-add-type="links">
+          <span class="add-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+          <span class="add-item-label" data-i18n="add_item.links">Linkler</span>
+          <span class="add-item-hint" data-i18n="add_item.links_hint">Kaybetmek istemediğin linkler</span>
         </button>
       </div>
     </div>

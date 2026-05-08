@@ -127,6 +127,20 @@ const I18N = {
     'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
     'add_item.purchases': 'Purchases', 'add_item.purchases_hint': 'Wishlist & procurement tracking',
     'add_item.review': 'Reviews', 'add_item.review_hint': 'Weekly & monthly summary notes',
+    'add_item.links': 'Links', 'add_item.links_hint': 'Save URLs you don’t want to lose',
+    'links.title':         'Links',
+    'links.subtitle':      'Bookmarks you don’t want to lose',
+    'links.add':           '+ Add Link',
+    'links.modal_add':     'Add Link',
+    'links.modal_edit':    'Edit Link',
+    'links.empty':         'No links yet. Add the first one above.',
+    'links.no_match':      'No links match your search.',
+    'links.confirm_delete':'Delete this link?',
+    'links.search_ph':     'Search title, URL, tag, notes…',
+    'links.f.url':         'URL',
+    'links.f.title':       'Title',
+    'links.f.tag':         'Tag',
+    'links.f.notes':       'Notes',
     'reviews.title':         'Reviews',
     'reviews.subtitle':      'Weekly & monthly summary notes',
     'reviews.tab.week':      'Weekly',
@@ -443,6 +457,21 @@ Object.assign(I18N.tr, {
   'add_item.purchases_hint': 'Istek listesi ve satin alim takibi',
   'add_item.review': 'Ozetler',
   'add_item.review_hint': 'Haftalik ve aylik ozet notlar',
+  'add_item.links': 'Linkler',
+  'add_item.links_hint': 'Kaybetmek istemedigin URLler',
+  'links.title':         'Linkler',
+  'links.subtitle':      'Kaybolmasin istedigin linkler',
+  'links.add':           '+ Link Ekle',
+  'links.modal_add':     'Link Ekle',
+  'links.modal_edit':    'Linki Duzenle',
+  'links.empty':         'Henuz link yok. Yukaridaki butonla ekle.',
+  'links.no_match':      'Aramana uygun link bulunamadi.',
+  'links.confirm_delete':'Bu link silinsin mi?',
+  'links.search_ph':     'Baslik, URL, etiket, not ara…',
+  'links.f.url':         'URL',
+  'links.f.title':       'Baslik',
+  'links.f.tag':         'Etiket',
+  'links.f.notes':       'Notlar',
   'reviews.title':         'Ozetler',
   'reviews.subtitle':      'Haftalik ve aylik ozet notlar',
   'reviews.tab.week':      'Haftalik',
@@ -595,7 +624,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], reviews: { week: {}, month: {} }, currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], reviews: { week: {}, month: {} }, links: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -611,6 +640,8 @@ let editingPurchaseId = null;
 let purchasesFilter = 'all'; // 'all' | 'wishlist' | 'buying' | 'done'
 let reviewPeriod = 'week';   // 'week' | 'month'
 let currentReviewKey = null; // e.g. '2026-W19' or '2026-05'
+let editingLinkId = null;
+let linksFilter = '';        // free-text search
 let financeSelectedMonth = ymd(new Date()).slice(0, 7);
 
 const STORAGE_KEY = 'b-less';
@@ -1670,6 +1701,7 @@ function closeModal(id) {
   editingSubscriptionId = null;
   editingExpenseId = null;
   editingPurchaseId = null;
+  editingLinkId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
     'modal-robot':     ['#modal-robot h3',     t('modal.add_new_list'),
@@ -1681,6 +1713,7 @@ function closeModal(id) {
     'modal-subscription': ['#modal-subscription h3', t('fin.modal_add'), 'save-subscription', t('fin.add_subscription')],
     'modal-expense': ['#modal-expense h3', t('fin.modal_expense_add'), 'save-expense', t('fin.add_expense')],
     'modal-purchase': ['#modal-purchase h3', t('purchases.modal_add'), 'save-purchase', t('btn.save')],
+    'modal-link':     ['#modal-link h3',     t('links.modal_add'),     'save-link',     t('btn.save')],
   };
   const r = resets[id];
   if (r) {
@@ -2926,6 +2959,7 @@ function renderAll() {
   renderFinance();
   if (typeof renderPurchases === 'function') renderPurchases();
   if (typeof renderReviews === 'function') renderReviews();
+  if (typeof renderLinks === 'function') renderLinks();
 }
 
 function renderWorkHours() {} // removed
@@ -4412,6 +4446,125 @@ document.getElementById('rev-current-btn')?.addEventListener('click', startCurre
 document.getElementById('rev-delete-btn')?.addEventListener('click', deleteCurrentReview);
 document.getElementById('rev-textarea')?.addEventListener('input', scheduleReviewSave);
 
+// ── LINKS (saved URLs) ──────────────────────────────────
+// Flat collection of bookmarks. Single global list shared across
+// Spaces — the 'links' item type is a singleton view onto state.links.
+
+function ensureLinksState() {
+  if (!Array.isArray(state.links)) state.links = [];
+}
+
+function linkDomain(url) {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, '');
+  } catch { return ''; }
+}
+
+function renderLinks() {
+  ensureLinksState();
+  const listEl = document.getElementById('links-list');
+  if (!listEl) return;
+  const searchEl = document.getElementById('links-search');
+  if (searchEl && !searchEl.placeholder) searchEl.placeholder = t('links.search_ph') || '';
+
+  const q = (linksFilter || '').trim().toLowerCase();
+  const filtered = state.links.filter(l => {
+    if (!q) return true;
+    return (l.title || '').toLowerCase().includes(q)
+        || (l.url   || '').toLowerCase().includes(q)
+        || (l.tag   || '').toLowerCase().includes(q)
+        || (l.notes || '').toLowerCase().includes(q);
+  }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="links-empty">${escapeHtml(t(state.links.length ? 'links.no_match' : 'links.empty') || 'Henüz link yok.')}</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(l => {
+    const dom = linkDomain(l.url || '');
+    const safeUrl   = escapeHtml(l.url || '#');
+    const titleText = escapeHtml(l.title || dom || l.url || '(no title)');
+    return `
+      <div class="link-row" data-link-id="${l.id}">
+        <a class="link-row-main" href="${safeUrl}" target="_blank" rel="noopener noreferrer">
+          <span class="link-row-icon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </span>
+          <span class="link-row-body">
+            <span class="link-row-title">${titleText}</span>
+            ${dom    ? `<span class="link-row-domain">${escapeHtml(dom)}</span>` : ''}
+            ${l.tag  ? `<span class="link-row-tag">${escapeHtml(l.tag)}</span>` : ''}
+            ${l.notes ? `<span class="link-row-notes">${escapeHtml(l.notes)}</span>` : ''}
+          </span>
+        </a>
+        <button class="btn-sm" data-link-edit="${l.id}" type="button">${escapeHtml(t('btn.edit') || 'Edit')}</button>
+      </div>`;
+  }).join('');
+
+  listEl.querySelectorAll('[data-link-edit]').forEach(b => {
+    b.addEventListener('click', () => openLinkModal(state.links.find(x => x.id === b.dataset.linkEdit)));
+  });
+}
+
+function openLinkModal(link) {
+  ensureLinksState();
+  editingLinkId = link ? link.id : null;
+  document.getElementById('link-url').value   = link ? (link.url   || '') : '';
+  document.getElementById('link-title').value = link ? (link.title || '') : '';
+  document.getElementById('link-tag').value   = link ? (link.tag   || '') : '';
+  document.getElementById('link-notes').value = link ? (link.notes || '') : '';
+  const titleEl = document.getElementById('modal-link-title');
+  if (titleEl) titleEl.textContent = link ? (t('links.modal_edit') || 'Edit Link') : (t('links.modal_add') || 'Add Link');
+  const delBtn = document.getElementById('link-delete-btn');
+  if (delBtn) delBtn.style.display = link ? '' : 'none';
+  if (typeof openModal === 'function') openModal('modal-link');
+  setTimeout(() => document.getElementById('link-url').focus(), 60);
+}
+
+document.getElementById('add-link-btn')?.addEventListener('click', () => openLinkModal(null));
+
+document.getElementById('save-link')?.addEventListener('click', () => {
+  ensureLinksState();
+  const url = (document.getElementById('link-url').value || '').trim();
+  if (!url) {
+    document.getElementById('link-url').focus();
+    return;
+  }
+  // Auto-prefix scheme if missing
+  const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  const payload = {
+    url:   finalUrl,
+    title: (document.getElementById('link-title').value || '').trim(),
+    tag:   (document.getElementById('link-tag').value   || '').trim(),
+    notes: (document.getElementById('link-notes').value || '').trim(),
+  };
+  if (editingLinkId) {
+    const l = state.links.find(x => x.id === editingLinkId);
+    if (l) Object.assign(l, payload);
+  } else {
+    state.links.push({ id: uid(), ...payload, createdAt: Date.now() });
+  }
+  save();
+  renderLinks();
+  closeModal('modal-link');
+});
+
+document.getElementById('link-delete-btn')?.addEventListener('click', () => {
+  if (!editingLinkId) return;
+  if (!confirm(t('links.confirm_delete') || 'Bu link silinsin mi?')) return;
+  state.links = state.links.filter(l => l.id !== editingLinkId);
+  save();
+  renderLinks();
+  closeModal('modal-link');
+});
+
+document.getElementById('links-search')?.addEventListener('input', e => {
+  linksFilter = e.target.value;
+  renderLinks();
+});
+
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
@@ -4506,6 +4659,7 @@ const ITEM_ICONS = {
   finance: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>',
   purchases: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
   review:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>',
+  links:     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
 };
 
 function escapeHtml(s) {
@@ -5307,9 +5461,11 @@ function migrateToSpaces() {
   if (!state.reviews || typeof state.reviews !== 'object') state.reviews = { week: {}, month: {} };
   if (!state.reviews.week)  state.reviews.week  = {};
   if (!state.reviews.month) state.reviews.month = {};
+  // Ensure links collection
+  if (!Array.isArray(state.links)) state.links = [];
 
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set(), review: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set(), review: new Set(), links: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -5359,6 +5515,7 @@ function migrateToSpaces() {
     finance: new Set(['default']),
     purchases: new Set(['default']),
     review: new Set(['default']),
+    links: new Set(['default']),
   };
   let removed = false;
   state.spaces.forEach(sp => {
@@ -5421,6 +5578,7 @@ function resolveItemData(item) {
   if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
   if (item.type === 'purchases') return { name: t('purchases.title') || 'Purchases' };
   if (item.type === 'review')    return { name: t('reviews.title') || 'Reviews' };
+  if (item.type === 'links')     return { name: t('links.title') || 'Links' };
   return null;
 }
 function itemDisplayName(item) {
@@ -5515,6 +5673,7 @@ function renderSidebar() {
     const finances = sp.items.filter(i => i.type === 'finance');
     const purchases = sp.items.filter(i => i.type === 'purchases');
     const reviews   = sp.items.filter(i => i.type === 'review');
+    const links     = sp.items.filter(i => i.type === 'links');
 
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
@@ -5525,7 +5684,8 @@ function renderSidebar() {
     const financeHtml   = finances.map(it => itemRow(it, sp.id)).join('');
     const purchasesHtml = purchases.map(it => itemRow(it, sp.id)).join('');
     const reviewsHtml   = reviews.map(it => itemRow(it, sp.id)).join('');
-    const body = listsHtml + financeHtml + purchasesHtml + reviewsHtml + meetingsHtml + journalsHtml;
+    const linksHtml     = links.map(it => itemRow(it, sp.id)).join('');
+    const body = listsHtml + financeHtml + purchasesHtml + reviewsHtml + linksHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -5711,6 +5871,9 @@ function selectSpaceItem(spaceId, itemId) {
   } else if (item.type === 'review') {
     activateSection('reviews');
     if (typeof renderReviews === 'function') renderReviews();
+  } else if (item.type === 'links') {
+    activateSection('links');
+    if (typeof renderLinks === 'function') renderLinks();
   }
 
   save();
@@ -5809,6 +5972,15 @@ function handleAddItemPick(type) {
     }
     pendingItemAttach = null;
     selectSpaceItem(spaceId, sp.items.find(i => i.type === 'review').id);
+  } else if (type === 'links') {
+    const sp = findSpace(spaceId);
+    if (sp && !sp.items.some(i => i.type === 'links')) {
+      sp.items.push({ id: uid(), type: 'links', refId: 'default' });
+      save();
+      renderSidebar();
+    }
+    pendingItemAttach = null;
+    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'links').id);
   }
 }
 
