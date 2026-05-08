@@ -4103,13 +4103,18 @@ body::before {
   inset: -10vmax;
   z-index: -1;
   pointer-events: none;
+  /* Smaller, more saturated blobs at higher opacity. Sharper edges
+     give the displacement filter contrasted regions to actually bend.
+     Without this, refraction shifts uniform pixels to other uniform
+     pixels and the lens effect is invisible. */
   background:
-    radial-gradient(40vmax 30vmax at 12% 18%,  rgba(120, 170, 255, .55), transparent 60%),
-    radial-gradient(38vmax 32vmax at 85% 12%,  rgba(255, 170, 210, .45), transparent 62%),
-    radial-gradient(46vmax 36vmax at 75% 88%,  rgba(160, 240, 210, .42), transparent 65%),
-    radial-gradient(34vmax 28vmax at 18% 90%,  rgba(255, 215, 150, .40), transparent 60%);
-  filter: blur(40px) saturate(140%);
-  opacity: .95;
+    radial-gradient(28vmax 22vmax at 8%  14%,  rgba( 90, 150, 255, .85), transparent 55%),
+    radial-gradient(32vmax 26vmax at 88% 10%,  rgba(255, 130, 200, .75), transparent 58%),
+    radial-gradient(36vmax 28vmax at 72% 92%,  rgba(120, 240, 200, .72), transparent 60%),
+    radial-gradient(26vmax 22vmax at 18% 92%,  rgba(255, 200, 110, .70), transparent 58%),
+    radial-gradient(20vmax 18vmax at 50% 50%,  rgba(190, 160, 255, .42), transparent 70%);
+  filter: blur(14px) saturate(160%);
+  opacity: 1;
 }
 
 :root[data-theme="dark"] body::before {
