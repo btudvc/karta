@@ -810,9 +810,17 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 }
 .space-search-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
 
-.space-list { flex: 1; overflow-y: auto; padding: 4px 8px 16px; }
+.space-list { flex: 1; overflow-y: auto; padding: 8px 8px 16px; }
 
-.space-group { margin-bottom: 4px; }
+/* Each Space (Work / Personal / B-less) is a framed card so its
+   members read as a grouped unit. */
+.space-group {
+  margin-bottom: 8px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
 .space-header {
   display: flex;
   align-items: center;
@@ -875,7 +883,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .space-group.drag-target {
   outline: 2px dashed var(--accent);
   outline-offset: -2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--accent-soft);
 }
 .space-item-icon { display: inline-flex; flex-shrink: 0; opacity: .8; }
