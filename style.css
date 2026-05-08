@@ -3810,7 +3810,9 @@ body { font-size: 13px; }
 .purchases-container {
   padding: 28px 32px 80px;
   max-width: 980px;
-  margin: 0 auto;
+  /* Left-aligned, not centred. Pages line up with the rest of the
+     app's left-anchored content (sidebar + main column). */
+  margin: 0;
 }
 .purchases-filter {
   display: flex;
@@ -3828,7 +3830,7 @@ body { font-size: 13px; }
   align-items: flex-start;
   padding: 14px 16px;
   border-radius: 12px;
-  background: var(--surface-1);
+  background: var(--surface);
   border: 1px solid var(--border);
   transition: background .12s var(--ease), border-color .12s var(--ease);
 }
@@ -3858,6 +3860,9 @@ body { font-size: 13px; }
 
 .purchase-row-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 .purchase-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   padding: 3px 8px;
   border-radius: 999px;
@@ -3866,7 +3871,9 @@ body { font-size: 13px; }
   border: 1px solid var(--border);
   text-decoration: none;
 }
+.purchase-meta-chip svg { flex-shrink: 0; opacity: .8; }
 .purchase-meta-chip:hover { color: var(--text); }
+.purchase-meta-chip:hover svg { opacity: 1; }
 .purchase-row-prices {
   display: flex; flex-wrap: wrap; gap: 12px;
   font-size: 13px; color: var(--muted);
@@ -3925,7 +3932,7 @@ body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
   text-align: left;
   padding: 16px 18px;
   border-radius: 12px;
-  background: var(--surface-1);
+  background: var(--surface);
   border: 1px solid var(--border);
   cursor: pointer;
   transition: background .12s var(--ease), border-color .12s var(--ease);
@@ -3952,7 +3959,7 @@ body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
   margin-top: 18px;
   padding: 22px;
   border-radius: 14px;
-  background: var(--surface-1);
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 .calc-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; }

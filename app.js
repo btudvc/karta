@@ -3830,9 +3830,14 @@ function renderPurchases() {
     if (p.estPrice != null && p.estPrice !== '')   priceParts.push(`<span class="purchase-price-est">${escapeHtml(t('purchases.f.est') || 'Est')}: ${formatMoney(Number(p.estPrice), p.currency || 'TRY')}</span>`);
     if (p.actPrice != null && p.actPrice !== '')   priceParts.push(`<span class="purchase-price-act">${escapeHtml(t('purchases.f.actual') || 'Actual')}: ${formatMoney(Number(p.actPrice), p.currency || 'TRY')}</span>`);
     const meta = [];
-    if (robot)      meta.push(`<span class="purchase-meta-chip">📁 ${escapeHtml(robot.name)}</span>`);
-    if (p.supplier) meta.push(`<span class="purchase-meta-chip">🛒 ${escapeHtml(p.supplier)}</span>`);
-    if (p.url)      meta.push(`<a class="purchase-meta-chip" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(t('purchases.f.url') || 'Link')}</a>`);
+    const ico = {
+      folder:   '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+      supplier: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+      link:     '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    };
+    if (robot)      meta.push(`<span class="purchase-meta-chip">${ico.folder}${escapeHtml(robot.name)}</span>`);
+    if (p.supplier) meta.push(`<span class="purchase-meta-chip">${ico.supplier}${escapeHtml(p.supplier)}</span>`);
+    if (p.url)      meta.push(`<a class="purchase-meta-chip" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer">${ico.link}${escapeHtml(t('purchases.f.url') || 'Link')}</a>`);
     const dates = [];
     if (p.dateRequest)  dates.push(`<span>${escapeHtml(t('purchases.f.date_request') || 'Req')}: ${escapeHtml(p.dateRequest)}</span>`);
     if (p.dateOrder)    dates.push(`<span>${escapeHtml(t('purchases.f.date_order') || 'Ord')}: ${escapeHtml(p.dateOrder)}</span>`);
