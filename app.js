@@ -4755,7 +4755,7 @@ function renderStreakWidget() {
   el.innerHTML = `
     <div class="streak-stat">
       <span class="streak-num">${s.last7}</span>
-      <span class="streak-lbl">done in 7 days</span>
+      <span class="streak-lbl">done this week</span>
     </div>
     <div class="streak-stat">
       <span class="streak-num">${s.streak}</span>
@@ -4763,7 +4763,7 @@ function renderStreakWidget() {
     </div>
     <div class="streak-stat">
       <span class="streak-num">${s.overdueOrToday}</span>
-      <span class="streak-lbl">due today / overdue</span>
+      <span class="streak-lbl">due now</span>
     </div>
   `;
 }
@@ -5687,7 +5687,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.15.1';
+const APP_VERSION = '4.15.2';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
