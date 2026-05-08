@@ -4178,9 +4178,9 @@ body::before {
     0 2px 8px rgba(0, 0, 0, .35);
 }
 
-/* 3. Prismatic rim — a thin conic-gradient ring around floating
-      glass surfaces. The mask trick punches out the interior so only
-      the border catches the rainbow. */
+/* 3. White specular shine — a soft top→bottom highlight that fades
+      around the rim, like sunlight catching the top of curved glass.
+      Replaces the previous rainbow conic ring. */
 .bottom-nav::before,
 .quick-fab::before,
 .calc-fab::before,
@@ -4189,15 +4189,16 @@ body::before {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1.6px;
-  background: conic-gradient(
-    from 200deg at 50% 50%,
-    rgba(255, 130, 180, 1),
-    rgba(140, 200, 255, 1),
-    rgba(160, 255, 210, .95),
-    rgba(255, 210, 150, 1),
-    rgba(255, 130, 180, 1)
-  );
+  padding: 1.4px;
+  background:
+    /* Bright top arc, fades to thinner glow on the sides + bottom */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1)    0%,
+      rgba(255, 255, 255, .65) 22%,
+      rgba(255, 255, 255, .25) 55%,
+      rgba(255, 255, 255, .55) 100%
+    );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -4208,7 +4209,6 @@ body::before {
           mask-composite: exclude;
   pointer-events: none;
   opacity: .9;
-  /* Ensure rim sits above background but below content */
   z-index: 0;
 }
 
@@ -4216,15 +4216,15 @@ body::before {
 :root[data-theme="dark"] .quick-fab::before,
 :root[data-theme="dark"] .calc-fab::before,
 :root[data-theme="dark"] .modal::before {
-  background: conic-gradient(
-    from 200deg at 50% 50%,
-    rgba(255, 130, 180, .60),
-    rgba(120, 180, 255, .60),
-    rgba(140, 240, 200, .55),
-    rgba(255, 200, 130, .60),
-    rgba(255, 130, 180, .60)
-  );
-  opacity: .55;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .85)  0%,
+      rgba(255, 255, 255, .35) 25%,
+      rgba(255, 255, 255, .12) 55%,
+      rgba(255, 255, 255, .30) 100%
+    );
+  opacity: .8;
 }
 
 /* Inner content of these elements must sit above the ::before ring */
