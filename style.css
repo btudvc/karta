@@ -3902,6 +3902,7 @@ body { font-size: 13px; }
 body[data-owner="1"] .more-card-list.owner-only { display: flex !important; }
 body[data-owner="1"] .more-section-title.owner-only { display: block !important; }
 body[data-owner="1"] section.owner-only.active { display: flex !important; }
+body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
 
 /* ── Tools / Calculators ──────────────────────────────── */
 .tools-container {

@@ -4437,6 +4437,18 @@ function applyOwnerGate(email) {
   try {
     if (localStorage.getItem(OWNER_FLAG_KEY) === '1') {
       document.body.dataset.owner = '1';
+      return;
+    }
+    // Fallback: derive from cached Drive userinfo (set by fetchUserInfo on the
+    // last successful sign-in). Lets the gate apply on the very first paint
+    // after this code is deployed, without waiting for silent re-auth.
+    const raw = localStorage.getItem('b-less-drive-user');
+    if (raw) {
+      const u = JSON.parse(raw);
+      if (u && u.email && u.email.toLowerCase() === OWNER_EMAIL) {
+        document.body.dataset.owner = '1';
+        localStorage.setItem(OWNER_FLAG_KEY, '1');
+      }
     }
   } catch {}
 })();
