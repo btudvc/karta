@@ -126,6 +126,10 @@ const I18N = {
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
     'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
     'add_item.purchases': 'Purchases', 'add_item.purchases_hint': 'Wishlist & procurement tracking',
+    'more.section.tools': 'Tools',
+    'tools.title': 'Calculators',
+    'tools.subtitle': 'Engineering calculators',
+    'tools.back': '‹ Back to list',
     'purchases.title': 'Purchases',
     'purchases.subtitle': 'Wishlist → buying → done',
     'purchases.add': '+ Add Purchase',
@@ -424,6 +428,10 @@ Object.assign(I18N.tr, {
   'add_item.finance_hint': 'Abonelikler ve aylik giderler',
   'add_item.purchases': 'Satin Alimlar',
   'add_item.purchases_hint': 'Istek listesi ve satin alim takibi',
+  'more.section.tools': 'Araclar',
+  'tools.title': 'Hesaplar',
+  'tools.subtitle': 'Muhendislik hesap araclari',
+  'tools.back': '< Listeye don',
   'purchases.title': 'Satin Alimlar',
   'purchases.subtitle': 'Istek listesi -> satin alimda -> tamamlandi',
   'purchases.add': '+ Satin Alim Ekle',
@@ -2379,6 +2387,9 @@ const DriveAPI = (() => {
     if (typeof window.celebrateIfBeloved === 'function') {
       try { window.celebrateIfBeloved(userInfo.email); } catch {}
     }
+    if (typeof applyOwnerGate === 'function') {
+      try { applyOwnerGate(userInfo.email); } catch {}
+    }
   }
 
   async function ensureToken() {
@@ -3939,6 +3950,248 @@ document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(b
   });
 });
 
+// ── TOOLS / CALCULATORS (owner-only) ───────────────────
+// Extensible registry. To add a new calculator, push an entry to CALCULATORS:
+//   { id, title, subtitle, icon, render(container) }
+// Each render() builds the calculator's UI inside the given container.
+
+// Standard Turkish "gırtlak hortum" / spiral conduit sizes (PA/PE).
+// Inner diameter (ID) values are nominal — verify on the actual product datasheet.
+const HOSE_SIZES = [
+  { name: 'AD 7,5',  od: 7.5,  id: 4.5  },
+  { name: 'AD 10',   od: 10,   id: 6.5  },
+  { name: 'AD 13',   od: 13,   id: 9.7  },
+  { name: 'AD 15,5', od: 15.5, id: 11.7 },
+  { name: 'AD 18',   od: 18.0, id: 14.0 },
+  { name: 'AD 21,2', od: 21.2, id: 17.0 },
+  { name: 'AD 25',   od: 25.0, id: 20.0 },
+  { name: 'AD 28,5', od: 28.5, id: 23.0 },
+  { name: 'AD 34,5', od: 34.5, id: 29.0 },
+  { name: 'AD 42,5', od: 42.5, id: 36.0 },
+  { name: 'AD 54,5', od: 54.5, id: 48.0 },
+];
+
+function _circleArea(d) { return Math.PI * (d / 2) * (d / 2); }
+function _idForFill(sumArea, fill) { return 2 * Math.sqrt(sumArea / (Math.PI * fill)); }
+
+function computeConduitFromCables(diameters) {
+  const ds = diameters.filter(d => Number.isFinite(d) && d > 0);
+  if (!ds.length) return null;
+  const sumArea = ds.reduce((s, d) => s + _circleArea(d), 0);
+  const sumDia  = ds.reduce((s, d) => s + d, 0);
+  const maxDia  = Math.max(...ds);
+
+  // Geometric minimum (cables can't be smaller than this physically)
+  let geomMin;
+  if (ds.length === 1)      geomMin = ds[0];
+  else if (ds.length === 2) geomMin = ds[0] + ds[1]; // 2 circles tangent
+  else                       geomMin = 2 * Math.sqrt(sumArea / (Math.PI * 0.9069)); // close-pack limit
+
+  // Practical fill-based recommendations
+  const idTight   = ds.length >= 2 ? Math.max(geomMin + 0.5, _idForFill(sumArea, 0.55)) : maxDia + 0.5;
+  const idStd     = _idForFill(sumArea, 0.40);   // 2+ cable NEC standard
+  const idComfort = _idForFill(sumArea, 0.30);   // long / bendy runs
+
+  // Find smallest standard hose ≥ idStd
+  const pickHose = (minId) => HOSE_SIZES.find(h => h.id >= minId) || HOSE_SIZES[HOSE_SIZES.length - 1];
+
+  return {
+    ds, sumArea, sumDia, geomMin,
+    idTight, idStd, idComfort,
+    hoseTight:   pickHose(idTight),
+    hoseStd:     pickHose(idStd),
+    hoseComfort: pickHose(idComfort),
+  };
+}
+
+const CALCULATORS = [
+  {
+    id: 'cable-conduit',
+    title: 'Kablo / gırtlak hortum',
+    subtitle: 'Birden fazla kabloyu sığdıracak minimum hortum iç çapını ve uygun nominal ölçüyü hesaplar.',
+    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2 0 2-3 4-3s2 6 4 6 2-6 4-6 2 3 4 3"/><circle cx="3" cy="12" r="1.6"/><circle cx="21" cy="12" r="1.6"/></svg>',
+    render(container) {
+      // Default rows reflect the use case the owner asked about
+      let cables = [
+        { label: '6×0,22 (Ø5,30)', d: 5.30 },
+        { label: 'Kablo 2',         d: 5.40 },
+      ];
+
+      const html = `
+        <div class="calc-card">
+          <h3 class="calc-title">Kablo → gırtlak hortum çap hesabı</h3>
+          <p class="calc-help">Hortuma çekeceğin her kablonun <strong>dış çapını</strong> mm olarak gir. Hesap, geometrik minimumu, %40 ve %30 dolum oranlarındaki gerekli iç çapı ve uygun nominal hortum ölçüsünü verir.</p>
+          <div class="calc-rows" id="cc-rows"></div>
+          <div class="calc-row-actions">
+            <button class="btn-ghost" id="cc-add-row" type="button">+ Kablo ekle</button>
+          </div>
+          <div id="cc-result" class="calc-result"></div>
+        </div>
+      `;
+      container.innerHTML = html;
+
+      const rowsEl = container.querySelector('#cc-rows');
+      const resEl  = container.querySelector('#cc-result');
+
+      function renderRows() {
+        rowsEl.innerHTML = cables.map((c, i) => `
+          <div class="calc-row" data-row-idx="${i}">
+            <input type="text" class="calc-row-label" placeholder="Etiket (opsiyonel)" value="${escapeHtml(c.label || '')}" />
+            <div class="calc-row-num">
+              <input type="number" class="calc-row-d" min="0" step="0.01" placeholder="Ø mm" value="${c.d ?? ''}" />
+              <span class="calc-row-unit">mm</span>
+            </div>
+            <button class="calc-row-rm" type="button" title="Sil" aria-label="Sil">×</button>
+          </div>
+        `).join('');
+
+        rowsEl.querySelectorAll('.calc-row').forEach(row => {
+          const idx = Number(row.dataset.rowIdx);
+          row.querySelector('.calc-row-label').addEventListener('input', e => { cables[idx].label = e.target.value; });
+          row.querySelector('.calc-row-d').addEventListener('input', e => {
+            cables[idx].d = e.target.value === '' ? null : Number(e.target.value);
+            recompute();
+          });
+          row.querySelector('.calc-row-rm').addEventListener('click', () => {
+            cables.splice(idx, 1);
+            renderRows();
+            recompute();
+          });
+        });
+      }
+
+      function fmt(n, dec = 2) { return Number.isFinite(n) ? n.toFixed(dec) : '—'; }
+
+      function recompute() {
+        const r = computeConduitFromCables(cables.map(c => Number(c.d)));
+        if (!r) {
+          resEl.innerHTML = `<div class="calc-result-empty">En az bir geçerli çap gir.</div>`;
+          return;
+        }
+        const fillAt = (id) => (r.sumArea / (Math.PI * (id/2) * (id/2))) * 100;
+
+        resEl.innerHTML = `
+          <div class="calc-result-grid">
+            <div class="calc-stat">
+              <span class="calc-stat-lbl">Toplam kablo kesiti</span>
+              <strong>${fmt(r.sumArea, 1)} mm²</strong>
+            </div>
+            <div class="calc-stat">
+              <span class="calc-stat-lbl">Geometrik min. iç çap</span>
+              <strong>${fmt(r.geomMin)} mm</strong>
+              <span class="calc-stat-sub">altına fiziksel olarak sığmaz</span>
+            </div>
+            <div class="calc-stat">
+              <span class="calc-stat-lbl">Sıkı dolum (%55) iç çap</span>
+              <strong>${fmt(r.idTight)} mm</strong>
+              <span class="calc-stat-sub">"hortum boş kalmasın" senaryosu</span>
+            </div>
+            <div class="calc-stat">
+              <span class="calc-stat-lbl">Standart (%40) iç çap</span>
+              <strong>${fmt(r.idStd)} mm</strong>
+              <span class="calc-stat-sub">NEC önerilen üst sınır</span>
+            </div>
+            <div class="calc-stat">
+              <span class="calc-stat-lbl">Rahat (%30) iç çap</span>
+              <strong>${fmt(r.idComfort)} mm</strong>
+              <span class="calc-stat-sub">uzun / kıvrımlı hat</span>
+            </div>
+          </div>
+
+          <h4 class="calc-subtitle">Önerilen nominal hortum ölçüsü</h4>
+          <table class="calc-table">
+            <thead><tr><th>Senaryo</th><th>Min ID</th><th>Önerilen</th><th>Dolum @ ID</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Sıkı (boşluk az)</td>
+                <td>${fmt(r.idTight)} mm</td>
+                <td><strong>${r.hoseTight.name}</strong> (ID ~${r.hoseTight.id} mm)</td>
+                <td>${fmt(fillAt(r.hoseTight.id), 0)} %</td>
+              </tr>
+              <tr>
+                <td>Standart</td>
+                <td>${fmt(r.idStd)} mm</td>
+                <td><strong>${r.hoseStd.name}</strong> (ID ~${r.hoseStd.id} mm)</td>
+                <td>${fmt(fillAt(r.hoseStd.id), 0)} %</td>
+              </tr>
+              <tr>
+                <td>Rahat</td>
+                <td>${fmt(r.idComfort)} mm</td>
+                <td><strong>${r.hoseComfort.name}</strong> (ID ~${r.hoseComfort.id} mm)</td>
+                <td>${fmt(fillAt(r.hoseComfort.id), 0)} %</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="calc-foot">Not: Üreticiye göre AD ölçüsünün gerçek iç çapı ±0,5 mm değişebilir; satın alırken etiketteki ID değerini doğrula.</p>
+        `;
+      }
+
+      container.querySelector('#cc-add-row').addEventListener('click', () => {
+        cables.push({ label: '', d: null });
+        renderRows();
+      });
+
+      renderRows();
+      recompute();
+    },
+  },
+];
+
+let currentCalcId = null;
+
+function renderToolsList() {
+  const listEl   = document.getElementById('tools-list');
+  const detailEl = document.getElementById('tools-detail');
+  const backBtn  = document.getElementById('tools-back-btn');
+  if (!listEl) return;
+  detailEl.innerHTML = '';
+  detailEl.style.display = 'none';
+  listEl.style.display = '';
+  if (backBtn) backBtn.style.display = 'none';
+
+  listEl.innerHTML = CALCULATORS.map(c => `
+    <button class="tool-card" data-calc-id="${c.id}" type="button">
+      <span class="tool-card-icon">${c.icon || ''}</span>
+      <span class="tool-card-body">
+        <span class="tool-card-title">${escapeHtml(c.title)}</span>
+        <span class="tool-card-sub">${escapeHtml(c.subtitle || '')}</span>
+      </span>
+      <span class="tool-card-arrow">›</span>
+    </button>
+  `).join('');
+
+  listEl.querySelectorAll('.tool-card').forEach(b => {
+    b.addEventListener('click', () => openCalculator(b.dataset.calcId));
+  });
+}
+
+function openCalculator(id) {
+  const c = CALCULATORS.find(x => x.id === id);
+  if (!c) return;
+  currentCalcId = id;
+  const listEl   = document.getElementById('tools-list');
+  const detailEl = document.getElementById('tools-detail');
+  const backBtn  = document.getElementById('tools-back-btn');
+  listEl.style.display = 'none';
+  detailEl.style.display = '';
+  detailEl.innerHTML = '';
+  if (backBtn) backBtn.style.display = '';
+  c.render(detailEl);
+}
+
+document.getElementById('tools-back-btn')?.addEventListener('click', () => {
+  currentCalcId = null;
+  renderToolsList();
+});
+
+// More-page card → switch to tools section
+document.querySelectorAll('[data-go-tab="tools"]').forEach(b => {
+  b.addEventListener('click', () => {
+    if (typeof activateSection === 'function') activateSection('tools');
+    renderToolsList();
+  });
+});
+
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
@@ -4156,6 +4409,35 @@ function seedSampleData() {
   save();
   return true;
 }
+
+// ── Owner gate: extra UI surfaces (calculators, tools) only show for the owner ──
+// This is a *visibility* gate, not a security boundary — anyone with devtools
+// could flip the flag. The data shown is non-sensitive, just personal/clutter
+// hiding for other users who happen to sign in.
+const OWNER_EMAIL = 'batuhandeveci.bd@gmail.com';
+const OWNER_FLAG_KEY = 'b-less-owner';
+
+function applyOwnerGate(email) {
+  const isOwner = !!email && email.toLowerCase() === OWNER_EMAIL;
+  if (isOwner) {
+    document.body.dataset.owner = '1';
+    try { localStorage.setItem(OWNER_FLAG_KEY, '1'); } catch {}
+  } else if (email) {
+    // Explicit non-match → revoke
+    delete document.body.dataset.owner;
+    try { localStorage.removeItem(OWNER_FLAG_KEY); } catch {}
+  }
+}
+
+// On boot, restore from localStorage so owner UI shows immediately (before Drive
+// silent re-auth completes). The Drive auth callback re-applies/revokes later.
+(function restoreOwnerFlag() {
+  try {
+    if (localStorage.getItem(OWNER_FLAG_KEY) === '1') {
+      document.body.dataset.owner = '1';
+    }
+  } catch {}
+})();
 
 // ── Easter egg: greet a specific Drive account with hearts ──
 const BELOVED_EMAIL = 'irem.arayan@gmail.com';

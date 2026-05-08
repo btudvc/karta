@@ -3892,3 +3892,131 @@ body { font-size: 13px; }
   #modal-purchase .row-2, #modal-purchase .row-3 { grid-template-columns: 1fr; }
   .purchase-row-head { flex-wrap: wrap; }
 }
+
+/* ── Owner-only UI (visibility gate) ──────────────────── */
+.owner-only { display: none !important; }
+body[data-owner="1"] .owner-only { display: revert !important; }
+body[data-owner="1"] .more-card-list.owner-only { display: flex !important; }
+body[data-owner="1"] .more-section-title.owner-only { display: block !important; }
+body[data-owner="1"] section.owner-only.active { display: flex !important; }
+
+/* ── Tools / Calculators ──────────────────────────────── */
+.tools-container {
+  padding: 28px 32px 80px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+#tools-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .12s var(--ease), border-color .12s var(--ease);
+  color: var(--text);
+  font: inherit;
+}
+.tool-card:hover { background: var(--surface-2); border-color: var(--border-strong, var(--border)); }
+.tool-card-icon {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  flex-shrink: 0;
+}
+.tool-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tool-card-title { font-weight: 600; font-size: 15px; }
+.tool-card-sub   { font-size: 13px; color: var(--muted); }
+.tool-card-arrow { color: var(--muted); font-size: 20px; }
+
+#tools-back-btn { display: none; }
+
+#tools-detail .calc-card {
+  margin-top: 18px;
+  padding: 22px;
+  border-radius: 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.calc-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+.calc-help  { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.calc-subtitle { margin: 22px 0 10px; font-size: 14px; font-weight: 600; }
+
+.calc-rows { display: flex; flex-direction: column; gap: 8px; }
+.calc-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 32px;
+  gap: 10px;
+  align-items: center;
+}
+.calc-row input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+}
+.calc-row-num { display: flex; align-items: center; gap: 6px; }
+.calc-row-unit { font-size: 12px; color: var(--muted); }
+.calc-row-rm {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px; line-height: 1;
+  cursor: pointer;
+}
+.calc-row-rm:hover { color: var(--text); border-color: rgba(255,80,80,.5); background: rgba(255,80,80,.08); }
+
+.calc-row-actions { margin-top: 12px; }
+
+.calc-result { margin-top: 22px; }
+.calc-result-empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
+.calc-result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.calc-stat {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.calc-stat-lbl { font-size: 12px; color: var(--muted); }
+.calc-stat strong { font-size: 18px; font-weight: 600; color: var(--text); }
+.calc-stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.calc-table th, .calc-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.calc-table th { font-weight: 600; color: var(--muted); font-size: 12px; }
+.calc-foot { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
+
+@media (max-width: 720px) {
+  .tools-container { padding: 18px 14px; }
+  .calc-row { grid-template-columns: 1fr 110px 32px; }
+  #tools-detail .calc-card { padding: 16px; }
+}
