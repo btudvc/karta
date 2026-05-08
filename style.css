@@ -4130,10 +4130,16 @@ body::before {
 .calc-fab,
 .modal,
 .space-sidebar {
-  position: relative;
+  /* DO NOT set `position` here — bottom-nav / quick-fab / calc-fab are
+     already fixed; overriding them flushes the FAB into the document
+     flow. Only .modal needs an explicit position:relative for ::before
+     anchoring; handled in a dedicated rule below. */
   backdrop-filter: blur(34px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(34px) saturate(190%) !important;
 }
+/* Ensure ::before rim has a positioned ancestor without breaking
+   existing positioning. .modal is normally static inside .modal-overlay. */
+.modal { position: relative; }
 
 .bottom-nav,
 .quick-fab,
@@ -4171,14 +4177,14 @@ body::before {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1.2px;
+  padding: 1.6px;
   background: conic-gradient(
     from 200deg at 50% 50%,
-    rgba(255, 170, 200, .85),
-    rgba(170, 220, 255, .85),
-    rgba(180, 255, 220, .80),
-    rgba(255, 220, 170, .85),
-    rgba(255, 170, 200, .85)
+    rgba(255, 130, 180, 1),
+    rgba(140, 200, 255, 1),
+    rgba(160, 255, 210, .95),
+    rgba(255, 210, 150, 1),
+    rgba(255, 130, 180, 1)
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -4189,7 +4195,7 @@ body::before {
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   pointer-events: none;
-  opacity: .70;
+  opacity: .9;
   /* Ensure rim sits above background but below content */
   z-index: 0;
 }
