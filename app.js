@@ -125,6 +125,30 @@ const I18N = {
     'add_item.visit': 'Visit', 'add_item.visit_hint': 'Plan a place + date',
     'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
     'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
+    'add_item.purchases': 'Purchases', 'add_item.purchases_hint': 'Wishlist & procurement tracking',
+    'purchases.title': 'Purchases',
+    'purchases.subtitle': 'Wishlist → buying → done',
+    'purchases.add': '+ Add Purchase',
+    'purchases.modal_add': 'Add Purchase',
+    'purchases.modal_edit': 'Edit Purchase',
+    'purchases.empty': 'No purchases yet. Click "+ Add Purchase" to start your wishlist.',
+    'purchases.confirm_delete': 'Delete this purchase?',
+    'purchases.filter.all': 'All',
+    'purchases.status.wishlist': 'Wishlist',
+    'purchases.status.buying':   'Buying',
+    'purchases.status.done':     'Done',
+    'purchases.f.name':          'Name',
+    'purchases.f.status':        'Status',
+    'purchases.f.project':       'Linked project',
+    'purchases.f.project_none':  '— None —',
+    'purchases.f.est':           'Estimated price',
+    'purchases.f.actual':        'Actual price',
+    'purchases.f.supplier':      'Supplier',
+    'purchases.f.url':           'Link',
+    'purchases.f.notes':         'Notes',
+    'purchases.f.date_request':  'Requested',
+    'purchases.f.date_order':    'Ordered',
+    'purchases.f.date_delivery': 'Delivered',
     'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
     'nav.spaces': 'Spaces',
     'btn.add_short': '+ Add',
@@ -398,6 +422,31 @@ const I18N = {
 Object.assign(I18N.tr, {
   'add_item.finance': 'Harcamalar',
   'add_item.finance_hint': 'Abonelikler ve aylik giderler',
+  'add_item.purchases': 'Satin Alimlar',
+  'add_item.purchases_hint': 'Istek listesi ve satin alim takibi',
+  'purchases.title': 'Satin Alimlar',
+  'purchases.subtitle': 'Istek listesi -> satin alimda -> tamamlandi',
+  'purchases.add': '+ Satin Alim Ekle',
+  'purchases.modal_add': 'Satin Alim Ekle',
+  'purchases.modal_edit': 'Satin Alimi Duzenle',
+  'purchases.empty': 'Henuz satin alim yok. Istek listene baslamak icin "+ Satin Alim Ekle"a bas.',
+  'purchases.confirm_delete': 'Bu satin alimi sil?',
+  'purchases.filter.all': 'Tumu',
+  'purchases.status.wishlist': 'Istek listesi',
+  'purchases.status.buying':   'Satin alimda',
+  'purchases.status.done':     'Tamamlandi',
+  'purchases.f.name':          'Ad',
+  'purchases.f.status':        'Durum',
+  'purchases.f.project':       'Ilgili proje',
+  'purchases.f.project_none':  '- Yok -',
+  'purchases.f.est':           'Tahmini fiyat',
+  'purchases.f.actual':        'Gercek fiyat',
+  'purchases.f.supplier':      'Tedarikci',
+  'purchases.f.url':           'Link',
+  'purchases.f.notes':         'Notlar',
+  'purchases.f.date_request':  'Talep',
+  'purchases.f.date_order':    'Siparis',
+  'purchases.f.date_delivery': 'Teslim',
   'fin.title': 'Harcamalar',
   'fin.subtitle': 'Abonelikler ve aylik tekrar eden giderler',
   'fin.add_subscription': 'Abonelik Ekle',
@@ -511,7 +560,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -523,6 +572,8 @@ let editingIssueId     = null;
 let editingMeetingId   = null;
 let editingSubscriptionId = null;
 let editingExpenseId = null;
+let editingPurchaseId = null;
+let purchasesFilter = 'all'; // 'all' | 'wishlist' | 'buying' | 'done'
 let financeSelectedMonth = ymd(new Date()).slice(0, 7);
 
 const STORAGE_KEY = 'b-less';
@@ -1581,6 +1632,7 @@ function closeModal(id) {
   editingIssueId = null; editingMeetingId = null;
   editingSubscriptionId = null;
   editingExpenseId = null;
+  editingPurchaseId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
     'modal-robot':     ['#modal-robot h3',     t('modal.add_new_list'),
@@ -1591,6 +1643,7 @@ function closeModal(id) {
     'modal-meeting':   ['#modal-meeting h3',    t('modal.add_meeting'), 'save-meeting',  t('btn.add_meeting')],
     'modal-subscription': ['#modal-subscription h3', t('fin.modal_add'), 'save-subscription', t('fin.add_subscription')],
     'modal-expense': ['#modal-expense h3', t('fin.modal_expense_add'), 'save-expense', t('fin.add_expense')],
+    'modal-purchase': ['#modal-purchase h3', t('purchases.modal_add'), 'save-purchase', t('btn.save')],
   };
   const r = resets[id];
   if (r) {
@@ -2831,6 +2884,7 @@ function renderAll() {
   renderMeetingList();
   renderMeetingDetail();
   renderFinance();
+  if (typeof renderPurchases === 'function') renderPurchases();
 }
 
 function renderWorkHours() {} // removed
@@ -3691,6 +3745,200 @@ document.getElementById('save-expense')?.addEventListener('click', () => {
   closeModal('modal-expense');
 });
 
+// ── PURCHASES ──────────────────────────────────────────
+// Lightweight procurement tracker: each item moves through
+// wishlist → buying → done, optionally linked to a project (robot).
+const PURCHASE_STATUSES = ['wishlist', 'buying', 'done'];
+
+function ensurePurchases() {
+  if (!Array.isArray(state.purchases)) state.purchases = [];
+}
+
+function refreshPurchaseRobotSelect(selectedRobotId) {
+  const sel = document.getElementById('purchase-robot');
+  if (!sel) return;
+  const noneLabel = t('purchases.f.project_none') || '— None —';
+  const opts = [`<option value="">${escapeHtml(noneLabel)}</option>`];
+  (state.robots || [])
+    .slice()
+    .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'))
+    .forEach(r => {
+      opts.push(`<option value="${r.id}" ${r.id === selectedRobotId ? 'selected' : ''}>${escapeHtml(r.name || '?')}</option>`);
+    });
+  sel.innerHTML = opts.join('');
+}
+
+function purchaseStatusLabel(status) {
+  return t('purchases.status.' + status) || status;
+}
+
+function renderPurchases() {
+  ensurePurchases();
+  const listEl = document.getElementById('purchases-list');
+  const sumEl  = document.getElementById('purchases-summary');
+  if (!listEl) return;
+
+  // Summary counts
+  const counts = { wishlist: 0, buying: 0, done: 0 };
+  state.purchases.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+  if (sumEl) {
+    sumEl.innerHTML = `
+      <div class="finance-summary-grid">
+        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('wishlist'))}</span><strong>${counts.wishlist}</strong></div>
+        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('buying'))}</span><strong>${counts.buying}</strong></div>
+        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('done'))}</span><strong>${counts.done}</strong></div>
+      </div>`;
+  }
+
+  // Filter buttons reflect current state
+  document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.purchasesFilter === purchasesFilter);
+  });
+
+  const filtered = state.purchases.filter(p =>
+    purchasesFilter === 'all' ? true : p.status === purchasesFilter
+  );
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="space-empty" style="padding:24px;text-align:center;">${escapeHtml(t('purchases.empty') || 'No purchases yet.')}</div>`;
+    return;
+  }
+
+  // Sort: wishlist → buying → done, then most recently created first
+  const order = { wishlist: 0, buying: 1, done: 2 };
+  filtered.sort((a, b) => {
+    const so = (order[a.status] ?? 9) - (order[b.status] ?? 9);
+    if (so !== 0) return so;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+
+  listEl.innerHTML = filtered.map(p => {
+    const robot = p.robotId ? (state.robots || []).find(r => r.id === p.robotId) : null;
+    const priceParts = [];
+    if (p.estPrice != null && p.estPrice !== '')   priceParts.push(`<span class="purchase-price-est">${escapeHtml(t('purchases.f.est') || 'Est')}: ${formatMoney(Number(p.estPrice), p.currency || 'TRY')}</span>`);
+    if (p.actPrice != null && p.actPrice !== '')   priceParts.push(`<span class="purchase-price-act">${escapeHtml(t('purchases.f.actual') || 'Actual')}: ${formatMoney(Number(p.actPrice), p.currency || 'TRY')}</span>`);
+    const meta = [];
+    if (robot)      meta.push(`<span class="purchase-meta-chip">📁 ${escapeHtml(robot.name)}</span>`);
+    if (p.supplier) meta.push(`<span class="purchase-meta-chip">🛒 ${escapeHtml(p.supplier)}</span>`);
+    if (p.url)      meta.push(`<a class="purchase-meta-chip" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(t('purchases.f.url') || 'Link')}</a>`);
+    const dates = [];
+    if (p.dateRequest)  dates.push(`<span>${escapeHtml(t('purchases.f.date_request') || 'Req')}: ${escapeHtml(p.dateRequest)}</span>`);
+    if (p.dateOrder)    dates.push(`<span>${escapeHtml(t('purchases.f.date_order') || 'Ord')}: ${escapeHtml(p.dateOrder)}</span>`);
+    if (p.dateDelivery) dates.push(`<span>${escapeHtml(t('purchases.f.date_delivery') || 'Del')}: ${escapeHtml(p.dateDelivery)}</span>`);
+
+    const statusOpts = PURCHASE_STATUSES.map(s =>
+      `<option value="${s}" ${p.status === s ? 'selected' : ''}>${escapeHtml(purchaseStatusLabel(s))}</option>`
+    ).join('');
+
+    return `
+      <div class="purchase-row purchase-status-${p.status}" data-purchase-id="${p.id}">
+        <div class="purchase-row-main">
+          <div class="purchase-row-head">
+            <div class="purchase-name">${escapeHtml(p.name || '(no name)')}</div>
+            <select class="purchase-status-select" data-purchase-status="${p.id}">${statusOpts}</select>
+          </div>
+          ${meta.length ? `<div class="purchase-row-meta">${meta.join('')}</div>` : ''}
+          ${priceParts.length ? `<div class="purchase-row-prices">${priceParts.join(' ')}</div>` : ''}
+          ${dates.length ? `<div class="purchase-row-dates">${dates.join(' · ')}</div>` : ''}
+          ${p.notes ? `<div class="purchase-row-notes">${escapeHtml(p.notes)}</div>` : ''}
+        </div>
+        <div class="purchase-row-actions">
+          <button class="btn-sm" data-purchase-edit="${p.id}">${escapeHtml(t('btn.edit') || 'Edit')}</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Wire up
+  listEl.querySelectorAll('[data-purchase-edit]').forEach(b => {
+    b.addEventListener('click', () => openPurchaseModal(state.purchases.find(p => p.id === b.dataset.purchaseEdit)));
+  });
+  listEl.querySelectorAll('.purchase-status-select').forEach(sel => {
+    sel.addEventListener('click', e => e.stopPropagation());
+    sel.addEventListener('change', () => {
+      const p = state.purchases.find(x => x.id === sel.dataset.purchaseStatus);
+      if (!p) return;
+      p.status = sel.value;
+      // Auto-stamp delivery date when moving to done
+      if (p.status === 'done' && !p.dateDelivery) p.dateDelivery = ymd(new Date());
+      save();
+      renderPurchases();
+    });
+  });
+}
+
+function openPurchaseModal(purchase) {
+  ensurePurchases();
+  editingPurchaseId = purchase ? purchase.id : null;
+  refreshPurchaseRobotSelect(purchase ? purchase.robotId : null);
+  document.getElementById('purchase-name').value     = purchase ? (purchase.name || '') : '';
+  document.getElementById('purchase-status').value   = purchase ? (purchase.status || 'wishlist') : 'wishlist';
+  document.getElementById('purchase-est').value      = purchase && purchase.estPrice != null ? purchase.estPrice : '';
+  document.getElementById('purchase-actual').value   = purchase && purchase.actPrice != null ? purchase.actPrice : '';
+  document.getElementById('purchase-currency').value = purchase ? (purchase.currency || 'TRY') : 'TRY';
+  document.getElementById('purchase-supplier').value = purchase ? (purchase.supplier || '') : '';
+  document.getElementById('purchase-url').value      = purchase ? (purchase.url || '') : '';
+  document.getElementById('purchase-date-request').value  = purchase ? (purchase.dateRequest  || '') : '';
+  document.getElementById('purchase-date-order').value    = purchase ? (purchase.dateOrder    || '') : '';
+  document.getElementById('purchase-date-delivery').value = purchase ? (purchase.dateDelivery || '') : '';
+  document.getElementById('purchase-notes').value    = purchase ? (purchase.notes || '') : '';
+  const titleEl = document.getElementById('modal-purchase-title');
+  if (titleEl) titleEl.textContent = purchase ? (t('purchases.modal_edit') || 'Edit Purchase') : (t('purchases.modal_add') || 'Add Purchase');
+  const delBtn = document.getElementById('purchase-delete-btn');
+  if (delBtn) delBtn.style.display = purchase ? '' : 'none';
+  openModal('modal-purchase');
+}
+
+document.getElementById('add-purchase-btn')?.addEventListener('click', () => openPurchaseModal(null));
+
+document.getElementById('save-purchase')?.addEventListener('click', () => {
+  ensurePurchases();
+  const name = (document.getElementById('purchase-name').value || '').trim();
+  if (!name) {
+    document.getElementById('purchase-name').focus();
+    return;
+  }
+  const robotSel = document.getElementById('purchase-robot');
+  const payload = {
+    name,
+    status:       document.getElementById('purchase-status').value || 'wishlist',
+    robotId:      robotSel ? (robotSel.value || null) : null,
+    estPrice:     document.getElementById('purchase-est').value    || null,
+    actPrice:     document.getElementById('purchase-actual').value || null,
+    currency:     document.getElementById('purchase-currency').value || 'TRY',
+    supplier:     (document.getElementById('purchase-supplier').value || '').trim(),
+    url:          (document.getElementById('purchase-url').value || '').trim(),
+    dateRequest:  document.getElementById('purchase-date-request').value || null,
+    dateOrder:    document.getElementById('purchase-date-order').value   || null,
+    dateDelivery: document.getElementById('purchase-date-delivery').value || null,
+    notes:        (document.getElementById('purchase-notes').value || '').trim(),
+  };
+  if (editingPurchaseId) {
+    const p = state.purchases.find(x => x.id === editingPurchaseId);
+    if (p) Object.assign(p, payload);
+  } else {
+    state.purchases.push({ id: uid(), ...payload, createdAt: Date.now() });
+  }
+  save();
+  renderPurchases();
+  closeModal('modal-purchase');
+});
+
+document.getElementById('purchase-delete-btn')?.addEventListener('click', () => {
+  if (!editingPurchaseId) return;
+  if (!confirm(t('purchases.confirm_delete') || 'Delete this purchase?')) return;
+  state.purchases = state.purchases.filter(p => p.id !== editingPurchaseId);
+  save();
+  renderPurchases();
+  closeModal('modal-purchase');
+});
+
+document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    purchasesFilter = btn.dataset.purchasesFilter;
+    renderPurchases();
+  });
+});
+
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
@@ -3783,6 +4031,7 @@ const ITEM_ICONS = {
   visit:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
   finance: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>',
+  purchases: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
 };
 
 function escapeHtml(s) {
@@ -4537,8 +4786,11 @@ function migrateToSpaces() {
   const work     = state.spaces.find(s => s.name === 'Work')     || state.spaces[0];
   const personal = state.spaces.find(s => s.name === 'Personal') || state.spaces[1] || work;
 
+  // Ensure purchases collection exists (older saves may not have it)
+  if (!Array.isArray(state.purchases)) state.purchases = [];
+
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -4586,6 +4838,7 @@ function migrateToSpaces() {
     visit:   new Set((state.fieldVisits || []).map(v => v.id)),
     journal: new Set(['default']),
     finance: new Set(['default']),
+    purchases: new Set(['default']),
   };
   let removed = false;
   state.spaces.forEach(sp => {
@@ -4646,6 +4899,7 @@ function resolveItemData(item) {
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
   if (item.type === 'journal') return { name: t('add_item.journal') || 'Journal' };
   if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
+  if (item.type === 'purchases') return { name: t('purchases.title') || 'Purchases' };
   return null;
 }
 function itemDisplayName(item) {
@@ -4738,6 +4992,7 @@ function renderSidebar() {
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
     const finances = sp.items.filter(i => i.type === 'finance');
+    const purchases = sp.items.filter(i => i.type === 'purchases');
 
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
@@ -4745,8 +5000,9 @@ function renderSidebar() {
     const meetingsHtml = subgroup(t('sidebar.meetings') || 'Meetings', 'meeting', meetings, sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
-    const financeHtml  = finances.map(it => itemRow(it, sp.id)).join('');
-    const body = listsHtml + financeHtml + meetingsHtml + journalsHtml;
+    const financeHtml   = finances.map(it => itemRow(it, sp.id)).join('');
+    const purchasesHtml = purchases.map(it => itemRow(it, sp.id)).join('');
+    const body = listsHtml + financeHtml + purchasesHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -4926,6 +5182,9 @@ function selectSpaceItem(spaceId, itemId) {
   } else if (item.type === 'finance') {
     activateSection('finance');
     renderFinance();
+  } else if (item.type === 'purchases') {
+    activateSection('purchases');
+    if (typeof renderPurchases === 'function') renderPurchases();
   }
 
   save();
@@ -5006,6 +5265,15 @@ function handleAddItemPick(type) {
     }
     pendingItemAttach = null;
     selectSpaceItem(spaceId, sp.items.find(i => i.type === 'finance').id);
+  } else if (type === 'purchases') {
+    const sp = findSpace(spaceId);
+    if (sp && !sp.items.some(i => i.type === 'purchases')) {
+      sp.items.push({ id: uid(), type: 'purchases', refId: 'default' });
+      save();
+      renderSidebar();
+    }
+    pendingItemAttach = null;
+    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'purchases').id);
   }
 }
 

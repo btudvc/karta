@@ -3804,3 +3804,91 @@ body { font-size: 13px; }
 .btn-sm.active-toggle:hover { background: rgba(63,185,80,.22); }
 
 /* Logo PNG ships finished — no theme inversion needed. */
+
+/* ── Purchases ─────────────────────────────────────────── */
+.purchases-container {
+  padding: 28px 32px 80px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.purchases-filter {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 14px;
+  flex-wrap: wrap;
+}
+.purchases-filter .at-filter-btn { cursor: pointer; }
+
+#purchases-list { display: flex; flex-direction: column; gap: 10px; }
+
+.purchase-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  transition: background .12s var(--ease), border-color .12s var(--ease);
+}
+.purchase-row:hover { background: var(--surface-2); }
+.purchase-row-main { flex: 1; min-width: 0; }
+.purchase-row-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.purchase-name { font-weight: 600; font-size: 15px; color: var(--text); word-break: break-word; }
+.purchase-status-select {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.purchase-row.purchase-status-wishlist .purchase-status-select { color: #c98a2a; border-color: rgba(201,138,42,.4); background: rgba(201,138,42,.10); }
+.purchase-row.purchase-status-buying   .purchase-status-select { color: #2a73c9; border-color: rgba(42,115,201,.4); background: rgba(42,115,201,.10); }
+.purchase-row.purchase-status-done     .purchase-status-select { color: #2a9d4f; border-color: rgba(63,185,80,.4);  background: rgba(63,185,80,.12); }
+.purchase-row.purchase-status-done .purchase-name { opacity: .65; text-decoration: line-through; }
+
+.purchase-row-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.purchase-meta-chip {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  text-decoration: none;
+}
+.purchase-meta-chip:hover { color: var(--text); }
+.purchase-row-prices {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  font-size: 13px; color: var(--muted);
+  margin: 4px 0;
+}
+.purchase-price-act { color: var(--text); font-weight: 600; }
+.purchase-row-dates { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.purchase-row-notes {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+.purchase-row-actions { flex-shrink: 0; }
+
+/* Modal helpers (shared with subscription/expense styles) */
+#modal-purchase .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#modal-purchase .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+#modal-purchase .row-2 > div, #modal-purchase .row-3 > div { display: flex; flex-direction: column; }
+#modal-purchase textarea { resize: vertical; }
+
+@media (max-width: 720px) {
+  .purchases-container { padding: 18px 14px; }
+  #modal-purchase .row-2, #modal-purchase .row-3 { grid-template-columns: 1fr; }
+  .purchase-row-head { flex-wrap: wrap; }
+}
