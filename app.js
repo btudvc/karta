@@ -130,9 +130,6 @@ const I18N = {
     'tools.title': 'Calculators',
     'tools.subtitle': 'Engineering calculators',
     'tools.back': '‹ Back to list',
-    'bg.title': 'Background',
-    'bg.modal_title': 'Background',
-    'bg.help': 'Pick one — or drop a new image into <code>assets/backgrounds/</code> and append it to <code>manifest.json</code>.',
     'purchases.title': 'Purchases',
     'purchases.subtitle': 'Wishlist → buying → done',
     'purchases.add': '+ Add Purchase',
@@ -435,9 +432,6 @@ Object.assign(I18N.tr, {
   'tools.title': 'Hesaplar',
   'tools.subtitle': 'Muhendislik hesap araclari',
   'tools.back': '< Listeye don',
-  'bg.title': 'Arka plan',
-  'bg.modal_title': 'Arka plan',
-  'bg.help': 'Birini sec — ya da <code>assets/backgrounds/</code> klasorune yeni bir gorsel at ve <code>manifest.json</code> dosyasina ekle.',
   'purchases.title': 'Satin Alimlar',
   'purchases.subtitle': 'Istek listesi -> satin alimda -> tamamlandi',
   'purchases.add': '+ Satin Alim Ekle',
@@ -3459,16 +3453,17 @@ function renderJournalList() {
   });
 }
 
-// ── THEME TOGGLE (light / dark liquid glass) ──────────
+// ── THEME TOGGLE (light / dim / dark) ────────────────
 const THEME_KEY = 'b-less-theme';
+const THEME_COLORS = { light: '#ffffff', dim: '#1c1f25', dark: '#000000' };
 function applyTheme(name) {
-  const t = name === 'dark' ? 'dark' : 'light';
+  const t = THEME_COLORS[name] ? name : 'light';
   document.documentElement.setAttribute('data-theme', t);
   document.querySelectorAll('.theme-toggle-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.themeSet === t);
   });
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', t === 'dark' ? '#000000' : '#f3f5fb');
+  if (meta) meta.setAttribute('content', THEME_COLORS[t]);
 }
 function setTheme(name) {
   try { localStorage.setItem(THEME_KEY, name); } catch {}
@@ -5702,83 +5697,6 @@ BackupManager.init();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 document.getElementById('bnav-search-btn')?.addEventListener('click', () => openSearchModal());
 
-// ── BACKGROUND PICKER ──────────────────────────────────
-// Manifest at assets/backgrounds/manifest.json lists available bg's.
-// User edits that file (or drops new images + appends an entry) and
-// the picker reflects the change after a reload.
-const BG_STORAGE_KEY = 'b-less-bg-id';
-let BG_MANIFEST = { items: [{ id: 'default', name: 'Iridescent' }] };
-
-async function loadBackgroundManifest() {
-  try {
-    const r = await fetch('assets/backgrounds/manifest.json', { cache: 'no-cache' });
-    if (!r.ok) return;
-    const data = await r.json();
-    if (data && Array.isArray(data.items) && data.items.length) {
-      BG_MANIFEST = data;
-    }
-  } catch {}
-}
-
-function getSavedBackgroundId() {
-  try { return localStorage.getItem(BG_STORAGE_KEY) || 'default'; } catch { return 'default'; }
-}
-
-function applyBackground(id) {
-  const item = (BG_MANIFEST.items || []).find(i => i.id === id) || BG_MANIFEST.items[0];
-  if (!item) return;
-  if (item.file) {
-    const url = `assets/backgrounds/${encodeURIComponent(item.file)}`;
-    document.body.style.setProperty('--user-bg', `url("${url}")`);
-    document.body.classList.add('has-custom-bg');
-  } else {
-    document.body.style.removeProperty('--user-bg');
-    document.body.classList.remove('has-custom-bg');
-  }
-  try { localStorage.setItem(BG_STORAGE_KEY, item.id); } catch {}
-  // Refresh picker tile selection if the modal is open
-  document.querySelectorAll('#bg-grid .bg-tile').forEach(t => {
-    t.classList.toggle('selected', t.dataset.bgId === item.id);
-  });
-}
-
-function renderBackgroundGrid() {
-  const grid = document.getElementById('bg-grid');
-  if (!grid) return;
-  const current = getSavedBackgroundId();
-  grid.innerHTML = (BG_MANIFEST.items || []).map(item => {
-    const isDefault = !item.file;
-    const previewStyle = item.file
-      ? `background-image: url("assets/backgrounds/${encodeURIComponent(item.thumb || item.file)}")`
-      : '';
-    const previewBody = isDefault
-      ? `<div class="bg-tile-default-preview"></div>`
-      : '';
-    return `
-      <button class="bg-tile ${item.id === current ? 'selected' : ''}" data-bg-id="${item.id}" type="button">
-        <span class="bg-tile-preview" style="${previewStyle}">${previewBody}</span>
-        <span class="bg-tile-name">${escapeHtml(item.name || item.id)}</span>
-      </button>`;
-  }).join('');
-  grid.querySelectorAll('.bg-tile').forEach(b => {
-    b.addEventListener('click', () => applyBackground(b.dataset.bgId));
-  });
-}
-
-async function openBackgroundPicker() {
-  await loadBackgroundManifest();   // re-read in case user added items
-  renderBackgroundGrid();
-  if (typeof openModal === 'function') openModal('modal-bg');
-}
-
-document.getElementById('more-bg-trigger')?.addEventListener('click', openBackgroundPicker);
-
-// Apply saved bg on boot — manifest may not be loaded yet, so we
-// optimistically apply by id if it has a file recorded, else fall back.
-(async function bootBackground() {
-  await loadBackgroundManifest();
-  applyBackground(getSavedBackgroundId());
-})();
 document.querySelectorAll('.theme-toggle-btn').forEach(b => {
   b.addEventListener('click', () => setTheme(b.dataset.themeSet));
 });

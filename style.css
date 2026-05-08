@@ -5,28 +5,26 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* ── THEME TOKENS ────────────────────────────────────────
-   Two themes. Monochrome palette — neutral zinc only, no chromatic
-   brand color. Status colors (green/red/yellow/etc.) are kept because
-   they carry semantic meaning (priority, severity, completion state). */
+   Three solid themes — light, dim, dark. Opaque surfaces, no
+   translucency or backdrop-filter; the goal is fast paint and
+   legible content over decorative effects. Status colors
+   (green/red/yellow) stay because they carry semantic meaning. */
 :root {
-  /* Single theme: light liquid glass. Surfaces are translucent rgba whites
-     stacked on a soft white-tinted background so backdrop-filter produces
-     the frosted look without sacrificing legibility. */
-  --bg:           #f3f5fb;
-  --surface:      rgba(255, 255, 255, .60);
-  --surface-2:    rgba(255, 255, 255, .42);
-  --surface-3:    rgba(255, 255, 255, .85);
-  --border:       rgba(20, 30, 60, .08);
-  --border-2:     rgba(20, 30, 60, .14);
+  --bg:           #ffffff;
+  --surface:      #f7f8fa;
+  --surface-2:    #eef0f4;
+  --surface-3:    #ffffff;
+  --border:       #e3e6ec;
+  --border-2:     #d5d9e0;
 
-  --text:         #0c1224;
-  --muted:        #555c75;
-  --muted-2:      #8089a5;
+  --text:         #11141b;
+  --muted:        #555c6b;
+  --muted-2:      #8089a0;
 
   --accent:       #4f46e5;
   --accent-h:     #4338ca;
   --accent-soft:  rgba(79, 70, 229, .10);
-  --accent-soft2: rgba(79, 70, 229, .20);
+  --accent-soft2: rgba(79, 70, 229, .22);
   --on-accent:    #ffffff;
 
   --green:        #16a34a;
@@ -36,22 +34,56 @@
   --yellow:       #ca8a04;
   --rose:         #e11d48;
 
-  --shadow-sm:    0 1px 2px rgba(20, 30, 60, .06);
-  --shadow:       0 8px 24px rgba(20, 30, 60, .12);
-  --shadow-lg:    0 20px 50px rgba(20, 30, 60, .18);
+  --shadow-sm:    0 1px 2px rgba(15, 20, 30, .06);
+  --shadow:       0 6px 18px rgba(15, 20, 30, .08);
+  --shadow-lg:    0 14px 36px rgba(15, 20, 30, .12);
   color-scheme: light;
 }
-
 input[type="date"] { color-scheme: light; }
 
-/* Dark liquid glass — full black base, translucent dark surfaces. */
+/* Dim — warm gray, between light and dark. Easier on eyes for long
+   sessions; keeps content high-contrast against a calm backdrop. */
+:root[data-theme="dim"] {
+  --bg:           #1c1f25;
+  --surface:      #232730;
+  --surface-2:    #2a2f3a;
+  --surface-3:    #2f3441;
+  --border:       #353a45;
+  --border-2:     #41475a;
+
+  --text:         #e8eaf0;
+  --muted:        #a4abb8;
+  --muted-2:      #767e8d;
+
+  --accent:       #a4b6ff;
+  --accent-h:     #c0cfff;
+  --accent-soft:  rgba(164, 182, 255, .14);
+  --accent-soft2: rgba(164, 182, 255, .28);
+  --on-accent:    #0a0c14;
+
+  --green:        #4ade80;
+  --orange:       #fb923c;
+  --red:          #f87171;
+  --purple:       #c4b5fd;
+  --yellow:       #fcd34d;
+  --rose:         #fb7185;
+
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .35);
+  --shadow:       0 6px 18px rgba(0, 0, 0, .35);
+  --shadow-lg:    0 14px 36px rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+:root[data-theme="dim"] input[type="date"] { color-scheme: dark; }
+:root[data-theme="dim"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
+
+/* Dark — pure black background, deep surfaces. */
 :root[data-theme="dark"] {
   --bg:           #000000;
-  --surface:      rgba(255, 255, 255, .06);
-  --surface-2:    rgba(255, 255, 255, .04);
-  --surface-3:    rgba(255, 255, 255, .10);
-  --border:       rgba(255, 255, 255, .09);
-  --border-2:     rgba(255, 255, 255, .16);
+  --surface:      #14161c;
+  --surface-2:    #1a1d24;
+  --surface-3:    #20232b;
+  --border:       #262932;
+  --border-2:     #353a45;
 
   --text:         #f0f3fa;
   --muted:        #98a0b3;
@@ -70,38 +102,13 @@ input[type="date"] { color-scheme: light; }
   --yellow:       #fcd34d;
   --rose:         #fb7185;
 
-  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .35);
-  --shadow:       0 8px 24px rgba(0, 0, 0, .45);
-  --shadow-lg:    0 20px 60px rgba(0, 0, 0, .55);
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, .55);
+  --shadow:       0 6px 18px rgba(0, 0, 0, .55);
+  --shadow-lg:    0 14px 36px rgba(0, 0, 0, .65);
   color-scheme: dark;
 }
 :root[data-theme="dark"] input[type="date"] { color-scheme: dark; }
 :root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
-
-/* Dark variants for the frosted chrome — keep the same blur, swap the
-   white-tinted rgba for a dark-tinted one. */
-:root[data-theme="dark"] .bottom-nav {
-  background: rgba(20, 22, 32, .35);
-  border-color: rgba(255, 255, 255, .08);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
-}
-:root[data-theme="dark"] .quick-fab {
-  background: rgba(20, 22, 32, .35);
-  border-color: rgba(255, 255, 255, .08);
-  color: var(--accent);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .35);
-}
-:root[data-theme="dark"] .quick-fab:hover { background: rgba(40, 44, 60, .45); }
-:root[data-theme="dark"] .space-sidebar {
-  background: rgba(20, 22, 32, .55);
-  border-right-color: rgba(255, 255, 255, .08);
-}
-@media (max-width: 800px) {
-  :root[data-theme="dark"] .space-sidebar {
-    background: rgba(15, 17, 26, .82);
-    border-right-color: rgba(255, 255, 255, .08);
-  }
-}
 
 :root {
   --radius-xs:    5px;
@@ -113,12 +120,19 @@ input[type="date"] { color-scheme: light; }
   --ease:         cubic-bezier(.4,0,.2,1);
 }
 
-html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+}
+/* Desktop: bump root size so the default reads like a comfortable
+   ~115-125% zoom without the user having to adjust the browser. */
+@media (min-width: 900px) { html { font-size: 17.5px; } }
+@media (min-width: 1280px) { html { font-size: 18px; } }
+@media (min-width: 1600px) { html { font-size: 19px; } }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* Plain off-white background — no gradient. Frosted surfaces still feel
-     glassy thanks to backdrop-filter and the translucent rgba whites. */
   background: var(--bg);
   color: var(--text);
   /* Use dynamic viewport height so iOS Safari's URL bar doesn't push content
@@ -751,11 +765,8 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .space-sidebar {
   width: 240px;
   flex-shrink: 0;
-  /* Frosted glass — content behind reads through but stays legible */
-  background: rgba(255, 255, 255, .55);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid rgba(20, 30, 60, .08);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1049,19 +1060,16 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   bottom: calc(82px + env(safe-area-inset-bottom));
   width: 52px; height: 52px;
   border-radius: 50%;
-  /* Match the pill's frosted-glass look instead of a solid accent block */
-  background: rgba(255, 255, 255, .55);
+  background: var(--surface);
   color: var(--accent);
-  border: 1px solid rgba(255, 255, 255, .65);
+  border: 1px solid var(--border);
   cursor: pointer;
-  box-shadow: 0 12px 32px rgba(20, 30, 60, .14), 0 2px 6px rgba(20, 30, 60, .08);
+  box-shadow: var(--shadow);
   z-index: 90;
   align-items: center; justify-content: center;
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
   transition: transform .12s var(--ease), background .12s var(--ease);
 }
-.quick-fab:hover  { background: rgba(255, 255, 255, .75); }
+.quick-fab:hover  { background: var(--surface-2); }
 .quick-fab:active { transform: scale(.96); }
 @media (max-width: 800px) {
   .quick-fab { display: inline-flex; }
@@ -3304,16 +3312,13 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  /* Heavy frosting — barely there until content scrolls underneath */
-  background: rgba(255, 255, 255, .55);
-  border: 1px solid rgba(255, 255, 255, .65);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 5px 6px;
   gap: 2px;
-  box-shadow: 0 12px 32px rgba(20, 30, 60, .14), 0 2px 6px rgba(20, 30, 60, .08);
+  box-shadow: var(--shadow);
   z-index: 100;
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
 }
 .bnav-btn {
   display: inline-flex;
@@ -3529,12 +3534,8 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     width: min(340px, 88vw);
     height: 100dvh;
     max-height: none;
-    /* Heavier opacity on the drawer than on the desktop sidebar — it overlays
-       full content, so legibility wins over translucency. */
-    background: rgba(255, 255, 255, .82);
-    backdrop-filter: blur(32px) saturate(180%);
-    -webkit-backdrop-filter: blur(32px) saturate(180%);
-    border-right: 1px solid rgba(20, 30, 60, .08);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     border-bottom: none;
     box-shadow: var(--shadow-lg);
     transform: translateX(-104%);
@@ -4085,308 +4086,3 @@ body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
   .modal-calc-body { padding: 14px; }
 }
 
-/* ──────────────────────────────────────────────────────────────
-   Liquid Glass+ refinements
-   The backdrop-filter blur on existing surfaces only "shows" if there
-   is colour beneath them. A static off-white bg flattens the effect.
-   These rules paint a soft iridescent wash behind everything and add
-   a light prismatic rim + top highlight to floating glass elements
-   so corners catch colour like real refractive glass.
-   ────────────────────────────────────────────────────────────── */
-
-/* 1. Colourful, blurred ambient layer behind the whole app.
-      Painted on body::before so it sits below all content but above
-      the solid --bg colour. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: -10vmax;
-  z-index: -1;
-  pointer-events: none;
-  /* Smaller, more saturated blobs at higher opacity. Sharper edges
-     give the displacement filter contrasted regions to actually bend.
-     Without this, refraction shifts uniform pixels to other uniform
-     pixels and the lens effect is invisible. */
-  background:
-    radial-gradient(28vmax 22vmax at 8%  14%,  rgba( 90, 150, 255, .85), transparent 55%),
-    radial-gradient(32vmax 26vmax at 88% 10%,  rgba(255, 130, 200, .75), transparent 58%),
-    radial-gradient(36vmax 28vmax at 72% 92%,  rgba(120, 240, 200, .72), transparent 60%),
-    radial-gradient(26vmax 22vmax at 18% 92%,  rgba(255, 200, 110, .70), transparent 58%),
-    radial-gradient(20vmax 18vmax at 50% 50%,  rgba(190, 160, 255, .42), transparent 70%);
-  filter: blur(14px) saturate(160%);
-  opacity: 1;
-}
-
-:root[data-theme="dark"] body::before {
-  background:
-    radial-gradient(40vmax 30vmax at 10% 18%,  rgba(80, 120, 255, .22), transparent 64%),
-    radial-gradient(36vmax 28vmax at 88% 10%,  rgba(220, 90, 200, .18), transparent 66%),
-    radial-gradient(42vmax 32vmax at 72% 88%,  rgba(60, 200, 200, .16), transparent 68%),
-    radial-gradient(32vmax 26vmax at 18% 92%,  rgba(255, 130, 110, .14), transparent 64%);
-  filter: blur(28px) saturate(130%);
-  opacity: .55;
-}
-
-/* 2. Glass elements: stronger blur, top inner highlight, prismatic rim.
-      The conic-gradient ring is masked to a ~1.5px stroke so it reads
-      as a faint rainbow edge — most visible at the rounded corners,
-      exactly the effect from the reference image. */
-/* Hide the SVG <defs> element (it only exists to be referenced by url()) */
-.lg-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
-
-/* Lower-strength refraction for big surfaces: modal + sidebar */
-.modal,
-.space-sidebar {
-  backdrop-filter: blur(18px) saturate(180%) url(#lg-light) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-}
-
-/* Strong, lens-like refraction for small floating elements where the
-   curvature reads clearly. The url() filter actually displaces the
-   pixels behind the element so background content bends. */
-.bottom-nav,
-.quick-fab,
-.calc-fab {
-  backdrop-filter: blur(8px) saturate(190%) url(#lg-strong) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
-}
-/* Ensure ::before rim has a positioned ancestor without breaking
-   existing positioning. .modal is normally static inside .modal-overlay. */
-.modal { position: relative; }
-
-.bottom-nav,
-.quick-fab,
-.calc-fab,
-.modal {
-  /* Crisp top edge highlight + subtle bottom inner shadow = depth */
-  box-shadow:
-    inset 0 1.2px 0 rgba(255, 255, 255, .95),
-    inset 0 -1px 0 rgba(255, 255, 255, .35),
-    inset 0 0 28px rgba(255, 255, 255, .14),
-    0 14px 40px rgba(30, 40, 80, .14),
-    0 2px 6px rgba(30, 40, 80, .07);
-}
-
-:root[data-theme="dark"] .bottom-nav,
-:root[data-theme="dark"] .quick-fab,
-:root[data-theme="dark"] .calc-fab,
-:root[data-theme="dark"] .modal {
-  box-shadow:
-    inset 0 1.2px 0 rgba(255, 255, 255, .22),
-    inset 0 -1px 0 rgba(255, 255, 255, .06),
-    inset 0 0 30px rgba(255, 255, 255, .04),
-    0 18px 50px rgba(0, 0, 0, .55),
-    0 2px 8px rgba(0, 0, 0, .35);
-}
-
-/* 3. White specular shine — a soft top→bottom highlight that fades
-      around the rim, like sunlight catching the top of curved glass.
-      Replaces the previous rainbow conic ring. */
-.bottom-nav::before,
-.quick-fab::before,
-.calc-fab::before,
-.modal::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.4px;
-  background:
-    /* Bright top arc, fades to thinner glow on the sides + bottom */
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 1)    0%,
-      rgba(255, 255, 255, .65) 22%,
-      rgba(255, 255, 255, .25) 55%,
-      rgba(255, 255, 255, .55) 100%
-    );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-          mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
-  opacity: .9;
-  z-index: 0;
-}
-
-:root[data-theme="dark"] .bottom-nav::before,
-:root[data-theme="dark"] .quick-fab::before,
-:root[data-theme="dark"] .calc-fab::before,
-:root[data-theme="dark"] .modal::before {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, .85)  0%,
-      rgba(255, 255, 255, .35) 25%,
-      rgba(255, 255, 255, .12) 55%,
-      rgba(255, 255, 255, .30) 100%
-    );
-  opacity: .8;
-}
-
-/* Inner content of these elements must sit above the ::before ring */
-.bottom-nav > *,
-.modal > *,
-.quick-fab > svg,
-.calc-fab > svg {
-  position: relative;
-  z-index: 1;
-}
-
-/* 4. Sidebar gets a softer treatment — full ring would be busy on a
-      tall column. Just stronger glass + a subtle tinted top edge. */
-.space-sidebar {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, .60),
-    rgba(255, 255, 255, .42) 18%,
-    rgba(255, 255, 255, .38)
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .85),
-    inset 1px 0 0 rgba(255, 255, 255, .35),
-    inset -1px 0 0 rgba(255, 255, 255, .35);
-}
-:root[data-theme="dark"] .space-sidebar {
-  /* Dark tinted base so the colourful body::before doesn't bleed
-     through items at the bottom of the column. The earlier
-     7%/4%/3% white over the gradient was readable at the top
-     but the column fades into the bg blobs further down. */
-  background: linear-gradient(
-    180deg,
-    rgba(15, 18, 28, .72),
-    rgba(15, 18, 28, .68) 18%,
-    rgba(15, 18, 28, .66)
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .12),
-    inset 1px 0 0 rgba(255, 255, 255, .04),
-    inset -1px 0 0 rgba(255, 255, 255, .04);
-}
-
-/* 5. Performance / accessibility fallback: skip the rim on low-end
-      devices and when the user prefers reduced motion. */
-@media (prefers-reduced-motion: reduce) {
-  body::before { filter: blur(28px) saturate(120%); opacity: .55; }
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  /* No backdrop-filter support → fall back to opaque-ish surfaces */
-  .bottom-nav, .quick-fab, .calc-fab, .modal, .space-sidebar {
-    background: rgba(255, 255, 255, .92) !important;
-  }
-  :root[data-theme="dark"] .bottom-nav,
-  :root[data-theme="dark"] .quick-fab,
-  :root[data-theme="dark"] .calc-fab,
-  :root[data-theme="dark"] .modal,
-  :root[data-theme="dark"] .space-sidebar {
-    background: rgba(20, 22, 30, .92) !important;
-  }
-}
-
-/* ── User-selectable background ───────────────────────── */
-/* Image is painted on body via --user-bg variable. The body::before
-   gradient blobs stay visible underneath at low opacity so glass
-   surfaces still have colour to refract at the edges. */
-body.has-custom-bg {
-  background-image: var(--user-bg, none);
-  background-size: cover;
-  background-position: center center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-body.has-custom-bg::before { opacity: .25; }
-:root[data-theme="dark"] body.has-custom-bg::before { opacity: .35; }
-
-/* Background picker modal */
-.modal.modal-bg-picker {
-  width: 640px;
-  max-width: 96vw;
-  max-height: min(86vh, 720px);
-  display: flex;
-  flex-direction: column;
-}
-.modal.modal-bg-picker .modal-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.modal.modal-bg-picker .modal-header h3 {
-  flex: 1;
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-.modal-bg-body {
-  padding: 16px;
-  overflow-y: auto;
-}
-.modal-bg-help {
-  margin: 0 0 14px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-.modal-bg-help code {
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  font-size: 11px;
-}
-
-.bg-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-}
-.bg-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0;
-  background: transparent;
-  border: 2px solid transparent;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: border-color .15s var(--ease), transform .12s var(--ease);
-  font: inherit;
-  color: var(--text);
-}
-.bg-tile:hover { transform: translateY(-1px); }
-.bg-tile.selected { border-color: var(--accent); }
-
-.bg-tile-preview {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16/10;
-  border-radius: 10px;
-  background-color: var(--surface-2);
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-}
-.bg-tile-default-preview {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 18% 22%, rgba(120,170,255,.85), transparent 55%),
-    radial-gradient(circle at 82% 18%, rgba(255,140,200,.75), transparent 58%),
-    radial-gradient(circle at 75% 80%, rgba(120,240,200,.72), transparent 60%),
-    radial-gradient(circle at 22% 88%, rgba(255,210,140,.70), transparent 60%);
-  filter: blur(6px) saturate(150%);
-}
-.bg-tile-name {
-  font-size: 13px;
-  text-align: center;
-  color: var(--text);
-  padding: 0 4px;
-}
-
-@media (max-width: 720px) {
-  .bg-grid { grid-template-columns: repeat(2, 1fr); }
-}
