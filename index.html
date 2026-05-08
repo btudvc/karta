@@ -279,6 +279,13 @@
             <span class="more-card-label">Export calendar (.ics)</span>
             <span class="more-card-arrow">›</span>
           </button>
+          <button class="more-card more-card-link" id="more-bg-trigger">
+            <span class="more-card-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+            </span>
+            <span class="more-card-label" data-i18n="bg.title">Background</span>
+            <span class="more-card-arrow">›</span>
+          </button>
         </div>
 
         <div class="more-section-title">Theme</div>
@@ -397,6 +404,22 @@
         </button>
       </div>
       <div class="modal-calc-body" id="modal-calc-body"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: Background picker -->
+  <div class="modal-overlay" id="modal-bg">
+    <div class="modal modal-bg-picker">
+      <div class="modal-header">
+        <h3 data-i18n="bg.modal_title">Background</h3>
+        <button class="modal-close" data-close="modal-bg" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-bg-body">
+        <p class="modal-bg-help" data-i18n="bg.help">Pick one — or drop a new image into <code>assets/backgrounds/</code> and add it to <code>manifest.json</code> to make it appear here.</p>
+        <div class="bg-grid" id="bg-grid"></div>
+      </div>
     </div>
   </div>
 
