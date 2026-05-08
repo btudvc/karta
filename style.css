@@ -4119,11 +4119,12 @@ body::before {
 
 :root[data-theme="dark"] body::before {
   background:
-    radial-gradient(42vmax 32vmax at 10% 18%,  rgba(80, 120, 255, .35), transparent 62%),
-    radial-gradient(38vmax 32vmax at 88% 10%,  rgba(220, 90, 200, .28), transparent 64%),
-    radial-gradient(46vmax 36vmax at 72% 88%,  rgba(60, 200, 200, .26), transparent 66%),
-    radial-gradient(34vmax 28vmax at 18% 92%,  rgba(255, 130, 110, .24), transparent 62%);
-  opacity: .85;
+    radial-gradient(40vmax 30vmax at 10% 18%,  rgba(80, 120, 255, .22), transparent 64%),
+    radial-gradient(36vmax 28vmax at 88% 10%,  rgba(220, 90, 200, .18), transparent 66%),
+    radial-gradient(42vmax 32vmax at 72% 88%,  rgba(60, 200, 200, .16), transparent 68%),
+    radial-gradient(32vmax 26vmax at 18% 92%,  rgba(255, 130, 110, .14), transparent 64%);
+  filter: blur(28px) saturate(130%);
+  opacity: .55;
 }
 
 /* 2. Glass elements: stronger blur, top inner highlight, prismatic rim.
@@ -4251,16 +4252,20 @@ body::before {
     inset -1px 0 0 rgba(255, 255, 255, .35);
 }
 :root[data-theme="dark"] .space-sidebar {
+  /* Dark tinted base so the colourful body::before doesn't bleed
+     through items at the bottom of the column. The earlier
+     7%/4%/3% white over the gradient was readable at the top
+     but the column fades into the bg blobs further down. */
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, .07),
-    rgba(255, 255, 255, .04) 18%,
-    rgba(255, 255, 255, .03)
+    rgba(15, 18, 28, .72),
+    rgba(15, 18, 28, .68) 18%,
+    rgba(15, 18, 28, .66)
   );
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .14),
-    inset 1px 0 0 rgba(255, 255, 255, .05),
-    inset -1px 0 0 rgba(255, 255, 255, .05);
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    inset 1px 0 0 rgba(255, 255, 255, .04),
+    inset -1px 0 0 rgba(255, 255, 255, .04);
 }
 
 /* 5. Performance / accessibility fallback: skip the rim on low-end
