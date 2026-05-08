@@ -3895,7 +3895,10 @@ body { font-size: 13px; }
 
 /* ── Owner-only UI (visibility gate) ──────────────────── */
 .owner-only { display: none !important; }
-body[data-owner="1"] .owner-only { display: revert !important; }
+/* Only reveal specific owner-only chrome to the owner. The blanket
+   `display: revert !important` rule that used to live here also
+   un-hid <section class="owner-only">, which made #tools render
+   side-by-side with whatever section was actually .active. */
 body[data-owner="1"] .more-card-list.owner-only { display: flex !important; }
 body[data-owner="1"] .more-section-title.owner-only { display: block !important; }
 body[data-owner="1"] section.owner-only.active { display: flex !important; }
