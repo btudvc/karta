@@ -4027,3 +4027,59 @@ body[data-owner="1"] section.owner-only.active { display: flex !important; }
   .calc-row { grid-template-columns: 1fr 110px 32px; }
   #tools-detail .calc-card { padding: 16px; }
 }
+
+/* ── Calculators FAB & modal ──────────────────────────── */
+/* FAB sits 60px above the quick-fab; same frosted-glass look */
+.calc-fab {
+  bottom: calc(142px + env(safe-area-inset-bottom));
+}
+
+/* Modal: list view on tap, detail view after picking */
+.modal.modal-calc {
+  width: 560px;
+  max-width: 96vw;
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+.modal.modal-calc .modal-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal.modal-calc .modal-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+.modal-back-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  visibility: hidden; /* shown only inside a calculator */
+}
+.modal-back-btn:hover { background: var(--surface-2); color: var(--text); }
+
+.modal-calc-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+.tool-card-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* Reuse .tool-card / .calc-* styles already defined above. Nothing extra. */
+
+@media (max-width: 720px) {
+  .modal.modal-calc { max-height: 92vh; border-radius: 14px 14px 0 0; }
+  .modal-calc-body { padding: 14px; }
+}

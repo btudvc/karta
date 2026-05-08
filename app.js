@@ -4139,28 +4139,37 @@ const CALCULATORS = [
 
 let currentCalcId = null;
 
+function _calcModalEls() {
+  return {
+    body:  document.getElementById('modal-calc-body'),
+    title: document.getElementById('modal-calc-title'),
+    back:  document.getElementById('calc-back-btn'),
+  };
+}
+
 function renderToolsList() {
-  const listEl   = document.getElementById('tools-list');
-  const detailEl = document.getElementById('tools-detail');
-  const backBtn  = document.getElementById('tools-back-btn');
-  if (!listEl) return;
-  detailEl.innerHTML = '';
-  detailEl.style.display = 'none';
-  listEl.style.display = '';
-  if (backBtn) backBtn.style.display = 'none';
+  const { body, title, back } = _calcModalEls();
+  if (!body) return;
+  currentCalcId = null;
+  if (title) title.textContent = t('tools.title') || 'Hesaplar';
+  if (back)  back.style.visibility = 'hidden';
 
-  listEl.innerHTML = CALCULATORS.map(c => `
-    <button class="tool-card" data-calc-id="${c.id}" type="button">
-      <span class="tool-card-icon">${c.icon || ''}</span>
-      <span class="tool-card-body">
-        <span class="tool-card-title">${escapeHtml(c.title)}</span>
-        <span class="tool-card-sub">${escapeHtml(c.subtitle || '')}</span>
-      </span>
-      <span class="tool-card-arrow">›</span>
-    </button>
-  `).join('');
+  body.innerHTML = `
+    <div class="tool-card-list">
+      ${CALCULATORS.map(c => `
+        <button class="tool-card" data-calc-id="${c.id}" type="button">
+          <span class="tool-card-icon">${c.icon || ''}</span>
+          <span class="tool-card-body">
+            <span class="tool-card-title">${escapeHtml(c.title)}</span>
+            <span class="tool-card-sub">${escapeHtml(c.subtitle || '')}</span>
+          </span>
+          <span class="tool-card-arrow">›</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
 
-  listEl.querySelectorAll('.tool-card').forEach(b => {
+  body.querySelectorAll('.tool-card').forEach(b => {
     b.addEventListener('click', () => openCalculator(b.dataset.calcId));
   });
 }
@@ -4168,29 +4177,22 @@ function renderToolsList() {
 function openCalculator(id) {
   const c = CALCULATORS.find(x => x.id === id);
   if (!c) return;
+  const { body, title, back } = _calcModalEls();
+  if (!body) return;
   currentCalcId = id;
-  const listEl   = document.getElementById('tools-list');
-  const detailEl = document.getElementById('tools-detail');
-  const backBtn  = document.getElementById('tools-back-btn');
-  listEl.style.display = 'none';
-  detailEl.style.display = '';
-  detailEl.innerHTML = '';
-  if (backBtn) backBtn.style.display = '';
-  c.render(detailEl);
+  if (title) title.textContent = c.title;
+  if (back)  back.style.visibility = 'visible';
+  body.innerHTML = '';
+  c.render(body);
 }
 
-document.getElementById('tools-back-btn')?.addEventListener('click', () => {
-  currentCalcId = null;
+function openCalculatorsModal() {
+  if (typeof openModal === 'function') openModal('modal-calc');
   renderToolsList();
-});
+}
 
-// More-page card → switch to tools section
-document.querySelectorAll('[data-go-tab="tools"]').forEach(b => {
-  b.addEventListener('click', () => {
-    if (typeof activateSection === 'function') activateSection('tools');
-    renderToolsList();
-  });
-});
+document.getElementById('calc-fab')?.addEventListener('click', openCalculatorsModal);
+document.getElementById('calc-back-btn')?.addEventListener('click', () => renderToolsList());
 
 function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
