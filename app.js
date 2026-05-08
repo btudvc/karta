@@ -4007,23 +4007,23 @@ function computeConduitFromCables(diameters) {
 const CALCULATORS = [
   {
     id: 'cable-conduit',
-    title: 'Kablo / gırtlak hortum',
-    subtitle: 'Birden fazla kabloyu sığdıracak minimum hortum iç çapını ve uygun nominal ölçüyü hesaplar.',
+    title: 'Cable conduit',
+    subtitle: 'Compute the minimum conduit inner diameter and a suitable nominal size to fit multiple cables.',
     icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2 0 2-3 4-3s2 6 4 6 2-6 4-6 2 3 4 3"/><circle cx="3" cy="12" r="1.6"/><circle cx="21" cy="12" r="1.6"/></svg>',
     render(container) {
       // Default rows reflect the use case the owner asked about
       let cables = [
-        { label: '6×0,22 (Ø5,30)', d: 5.30 },
-        { label: 'Kablo 2',         d: 5.40 },
+        { label: '6×0.22 (Ø5.30)', d: 5.30 },
+        { label: 'Cable 2',         d: 5.40 },
       ];
 
       const html = `
         <div class="calc-card">
-          <h3 class="calc-title">Kablo → gırtlak hortum çap hesabı</h3>
-          <p class="calc-help">Hortuma çekeceğin her kablonun <strong>dış çapını</strong> mm olarak gir. Hesap, geometrik minimumu, %40 ve %30 dolum oranlarındaki gerekli iç çapı ve uygun nominal hortum ölçüsünü verir.</p>
+          <h3 class="calc-title">Cable → conduit diameter</h3>
+          <p class="calc-help">Enter the <strong>outer diameter</strong> in mm of every cable you want to pull through the conduit. The result shows the geometric minimum, the inner diameter required at 40% and 30% fill ratios, and the matching nominal conduit size.</p>
           <div class="calc-rows" id="cc-rows"></div>
           <div class="calc-row-actions">
-            <button class="btn-ghost" id="cc-add-row" type="button">+ Kablo ekle</button>
+            <button class="btn-ghost" id="cc-add-row" type="button">+ Add cable</button>
           </div>
           <div id="cc-result" class="calc-result"></div>
         </div>
@@ -4036,12 +4036,12 @@ const CALCULATORS = [
       function renderRows() {
         rowsEl.innerHTML = cables.map((c, i) => `
           <div class="calc-row" data-row-idx="${i}">
-            <input type="text" class="calc-row-label" placeholder="Etiket (opsiyonel)" value="${escapeHtml(c.label || '')}" />
+            <input type="text" class="calc-row-label" placeholder="Label (optional)" value="${escapeHtml(c.label || '')}" />
             <div class="calc-row-num">
               <input type="number" class="calc-row-d" min="0" step="0.01" placeholder="Ø mm" value="${c.d ?? ''}" />
               <span class="calc-row-unit">mm</span>
             </div>
-            <button class="calc-row-rm" type="button" title="Sil" aria-label="Sil">×</button>
+            <button class="calc-row-rm" type="button" title="Remove" aria-label="Remove">×</button>
           </div>
         `).join('');
 
@@ -4065,7 +4065,7 @@ const CALCULATORS = [
       function recompute() {
         const r = computeConduitFromCables(cables.map(c => Number(c.d)));
         if (!r) {
-          resEl.innerHTML = `<div class="calc-result-empty">En az bir geçerli çap gir.</div>`;
+          resEl.innerHTML = `<div class="calc-result-empty">Enter at least one valid diameter.</div>`;
           return;
         }
         const fillAt = (id) => (r.sumArea / (Math.PI * (id/2) * (id/2))) * 100;
@@ -4073,56 +4073,56 @@ const CALCULATORS = [
         resEl.innerHTML = `
           <div class="calc-result-grid">
             <div class="calc-stat">
-              <span class="calc-stat-lbl">Toplam kablo kesiti</span>
+              <span class="calc-stat-lbl">Total cable area</span>
               <strong>${fmt(r.sumArea, 1)} mm²</strong>
             </div>
             <div class="calc-stat">
-              <span class="calc-stat-lbl">Geometrik min. iç çap</span>
+              <span class="calc-stat-lbl">Geometric min. ID</span>
               <strong>${fmt(r.geomMin)} mm</strong>
-              <span class="calc-stat-sub">altına fiziksel olarak sığmaz</span>
+              <span class="calc-stat-sub">cables physically can't fit below this</span>
             </div>
             <div class="calc-stat">
-              <span class="calc-stat-lbl">Sıkı dolum (%55) iç çap</span>
+              <span class="calc-stat-lbl">Tight fill (55%) ID</span>
               <strong>${fmt(r.idTight)} mm</strong>
-              <span class="calc-stat-sub">"hortum boş kalmasın" senaryosu</span>
+              <span class="calc-stat-sub">"don't waste space" scenario</span>
             </div>
             <div class="calc-stat">
-              <span class="calc-stat-lbl">Standart (%40) iç çap</span>
+              <span class="calc-stat-lbl">Standard (40%) ID</span>
               <strong>${fmt(r.idStd)} mm</strong>
-              <span class="calc-stat-sub">NEC önerilen üst sınır</span>
+              <span class="calc-stat-sub">NEC recommended upper limit</span>
             </div>
             <div class="calc-stat">
-              <span class="calc-stat-lbl">Rahat (%30) iç çap</span>
+              <span class="calc-stat-lbl">Comfort (30%) ID</span>
               <strong>${fmt(r.idComfort)} mm</strong>
-              <span class="calc-stat-sub">uzun / kıvrımlı hat</span>
+              <span class="calc-stat-sub">long / bendy runs</span>
             </div>
           </div>
 
-          <h4 class="calc-subtitle">Önerilen nominal hortum ölçüsü</h4>
+          <h4 class="calc-subtitle">Recommended nominal conduit size</h4>
           <table class="calc-table">
-            <thead><tr><th>Senaryo</th><th>Min ID</th><th>Önerilen</th><th>Dolum @ ID</th></tr></thead>
+            <thead><tr><th>Scenario</th><th>Min ID</th><th>Recommended</th><th>Fill @ ID</th></tr></thead>
             <tbody>
               <tr>
-                <td>Sıkı (boşluk az)</td>
+                <td>Tight (little slack)</td>
                 <td>${fmt(r.idTight)} mm</td>
                 <td><strong>${r.hoseTight.name}</strong> (ID ~${r.hoseTight.id} mm)</td>
                 <td>${fmt(fillAt(r.hoseTight.id), 0)} %</td>
               </tr>
               <tr>
-                <td>Standart</td>
+                <td>Standard</td>
                 <td>${fmt(r.idStd)} mm</td>
                 <td><strong>${r.hoseStd.name}</strong> (ID ~${r.hoseStd.id} mm)</td>
                 <td>${fmt(fillAt(r.hoseStd.id), 0)} %</td>
               </tr>
               <tr>
-                <td>Rahat</td>
+                <td>Comfort</td>
                 <td>${fmt(r.idComfort)} mm</td>
                 <td><strong>${r.hoseComfort.name}</strong> (ID ~${r.hoseComfort.id} mm)</td>
                 <td>${fmt(fillAt(r.hoseComfort.id), 0)} %</td>
               </tr>
             </tbody>
           </table>
-          <p class="calc-foot">Not: Üreticiye göre AD ölçüsünün gerçek iç çapı ±0,5 mm değişebilir; satın alırken etiketteki ID değerini doğrula.</p>
+          <p class="calc-foot">Note: actual ID for an AD size can vary ±0.5 mm by manufacturer; verify the ID printed on the product label before buying.</p>
         `;
       }
 
@@ -5687,7 +5687,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '4.15.2';
+const APP_VERSION = '4.16.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
