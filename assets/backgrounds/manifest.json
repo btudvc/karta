@@ -1,6 +1,7 @@
 {
   "$comment": "List of selectable backgrounds. Each item: { id, name, file?, thumb? }. The 'default' entry (no file) leaves the iridescent gradient on. Add an image to this folder, then append a new entry below — the picker reads this file at runtime.",
   "items": [
-    { "id": "default", "name": "Iridescent" }
+    { "id": "default",        "name": "Iridescent" },
+    { "id": "dino-reichmuth", "name": "Dino Reichmuth", "file": "dino-reichmuth.jpg" }
   ]
 }
