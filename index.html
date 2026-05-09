@@ -250,7 +250,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v4.16.1</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.3.0</div>
       </div>
     </section>
 
@@ -380,16 +380,6 @@
 
   </main>
 
-  <!-- Quick-capture floating action button (mobile only) -->
-  <button class="quick-fab" id="quick-fab" type="button" aria-label="Quick add task">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-  </button>
-
-  <!-- Calculators FAB (owner-only) -->
-  <button class="quick-fab calc-fab owner-only" id="calc-fab" type="button" aria-label="Hesaplar" title="Hesaplar">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8"/></svg>
-  </button>
-
   <!-- MODAL: Add / Edit Link -->
   <div class="modal-overlay" id="modal-link">
     <div class="modal">
@@ -482,6 +472,14 @@
     <button class="bnav-btn" id="bnav-search-btn" type="button" aria-label="Search">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <span>Search</span>
+    </button>
+    <button class="bnav-btn owner-only" id="calc-fab" type="button" aria-label="Calculators" title="Calculators">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h8"/></svg>
+      <span>Calculators</span>
+    </button>
+    <button class="bnav-btn" id="quick-fab" type="button" aria-label="Quick add task">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Add</span>
     </button>
     <button class="tab bnav-btn" data-tab="more">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .58V20a2 2 0 1 1-4 0v-.05a1.7 1.7 0 0 0-1-.58 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-.58-1H4a2 2 0 1 1 0-4h.05a1.7 1.7 0 0 0 .58-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-.58V4a2 2 0 1 1 4 0v.05a1.7 1.7 0 0 0 1 .58 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.2.35.2.65.58 1H20a2 2 0 1 1 0 4h-.05a1.7 1.7 0 0 0-.55 1z"/></svg>
