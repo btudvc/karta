@@ -1318,75 +1318,95 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   text-align: center;
 }
 
-/* Spaces accordion on Home — each space is a header that expands to its
-   items list inline. Click an item to navigate to its detail. */
+/* Spaces tree on Home — left-aligned hierarchy with a leading caret per
+   row. Children indent under their parent space and connect to a faint
+   vertical guide line for that classic file-tree feel. */
 .home-spaces { display: flex; flex-direction: column; gap: 0; }
 .home-space {
+  border: none;
   border-radius: 0;
   background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
-.home-space:last-child { border-bottom: none; }
 .home-space-head {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center;
+  gap: 6px;
   width: 100%;
-  padding: 12px 8px;
+  padding: 8px 6px;
   background: transparent;
   border: none;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
+  border-radius: 8px;
 }
 .home-space-head:hover { background: var(--surface-2); }
-.home-space-head::after {
-  content: '›';
-  margin-left: auto;
+/* Caret to the LEFT of the row (file-tree style), rotates when expanded */
+.home-space-head::before {
+  content: '';
+  width: 0; height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  margin-right: 4px;
   color: var(--muted);
-  font-size: 22px;
-  line-height: 1;
   flex-shrink: 0;
   transition: transform .15s var(--ease);
 }
-.home-space.open .home-space-head::after { transform: rotate(90deg); }
+.home-space.open .home-space-head::before { transform: rotate(90deg); }
 .home-space-icon {
-  width: 32px; height: 32px;
-  border-radius: 9px;
+  width: 24px; height: 24px;
+  border-radius: 7px;
   background: var(--c, var(--accent));
   color: #fff;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.home-space-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.home-space-name  { font-size: 14px; font-weight: 700; color: var(--text); }
-.home-space-meta  { font-size: 12px; color: var(--muted); }
+.home-space-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+.home-space-name  { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-space-meta  { font-size: 11.5px; color: var(--muted); }
 .home-space-chev  { display: none; }
 
 .home-space-items {
   display: none;
-  padding: 4px 8px 10px 56px;
+  /* Indent children + draw a faint vertical guide line so the hierarchy
+     reads at a glance, like a sidebar tree. */
+  position: relative;
+  padding: 2px 0 6px 26px;
+  margin-left: 12px;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
+  border-left: 1px solid var(--border);
 }
 .home-space.open .home-space-items { display: flex; }
 .home-space-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px;
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px 6px 14px;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text);
   transition: background .12s var(--ease);
 }
+.home-space-item::before {
+  /* Tree elbow connecting the vertical guide to each child row */
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--border);
+}
 .home-space-item:hover { background: var(--surface-2); }
 .home-space-item-icon {
-  width: 22px; height: 22px;
-  border-radius: 6px;
+  width: 20px; height: 20px;
+  border-radius: 5px;
   background: var(--c, var(--surface-2));
   color: #fff;
   display: inline-flex; align-items: center; justify-content: center;
@@ -1397,11 +1417,13 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .home-space-item-add {
+  position: relative;
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 10px;
+  margin: 4px 0 0 14px;
+  padding: 5px 8px;
   background: transparent;
   border: 1px dashed var(--border-2);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   font-size: 12.5px;
@@ -3683,13 +3705,14 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .bnav-badge.has { display: inline-block; }
 
 /* Standalone circular FAB to the right of the pill — same frosted-glass
-   material as the pill so they feel like one nav surface. */
+   material as the pill so they feel like one nav surface. Sized to match
+   the pill height for a flush horizontal alignment. */
 .quick-fab {
   display: inline-flex;
   position: fixed;
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   right: 16px;
-  width: 56px; height: 56px;
+  width: 50px; height: 50px;
   border-radius: 50%;
   background: rgba(255, 255, 255, .55);
   color: var(--text);
@@ -3704,7 +3727,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 }
 .quick-fab:hover  { background: rgba(255, 255, 255, .75); }
 .quick-fab:active { transform: scale(.95); }
-.quick-fab svg { width: 24px; height: 24px; stroke-width: 2.4; }
+.quick-fab svg { width: 22px; height: 22px; stroke-width: 2.4; }
 :root[data-theme="dark"] .quick-fab {
   background: rgba(20, 22, 32, .45);
   border-color: rgba(255, 255, 255, .08);
@@ -3714,10 +3737,11 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 :root[data-theme="dark"] .quick-fab:hover { background: rgba(40, 44, 60, .55); }
 
 @media (max-width: 480px) {
-  .bottom-nav { padding: 5px 6px; gap: 2px; left: 8px; right: 76px; }
+  .bottom-nav { padding: 5px 6px; gap: 2px; left: 8px; right: 70px; }
   .bnav-btn   { min-width: 0; flex: 1; padding: 5px 4px; font-size: 10px; }
   .bnav-btn svg { width: 21px; height: 21px; }
-  .quick-fab  { width: 50px; height: 50px; right: 12px; }
+  .quick-fab  { width: 46px; height: 46px; right: 12px; }
+  .quick-fab svg { width: 20px; height: 20px; }
 }
 @media (max-width: 380px) {
   .bnav-btn > span:not(.bnav-badge) { display: none; }
