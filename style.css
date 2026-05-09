@@ -3407,12 +3407,25 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .cal-notes:focus { outline: none; border-color: var(--accent); }
 
 /* ─── JOURNAL ──────────────────────────────────────────── */
-#journal.active { display: flex; }
+#journal.active { display: flex; flex-direction: column; }
+
+/* Section-level header used by Meetings & Journal so they match
+   the Reviews/Links header pattern even though their bodies are
+   master-detail layouts, not flat lists. */
+.section > .fv-header.section-head-pad {
+  padding: 28px 32px 0;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .section > .fv-header.section-head-pad { padding: 18px 14px 0; margin-bottom: 14px; }
+}
 
 .jrn-container {
   display: flex;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 .jrn-sidebar {

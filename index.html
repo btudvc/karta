@@ -82,6 +82,12 @@
 
     <!-- MEETINGS TAB -->
     <section id="meetings" class="section">
+      <div class="fv-header section-head-pad">
+        <div>
+          <h2 data-i18n="meetings.title">Meetings</h2>
+          <p class="fv-subtitle" data-i18n="meetings.subtitle">Notes, decisions, action items</p>
+        </div>
+      </div>
       <div class="sidebar">
         <div class="sidebar-header">
           <span class="sidebar-label" data-i18n="sidebar.meetings">Toplantılar</span>
@@ -107,7 +113,9 @@
             <h2 data-i18n="visits.title">Ziyaretler</h2>
             <p class="fv-subtitle" data-i18n="visits.subtitle">Planlanmış ziyaretler ve seyahatler</p>
           </div>
-          <button class="btn-primary" id="add-visit-btn"><span data-i18n="btn.add_visit">+ Ziyaret Ekle</span></button>
+          <div class="finance-header-actions">
+            <button class="btn-primary" id="add-visit-btn"><span data-i18n="btn.add_visit">+ Ziyaret Ekle</span></button>
+          </div>
         </div>
         <div id="visits-list"></div>
       </div>
@@ -262,12 +270,18 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v6.1.2</div>
+        <div class="more-version" id="more-version">B-Less Planner v6.1.3</div>
       </div>
     </section>
 
     <!-- JOURNAL TAB (daily-only) -->
     <section id="journal" class="section">
+      <div class="fv-header section-head-pad">
+        <div>
+          <h2 data-i18n="journal.title">Journal</h2>
+          <p class="fv-subtitle" data-i18n="journal.subtitle">Daily entries</p>
+        </div>
+      </div>
       <div class="jrn-container">
         <aside class="jrn-sidebar">
           <div class="jrn-side-head">

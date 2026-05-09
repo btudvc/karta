@@ -72,6 +72,12 @@ const I18N = {
     'empty.no_tasks_add': 'No tasks yet. Add your first task!',
     'all_tasks.title': 'All Tasks',
     'all_tasks.subtitle': 'Tasks across every list',
+    'visits.title': 'Visits',
+    'visits.subtitle': 'Planned visits and trips',
+    'meetings.title': 'Meetings',
+    'meetings.subtitle': 'Notes, decisions, action items',
+    'journal.title': 'Journal',
+    'journal.subtitle': 'Daily entries',
     'empty.no_issues': 'No issues recorded.',
     'empty.no_notes': 'No notes yet.',
     'empty.no_journal': 'No entries yet. Start with today.',
@@ -5350,7 +5356,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.1.2';
+const APP_VERSION = '6.1.3';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
