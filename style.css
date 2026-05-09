@@ -370,7 +370,7 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
   transform: translate(-50%, -50%) scale(1);
 }
 
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .backup-popover {
     width: auto;
     left: 12px; right: 12px;
@@ -741,6 +741,13 @@ body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
 /* ─── MAIN ──────────────────────────────────────────────── */
 main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 
+/* Mobile-first universal layout: cap the app width on desktop so it looks
+   like a phone column instead of stretching across the viewport. The
+   background still fills the rest of the screen. */
+@media (min-width: 801px) {
+  main { max-width: 720px; margin: 0 auto; width: 100%; }
+}
+
 /* v4: hide legacy navigation that the sidebar replaces */
 .v4-hidden { display: none !important; }
 /* The per-section sidebars (legacy) inside #robots, #meetings, #firmware
@@ -1012,7 +1019,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .cross-nav-btn.active { background: var(--accent-soft); color: var(--accent); }
 .cross-nav-btn svg { flex-shrink: 0; }
 
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .cross-nav-btn span { display: none; }
   .cross-nav-btn { padding: 6px 10px; min-height: 40px; }
 }
@@ -1419,7 +1426,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 }
 
 /* Mobile: sidebar collapses to a drawer accessible from a button */
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .space-sidebar {
     width: 100%;
     height: auto;
@@ -2372,7 +2379,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-2); }
 
 /* ─── RESPONSIVE / MOBILE ──────────────────────────────── */
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .mode-switcher { padding: 2px; }
   .mode-btn { padding: 5px 10px; font-size: 12px; }
 
@@ -3277,7 +3284,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   gap: 6px;
 }
 
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .finance-container { padding: 18px 14px; }
   .finance-header-actions { justify-content: stretch; }
   .finance-header-actions button { flex: 1; }
@@ -3327,11 +3334,8 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   color: var(--accent);
 }
 
-/* Spaces is reachable from the always-open sidebar on desktop, no need
-   to duplicate it in the floating pill. */
-@media (min-width: 801px) {
-  .bnav-btn[data-mobile-spaces] { display: none; }
-}
+/* Spaces is reachable via the drawer on every viewport now (mobile-first
+   universal layout), so the pill always shows the Spaces button. */
 
 /* Tight pill at narrow widths — 8 icons (Spaces + 4 cross-views + Search +
    Calculators[owner] + Add + Settings) won't fit at 44px each on a 360-wide
@@ -3359,7 +3363,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   margin: 0;
   padding: 28px 32px;
 }
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   /* Add bottom-nav clearance so the version line at the foot of the page
      isn't trapped under the fixed nav. */
   .more-page { max-width: 560px; margin: 0 auto; padding: 18px 14px 96px; }
@@ -3369,7 +3373,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 6px;
 }
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .more-card-list { grid-template-columns: 1fr; }
 }
 .more-card {
@@ -3507,7 +3511,7 @@ body[data-mode="job"]   .more-card.daily-only { display: none; }
 body[data-mode="daily"] .more-card.job-only   { display: none; }
 
 /* ─── MOBILE: bottom nav + collapsed header ───────────── */
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   body.space-drawer-open { overflow: hidden; }
 
   .space-drawer-backdrop {
@@ -3918,7 +3922,7 @@ body[data-owner="1"] .bnav-btn.owner-only { display: inline-flex !important; }
   margin: 0 auto;
   width: 100%;
 }
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .tools-container { padding: 18px 14px 96px; }
 }
 #tools-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
@@ -4199,7 +4203,7 @@ body[data-owner="1"] .bnav-btn.owner-only { display: inline-flex !important; }
   color: var(--muted);
 }
 
-@media (max-width: 800px) {
+@media all { /* mobile-first universal */
   .reviews-container { padding: 18px 14px 96px; }
   .reviews-layout { grid-template-columns: 1fr; }
   .reviews-list { max-height: 240px; }
