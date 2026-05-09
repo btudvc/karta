@@ -6111,33 +6111,161 @@ document.getElementById('bnav-search-btn')?.addEventListener('click', () => open
 function setBnavActiveFor(id) {
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
   if (id === 'home') document.getElementById('bnav-home-btn')?.classList.add('active');
-  else if (id === 'all-tasks' || id === 'today') document.querySelector('.bnav-btn[data-cross="today"]')?.classList.add('active');
-  else if (id === 'calendar') document.querySelector('.bnav-btn[data-cross="calendar"]')?.classList.add('active');
-  else if (id === 'visits' || id === 'field-visits') document.querySelector('.bnav-btn[data-cross="visits"]')?.classList.add('active');
+  else if (id === 'all-tasks') document.getElementById('bnav-mytasks-btn')?.classList.add('active');
+  else if (id === 'today') document.querySelector('.bnav-btn[data-cross="today"]')?.classList.add('active');
   else if (id === 'more') document.querySelector('.tab.bnav-btn[data-tab="more"]')?.classList.add('active');
 }
+
+// Home dashboard renderer — stats from computeStreakStats, recents from
+// the most-recently-touched robots, spaces from state.spaces.
+function renderHome() {
+  // Workspace name → current space's name (drawer-pickable)
+  const sp = (state.spaces || []).find(s => s.id === state.currentSpaceId) || (state.spaces || [])[0];
+  const wsEl = document.getElementById('home-current-space');
+  if (wsEl) wsEl.textContent = (sp && sp.name) || 'Workspace';
+
+  // Stats cards: today/overdue, open this week, done this week
+  const statsEl = document.getElementById('home-stats');
+  if (statsEl) {
+    const s = computeStreakStats();
+    statsEl.innerHTML = `
+      <button class="home-stat" data-home-go="today" type="button" style="--c: #ff6b6b;">
+        <span class="home-stat-icon">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        </span>
+        <span class="home-stat-num">${s.overdueOrToday}</span>
+        <span class="home-stat-lbl">Today</span>
+        <span class="home-stat-sub">due now</span>
+      </button>
+      <button class="home-stat" data-home-go="all-tasks" type="button" style="--c: #4f8cff;">
+        <span class="home-stat-icon">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </span>
+        <span class="home-stat-num">${s.last7}</span>
+        <span class="home-stat-lbl">Done</span>
+        <span class="home-stat-sub">this week</span>
+      </button>
+      <button class="home-stat" data-home-go="all-tasks" type="button" style="--c: #a855f7;">
+        <span class="home-stat-icon">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        </span>
+        <span class="home-stat-num">${s.streak}</span>
+        <span class="home-stat-lbl">Streak</span>
+        <span class="home-stat-sub">days${s.streak ? ' 🔥' : ''}</span>
+      </button>
+    `;
+    statsEl.querySelectorAll('[data-home-go]').forEach(el => {
+      el.addEventListener('click', () => homeNavigate(el.dataset.homeGo));
+    });
+  }
+
+  // Recents: top 5 robots by latest activity (createdAt + last task added)
+  const recentsEl = document.getElementById('home-recents');
+  if (recentsEl) {
+    const robots = (state.robots || []).slice();
+    const lastActivity = (r) => {
+      let t = r.createdAt || 0;
+      (r.tasks || []).forEach(task => { if ((task.createdAt || 0) > t) t = task.createdAt; if ((task.completedAt || 0) > t) t = task.completedAt; });
+      return t;
+    };
+    robots.sort((a, b) => lastActivity(b) - lastActivity(a));
+    const top = robots.slice(0, 5);
+    if (!top.length) {
+      recentsEl.innerHTML = '<div class="home-list-empty">No lists yet. Tap + to create your first.</div>';
+    } else {
+      const colors = ['#a855f7', '#4f8cff', '#10b981', '#f59e0b', '#ec4899'];
+      recentsEl.innerHTML = top.map((r, i) => `
+        <button class="home-list-item" data-robot-id="${escapeAttr(r.id)}" type="button">
+          <span class="home-list-item-icon" style="--c: ${colors[i % colors.length]};">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </span>
+          <span class="home-list-item-body">
+            <span class="home-list-item-title">${escapeHtml(r.name || 'Untitled')}</span>
+            <span class="home-list-item-sub">${(r.tasks || []).filter(t => t.status !== 'done').length} open</span>
+          </span>
+        </button>
+      `).join('');
+      recentsEl.querySelectorAll('[data-robot-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          const rid = el.dataset.robotId;
+          if (typeof goToTask === 'function') {
+            // Reuse selectSpaceItem path via goToTask without taskId
+            let spaceId = null, itemId = null;
+            (state.spaces || []).forEach(s => (s.items || []).forEach(it => {
+              if (it.type === 'list' && it.refId === rid) { spaceId = s.id; itemId = it.id; }
+            }));
+            if (spaceId && itemId && typeof selectSpaceItem === 'function') selectSpaceItem(spaceId, itemId);
+            else { state.currentRobotId = rid; activateSection('robots'); renderRobotList(); renderRobotDetail(); }
+            setBnavActiveFor(null);
+          }
+        });
+      });
+    }
+  }
+
+  // Spaces list
+  const spacesEl = document.getElementById('home-spaces');
+  if (spacesEl) {
+    const spaces = state.spaces || [];
+    const colors = ['#4f8cff', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
+    spacesEl.innerHTML = spaces.map((sp, i) => `
+      <button class="home-list-item" data-space-id="${escapeAttr(sp.id)}" type="button">
+        <span class="home-list-item-icon" style="--c: ${colors[i % colors.length]};">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
+        </span>
+        <span class="home-list-item-body">
+          <span class="home-list-item-title">${escapeHtml(sp.name)}</span>
+          <span class="home-list-item-sub">${(sp.items || []).length} items</span>
+        </span>
+      </button>
+    `).join('');
+    spacesEl.querySelectorAll('[data-space-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.currentSpaceId = el.dataset.spaceId;
+        save();
+        if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
+        else document.body.classList.add('space-drawer-open');
+      });
+    });
+  }
+}
+
+function homeNavigate(target) {
+  if (target === 'today')      showCrossView('today');
+  else if (target === 'calendar')  showCrossView('calendar');
+  else if (target === 'all-tasks') showCrossView('all-tasks');
+  else if (target === 'visits')    showCrossView('visits');
+  else if (target === 'meetings')  { activateSection('meetings'); setBnavActiveFor(null); if (typeof renderMeetingList === 'function') renderMeetingList(); if (typeof renderMeetingDetail === 'function') renderMeetingDetail(); }
+  else if (target === 'journal')   { activateSection('journal'); setBnavActiveFor(null); }
+  else if (target === 'finance')   { activateSection('finance'); setBnavActiveFor(null); if (typeof renderFinance === 'function') renderFinance(); }
+  else if (target === 'spaces') {
+    if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
+    else document.body.classList.add('space-drawer-open');
+  }
+  else if (target === 'search')    openSearchModal();
+  else if (target === 'add')       openQuickCapture();
+  else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
+  else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
+}
+
 function openHome() {
   state.currentItemId = null;
   if (typeof activateSection === 'function') activateSection('home');
   setBnavActiveFor('home');
+  renderHome();
 }
 document.getElementById('bnav-home-btn')?.addEventListener('click', openHome);
+document.getElementById('bnav-mytasks-btn')?.addEventListener('click', () => showCrossView('all-tasks'));
+document.getElementById('home-search-pill')?.addEventListener('click', () => openSearchModal());
+document.getElementById('home-space-picker')?.addEventListener('click', () => {
+  if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
+  else document.body.classList.add('space-drawer-open');
+});
+document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
+  if (typeof addSpace === 'function') { addSpace(); renderHome(); }
+});
 document.querySelectorAll('[data-home-go]').forEach(b => {
-  b.addEventListener('click', () => {
-    const target = b.dataset.homeGo;
-    if (target === 'today')      showCrossView('today');
-    else if (target === 'calendar')  showCrossView('calendar');
-    else if (target === 'all-tasks') showCrossView('all-tasks');
-    else if (target === 'visits')    showCrossView('visits');
-    else if (target === 'spaces') {
-      if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
-      else document.body.classList.add('space-drawer-open');
-    }
-    else if (target === 'search')    openSearchModal();
-    else if (target === 'add')       openQuickCapture();
-    else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
-    else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
-  });
+  b.addEventListener('click', () => homeNavigate(b.dataset.homeGo));
 });
 
 document.querySelectorAll('.theme-toggle-btn').forEach(b => {
@@ -6146,7 +6274,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.5.0';
+const APP_VERSION = '5.6.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
