@@ -1158,8 +1158,22 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  padding: 22px 16px 0;
+  /* Top padding includes the device status-bar safe area so the workspace
+     header isn't clipped behind the notch / camera cutout. */
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0;
 }
+.home-burger {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s var(--ease);
+}
+.home-burger:hover { background: var(--surface-3); }
 .home-header {
   display: flex; flex-direction: column;
   gap: 12px;
@@ -1277,6 +1291,97 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   transition: background .15s var(--ease);
 }
 .home-section-icon-btn:hover { background: var(--accent-soft); }
+
+/* ── Left Spaces drawer (toggled by hamburger on Home) ── */
+.spaces-drawer-backdrop {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(8, 11, 18, .55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 110;
+}
+body.spaces-drawer-open .spaces-drawer-backdrop { display: block; }
+.spaces-drawer {
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
+  width: min(320px, 88vw);
+  background: rgba(255, 255, 255, .92);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  transform: translateX(-104%);
+  transition: transform .22s var(--ease);
+  z-index: 120;
+  overflow-y: auto;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+:root[data-theme="dark"] .spaces-drawer {
+  background: rgba(15, 17, 26, .92);
+  border-right-color: rgba(255, 255, 255, .08);
+}
+body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
+.spaces-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 14px 10px;
+}
+.spaces-drawer-title {
+  font-size: 12.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .8px;
+  color: var(--muted);
+}
+.spaces-drawer .home-spaces { padding: 0 8px; }
+
+/* ── Type-group nesting inside a space (Lists / Meetings / Visits…) ── */
+.home-type-group {
+  position: relative;
+  padding-left: 2px;
+}
+.home-type-head {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%;
+  padding: 5px 6px;
+  margin-top: 2px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  border-radius: 6px;
+}
+.home-type-head:hover { background: var(--surface-2); color: var(--text); }
+.home-type-head::before {
+  content: '';
+  width: 0; height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  flex-shrink: 0;
+  transition: transform .15s var(--ease);
+}
+.home-type-group.open .home-type-head::before { transform: rotate(90deg); }
+.home-type-count {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--muted-2);
+  font-weight: 600;
+}
+.home-type-items {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 14px;
+  margin-left: 4px;
+  border-left: 1px solid var(--border);
+}
+.home-type-group.open .home-type-items { display: flex; }
 
 .home-list { display: flex; flex-direction: column; gap: 2px; }
 .home-list-item {
@@ -3631,12 +3736,13 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   left: 12px;
   right: 84px;
+  height: 56px;
   justify-content: center;
   /* Glass: heavy backdrop blur over a translucent white tint */
   background: rgba(255, 255, 255, .55);
   border: 1px solid rgba(255, 255, 255, .65);
   border-radius: 999px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   gap: 4px;
   box-shadow: 0 12px 32px rgba(20, 30, 60, .14), 0 2px 6px rgba(20, 30, 60, .08);
   z-index: 100;
@@ -3659,7 +3765,8 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   padding: 6px 8px;
   background: transparent;
   border: none;
-  border-radius: 14px;
+  /* Oval pill so the active highlight matches the bottom-nav curvature */
+  border-radius: 999px;
   color: var(--muted);
   cursor: pointer;
   font-family: inherit;
@@ -3672,21 +3779,11 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .bnav-btn:hover { color: var(--text); }
 .bnav-btn.active {
   color: var(--accent);
-  /* Soft purple gradient highlight under the active item, like the ref */
+  /* Soft purple gradient highlight under the active item — pill-shaped to
+     match the surrounding bar curvature. */
   background: linear-gradient(180deg,
-              color-mix(in srgb, var(--accent) 14%, transparent),
-              color-mix(in srgb, var(--accent) 4%, transparent));
-}
-.bnav-btn.active::before {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 22px; height: 3px;
-  border-radius: 2px;
-  background: var(--accent);
-  opacity: .55;
+              color-mix(in srgb, var(--accent) 16%, transparent),
+              color-mix(in srgb, var(--accent) 6%, transparent));
 }
 .bnav-btn-icon-wrap { position: relative; display: inline-flex; font-style: normal; }
 .bnav-badge {
@@ -3712,7 +3809,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   position: fixed;
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   right: 16px;
-  width: 50px; height: 50px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: rgba(255, 255, 255, .55);
   color: var(--text);
@@ -3737,10 +3834,10 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 :root[data-theme="dark"] .quick-fab:hover { background: rgba(40, 44, 60, .55); }
 
 @media (max-width: 480px) {
-  .bottom-nav { padding: 5px 6px; gap: 2px; left: 8px; right: 70px; }
-  .bnav-btn   { min-width: 0; flex: 1; padding: 5px 4px; font-size: 10px; }
+  .bottom-nav { padding: 3px 5px; gap: 2px; left: 8px; right: 64px; height: 50px; }
+  .bnav-btn   { min-width: 0; flex: 1; padding: 4px 4px; font-size: 10px; }
   .bnav-btn svg { width: 21px; height: 21px; }
-  .quick-fab  { width: 46px; height: 46px; right: 12px; }
+  .quick-fab  { width: 50px; height: 50px; right: 8px; }
   .quick-fab svg { width: 20px; height: 20px; }
 }
 @media (max-width: 380px) {

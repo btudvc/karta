@@ -6199,24 +6199,47 @@ function renderHome() {
     }
   }
 
-  // Spaces accordion
+  // Spaces tree (drawer) — 3-level: Space → Type group → Items
   const spacesEl = document.getElementById('home-spaces');
   if (spacesEl) {
     const open = loadHomeOpen();
     const spaces = state.spaces || [];
+    const TYPE_LABEL = {
+      list: 'Lists', meeting: 'Meetings', visit: 'Visits',
+      journal: 'Journals', finance: 'Expenses',
+      purchases: 'Purchases', links: 'Links', reviews: 'Reviews',
+    };
+    const TYPE_ORDER = ['list', 'meeting', 'visit', 'journal', 'finance', 'purchases', 'links', 'reviews'];
+
     spacesEl.innerHTML = spaces.map((sp, i) => {
       const color = SPACE_COLORS[i % SPACE_COLORS.length];
       const isOpen = open.has(sp.id);
       const items = sp.items || [];
-      const itemsHtml = items.map(it => {
-        const meta = ITEM_TYPE_META[it.type] || ITEM_TYPE_META.list;
-        return `
+      // Bucket by type
+      const byType = {};
+      items.forEach(it => { (byType[it.type] = byType[it.type] || []).push(it); });
+
+      const groupsHtml = TYPE_ORDER.filter(t => byType[t] && byType[t].length).map(t => {
+        const meta = ITEM_TYPE_META[t] || ITEM_TYPE_META.list;
+        const groupKey = sp.id + ':' + t;
+        const groupOpen = open.has(groupKey);
+        const itemsHtml = byType[t].map(it => `
           <button class="home-space-item" data-space-id="${escapeAttr(sp.id)}" data-item-id="${escapeAttr(it.id)}" type="button">
             <span class="home-space-item-icon" style="--c: ${meta.color};">${meta.svg}</span>
             <span class="home-space-item-name">${escapeHtml(spaceItemTitle(it))}</span>
           </button>
+        `).join('');
+        return `
+          <div class="home-type-group ${groupOpen ? 'open' : ''}">
+            <button class="home-type-head" type="button" data-toggle="${escapeAttr(groupKey)}">
+              <span class="home-type-label">${TYPE_LABEL[t] || t}</span>
+              <span class="home-type-count">${byType[t].length}</span>
+            </button>
+            <div class="home-type-items">${itemsHtml}</div>
+          </div>
         `;
       }).join('');
+
       return `
         <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">
           <button class="home-space-head" type="button" data-toggle="${escapeAttr(sp.id)}">
@@ -6230,7 +6253,7 @@ function renderHome() {
             <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
           </button>
           <div class="home-space-items">
-            ${itemsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">Empty space.</div>'}
+            ${groupsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">Empty space.</div>'}
             <button class="home-space-item-add" data-add-space="${escapeAttr(sp.id)}" type="button">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
               <span>Add to ${escapeHtml(sp.name)}</span>
@@ -6246,8 +6269,8 @@ function renderHome() {
         const open = loadHomeOpen();
         if (open.has(sid)) open.delete(sid); else open.add(sid);
         saveHomeOpen(open);
-        const spaceEl = btn.closest('.home-space');
-        if (spaceEl) spaceEl.classList.toggle('open');
+        const wrap = btn.closest('.home-space, .home-type-group');
+        if (wrap) wrap.classList.toggle('open');
       });
     });
     spacesEl.querySelectorAll('[data-item-id]').forEach(btn => {
@@ -6256,6 +6279,7 @@ function renderHome() {
         const iid = btn.dataset.itemId;
         if (typeof selectSpaceItem === 'function') selectSpaceItem(sid, iid);
         setBnavActiveFor(null);
+        closeSpacesDrawer();
       });
     });
     spacesEl.querySelectorAll('[data-add-space]').forEach(btn => {
@@ -6265,6 +6289,16 @@ function renderHome() {
       });
     });
   }
+}
+
+// Spaces drawer (left slide-in, opened by the hamburger on Home)
+function openSpacesDrawer() {
+  document.body.classList.add('spaces-drawer-open');
+  // Re-render so the tree reflects the latest data (new items, etc.)
+  renderHome();
+}
+function closeSpacesDrawer() {
+  document.body.classList.remove('spaces-drawer-open');
 }
 
 function homeOpenRobot(rid) {
@@ -6364,6 +6398,12 @@ document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
 document.getElementById('home-spaces-search-btn')?.addEventListener('click', () => openSearchModal());
+document.getElementById('home-burger-btn')?.addEventListener('click', openSpacesDrawer);
+document.getElementById('spaces-drawer-backdrop')?.addEventListener('click', closeSpacesDrawer);
+document.getElementById('drawer-search-btn')?.addEventListener('click', () => { closeSpacesDrawer(); openSearchModal(); });
+document.getElementById('drawer-add-space-btn')?.addEventListener('click', () => {
+  if (typeof addSpace === 'function') { addSpace(); renderHome(); }
+});
 document.querySelectorAll('[data-home-go]').forEach(b => {
   b.addEventListener('click', () => homeNavigate(b.dataset.homeGo));
 });
@@ -6374,7 +6414,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.8.1';
+const APP_VERSION = '5.9.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 

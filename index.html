@@ -143,6 +143,9 @@
       <div class="home-container">
         <div class="home-header">
           <div class="home-workspace">
+            <button class="home-burger" id="home-burger-btn" type="button" aria-label="Open Spaces">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
             <span class="home-ws-avatar">B</span>
             <span class="home-ws-name-static">B-Less Planner</span>
           </div>
@@ -170,22 +173,25 @@
           <div class="home-list" id="home-recents"></div>
         </div>
 
-        <div class="home-section">
-          <div class="home-section-head">
-            <span>Spaces</span>
-            <span class="home-section-actions">
-              <button class="home-section-icon-btn" id="home-spaces-search-btn" type="button" aria-label="Search">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              </button>
-              <button class="home-section-icon-btn" id="home-add-space-btn" type="button" aria-label="New space">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-              </button>
-            </span>
-          </div>
-          <div class="home-spaces" id="home-spaces"></div>
-        </div>
       </div>
     </section>
+
+    <!-- LEFT DRAWER: Spaces tree (toggled by the hamburger on Home) -->
+    <div class="spaces-drawer-backdrop" id="spaces-drawer-backdrop"></div>
+    <aside class="spaces-drawer" id="spaces-drawer">
+      <div class="spaces-drawer-head">
+        <span class="spaces-drawer-title">Spaces</span>
+        <span class="home-section-actions">
+          <button class="home-section-icon-btn" id="drawer-search-btn" type="button" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="home-section-icon-btn" id="drawer-add-space-btn" type="button" aria-label="New space">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </span>
+      </div>
+      <div class="home-spaces" id="home-spaces"></div>
+    </aside>
 
     <!-- INBOX (today's agenda + recent activity) -->
     <section id="inbox" class="section">
@@ -314,7 +320,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v5.8.1</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.9.0</div>
       </div>
     </section>
 
