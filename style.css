@@ -744,9 +744,9 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 #settings.section.active {
   display: block;
   overflow-y: auto;
-  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
-#field-visits.active { display: block; overflow-y: auto; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+#field-visits.active { display: block; overflow-y: auto; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── v4 Space sidebar (global navigation) ─────────────── */
 .space-sidebar {
@@ -1293,40 +1293,6 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 }
 
 .home-section { margin-bottom: 22px; }
-
-/* Home stat row — three click-through cards above the streak widget */
-.home-stat-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 0 0 14px;
-}
-.home-stat {
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  font: inherit;
-  color: var(--text);
-  cursor: pointer;
-  transition: background .12s var(--ease), border-color .12s var(--ease);
-  text-align: left;
-}
-.home-stat:hover { background: var(--surface-2); border-color: var(--border-2); }
-.home-stat-num {
-  font-size: 20px; font-weight: 700;
-  letter-spacing: -.02em;
-  color: var(--text);
-  line-height: 1;
-}
-.home-stat-lbl {
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  color: var(--muted);
-}
 
 /* Today's Journal preview card */
 .home-journal-card {
@@ -1944,7 +1910,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   color: var(--muted);
 }
 
-.robot-list { flex: 1; overflow-y: auto; padding: 6px; }
+.robot-list { flex: 1; overflow-y: auto; padding: 6px 6px calc(88px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── Category groups in sidebar ── */
 .cat-group { margin-bottom: 4px; }
@@ -2036,7 +2002,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 28px 32px calc(64px + env(safe-area-inset-bottom, 0px));
+  padding: 28px 32px calc(88px + env(safe-area-inset-bottom, 0px));
   /* Transparent so the body gradient (and any underlying frosted glass)
      reads through, instead of stamping a flat dark rectangle on top. */
   background: transparent;
@@ -2993,7 +2959,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .jrn-main { padding: 16px 14px; }
+  .jrn-main { padding: 16px 14px calc(88px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* Touch-friendly hit areas */
@@ -3601,7 +3567,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .jrn-list {
   flex: 1;
   overflow-y: auto;
-  padding: 6px;
+  padding: 6px 6px calc(88px + env(safe-area-inset-bottom, 0px));
 }
 .jrn-entry {
   padding: 9px 11px;
@@ -3640,7 +3606,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 24px 32px;
+  padding: 24px 32px calc(88px + env(safe-area-inset-bottom, 0px));
   gap: 12px;
 }
 .jrn-header {
@@ -3771,8 +3737,9 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .bnav-badge.has { display: inline-block; }
 
-/* Centered FAB inside the nav: inverse-of-text colour (black in
-   light, near-white in dim/dark), raised above the bar. */
+/* Centered FAB inside the nav: frosted-glass disc that picks up
+   whatever's behind the bar, with the +/- icon in the theme's
+   text colour for contrast. */
 .bnav-fab {
   flex: 0 0 auto;
   display: inline-flex;
@@ -3782,16 +3749,21 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   width: 52px; height: 52px;
   margin: 0 8px;
   border-radius: 50%;
-  background: var(--text);
-  color: var(--bg);
-  border: none;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, .22);
-  transition: filter .12s var(--ease), transform .12s var(--ease);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+  transition: filter .12s var(--ease), transform .12s var(--ease), background .12s var(--ease);
 }
 .bnav-fab:hover  { filter: brightness(1.08); }
 .bnav-fab:active { transform: scale(.95); }
 .bnav-fab svg { width: 24px; height: 24px; stroke-width: 2.4; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bnav-fab { background: var(--surface-2); border-color: var(--border); }
+}
 
 @media (max-width: 480px) {
   .bottom-nav { height: calc(58px + env(safe-area-inset-bottom, 0px)); }
@@ -4126,6 +4098,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 #journal .jrn-container { flex-direction: column; height: 100%; }
 #journal .jrn-sidebar {
   width: 100%; height: 100%; flex: 1;
+  max-height: none;
   border-right: none; border-bottom: 1px solid var(--border);
 }
 #journal[data-detail-open="true"] .jrn-sidebar { display: none !important; }
