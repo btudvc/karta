@@ -81,16 +81,17 @@
     <div id="bp-content"></div>
   </div>
 
-  <!-- Global top bar — hamburger + search, persistent across every tab. -->
+  <!-- Global top bar — hamburger + inline search, persistent across every tab. -->
   <header class="app-topbar">
     <button class="home-burger" id="topbar-burger-btn" type="button" aria-label="Open Spaces">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </button>
-    <button class="home-search-pill" id="topbar-search-pill" type="button">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <span>Search</span>
-    </button>
+    <label class="topbar-search">
+      <svg class="topbar-search-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="topbar-search-input" placeholder="Search" autocomplete="off" />
+    </label>
   </header>
+  <div class="topbar-search-results" id="topbar-search-results" hidden></div>
 
   <main>
     <!-- PROJECTS / LISTS TAB (state.robots — same store, label changes per mode) -->
@@ -300,7 +301,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v5.11.0</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.11.1</div>
       </div>
     </section>
 

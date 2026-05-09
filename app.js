@@ -6410,7 +6410,52 @@ document.getElementById('bnav-home-btn')?.addEventListener('click', openHome);
 document.getElementById('bnav-inbox-btn')?.addEventListener('click', openInbox);
 document.getElementById('bnav-mytasks-btn')?.addEventListener('click', () => { showCrossView('all-tasks'); setBnavActiveFor('all-tasks'); });
 document.getElementById('home-search-pill')?.addEventListener('click', () => openSearchModal());
-document.getElementById('topbar-search-pill')?.addEventListener('click', () => openSearchModal());
+// Inline topbar search — type into the input, results render in the
+// dropdown panel just below the bar, click → navigate, Esc / blank
+// input → hide.
+(function wireTopbarSearch() {
+  const input  = document.getElementById('topbar-search-input');
+  const panel  = document.getElementById('topbar-search-results');
+  if (!input || !panel) return;
+
+  function render(q) {
+    const items = searchAll(q);
+    if (!q) { panel.hidden = true; panel.innerHTML = ''; return; }
+    if (!items.length) {
+      panel.hidden = false;
+      panel.innerHTML = `<div class="search-empty">No matches for "${escapeHtml(q)}".</div>`;
+      return;
+    }
+    panel.hidden = false;
+    panel.innerHTML = items.map((it, i) => `
+      <button class="search-result" data-idx="${i}" type="button">
+        <span class="search-result-kind">${SEARCH_KIND_LABEL[it.kind]}</span>
+        <span class="search-result-body">
+          <span class="search-result-title">${escapeHtml(it.title || '')}</span>
+          <span class="search-result-sub">${escapeHtml(it.sub || '')}</span>
+        </span>
+      </button>
+    `).join('');
+    panel.querySelectorAll('.search-result').forEach((el, i) => {
+      el.addEventListener('click', () => {
+        navigateToSearchResult(items[i]);
+        input.value = '';
+        panel.hidden = true;
+        panel.innerHTML = '';
+      });
+    });
+  }
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { input.value = ''; panel.hidden = true; panel.innerHTML = ''; input.blur(); }
+  });
+  // Hide panel when clicking outside
+  document.addEventListener('click', e => {
+    if (panel.hidden) return;
+    if (panel.contains(e.target) || input === e.target || e.target.closest('.topbar-search')) return;
+    panel.hidden = true;
+  });
+})();
 document.getElementById('home-today-card')?.addEventListener('click', () => showCrossView('today'));
 document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
@@ -6433,7 +6478,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.11.0';
+const APP_VERSION = '5.11.1';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
