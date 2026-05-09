@@ -82,21 +82,6 @@
   </div>
 
   <main>
-    <!-- v4 Space sidebar — global navigation tree -->
-    <aside class="space-sidebar" id="space-sidebar">
-      <div class="space-sidebar-header">
-        <span class="space-sidebar-title">Spaces</span>
-        <div class="space-sidebar-actions">
-          <button class="space-search-btn" id="open-search-btn" title="Search (Ctrl+K)" aria-label="Search">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          </button>
-          <button class="space-add-space-btn" id="add-space-btn" title="New space" aria-label="New space">+</button>
-        </div>
-      </div>
-      <div class="space-list" id="space-list"></div>
-    </aside>
-    <div class="space-drawer-backdrop" id="space-drawer-backdrop"></div>
-
     <!-- PROJECTS / LISTS TAB (state.robots — same store, label changes per mode) -->
     <section id="robots" class="section active">
       <div class="sidebar">
@@ -159,10 +144,7 @@
         <div class="home-header">
           <div class="home-workspace">
             <span class="home-ws-avatar">B</span>
-            <button class="home-ws-name" id="home-space-picker" type="button">
-              <span id="home-current-space">Workspace</span>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
+            <span class="home-ws-name-static">B-Less Planner</span>
           </div>
           <button class="home-search-pill" id="home-search-pill" type="button">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -170,7 +152,16 @@
           </button>
         </div>
 
-        <div class="home-stats" id="home-stats"></div>
+        <button class="home-today-card" id="home-today-card" type="button">
+          <span class="home-today-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          </span>
+          <span class="home-today-body">
+            <span class="home-today-title">Today</span>
+            <span class="home-today-sub" id="home-today-sub">No tasks due today</span>
+          </span>
+          <span class="home-today-arrow">›</span>
+        </button>
 
         <div class="home-section">
           <div class="home-section-head">
@@ -184,8 +175,17 @@
             <span>Spaces</span>
             <button class="home-section-add" id="home-add-space-btn" type="button" aria-label="New space">+</button>
           </div>
-          <div class="home-list" id="home-spaces"></div>
+          <div class="home-spaces" id="home-spaces"></div>
         </div>
+      </div>
+    </section>
+
+    <!-- INBOX (today's agenda + recent activity) -->
+    <section id="inbox" class="section">
+      <div class="home-container">
+        <h2 class="inbox-title">Inbox</h2>
+        <p class="inbox-sub">Tasks waiting on you</p>
+        <div id="inbox-list"></div>
       </div>
     </section>
 
@@ -234,54 +234,18 @@
     <section id="more" class="section">
       <div class="more-page">
 
-        <div class="more-grid">
-          <button class="home-card" data-home-go="today" type="button">
-            <span class="home-card-icon" style="--c: #ff6b6b;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            </span>
-            <span class="home-card-label">Today</span>
-          </button>
+        <div class="more-grid more-grid-2">
           <button class="home-card" data-home-go="calendar" type="button">
             <span class="home-card-icon" style="--c: #4f8cff;">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             </span>
             <span class="home-card-label">Calendar</span>
           </button>
-          <button class="home-card" data-home-go="all-tasks" type="button">
-            <span class="home-card-icon" style="--c: #a855f7;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            </span>
-            <span class="home-card-label">All Tasks</span>
-          </button>
           <button class="home-card" data-home-go="visits" type="button">
             <span class="home-card-icon" style="--c: #10b981;">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
             </span>
             <span class="home-card-label">Visits</span>
-          </button>
-          <button class="home-card" data-home-go="meetings" type="button">
-            <span class="home-card-icon" style="--c: #f97316;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </span>
-            <span class="home-card-label">Meetings</span>
-          </button>
-          <button class="home-card" data-home-go="journal" type="button">
-            <span class="home-card-icon" style="--c: #14b8a6;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-            </span>
-            <span class="home-card-label">Journal</span>
-          </button>
-          <button class="home-card" data-home-go="finance" type="button">
-            <span class="home-card-icon" style="--c: #eab308;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>
-            </span>
-            <span class="home-card-label">Expenses</span>
-          </button>
-          <button class="home-card" data-home-go="search" type="button">
-            <span class="home-card-icon" style="--c: #06b6d4;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            </span>
-            <span class="home-card-label">Search</span>
           </button>
           <button class="home-card owner-only" data-home-go="calc" type="button">
             <span class="home-card-icon" style="--c: #8b5cf6;">
@@ -343,7 +307,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v5.6.0</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.7.0</div>
       </div>
     </section>
 
@@ -544,28 +508,31 @@
     </div>
   </div>
 
-  <!-- Bottom navigation (mobile only) -->
+  <!-- Bottom navigation: 4-button pill + separate circular FAB to its right -->
   <nav class="bottom-nav" aria-label="Primary">
     <button class="bnav-btn active" id="bnav-home-btn" type="button" aria-label="Home">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 9.5V21a1 1 0 0 0 1 1h4v-7h4v7h4a1 1 0 0 0 1-1V9.5"/></svg>
       <span>Home</span>
     </button>
-    <button class="bnav-btn" data-cross="today" type="button" aria-label="Today">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      <span>Today</span>
+    <button class="bnav-btn" id="bnav-inbox-btn" type="button" aria-label="Inbox">
+      <span class="bnav-btn-icon-wrap">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        <span class="bnav-badge" id="inbox-badge"></span>
+      </span>
+      <span>Inbox</span>
     </button>
-    <button class="bnav-btn bnav-fab" id="quick-fab" type="button" aria-label="Quick add task">
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-    <button class="bnav-btn" id="bnav-mytasks-btn" type="button" aria-label="My Tasks">
+    <button class="bnav-btn" id="bnav-mytasks-btn" type="button" aria-label="Tasks">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><circle cx="4" cy="6" r="1.6"/></svg>
-      <span>My Tasks</span>
+      <span>Tasks</span>
     </button>
     <button class="tab bnav-btn" data-tab="more" type="button" aria-label="More">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="19" cy="5" r="1.6"/><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="5" cy="19" r="1.6"/><circle cx="12" cy="19" r="1.6"/><circle cx="19" cy="19" r="1.6"/></svg>
       <span>More</span>
     </button>
   </nav>
+  <button class="quick-fab" id="quick-fab" type="button" aria-label="Quick add task">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 
   <!-- MODAL: Add Item picker (v4) — choose what to add to a Space -->
   <div class="modal-overlay" id="modal-add-item">
