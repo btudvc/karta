@@ -5907,12 +5907,13 @@ function activateSection(id) {
   if (id === 'robots' || id === 'topics') activeSection = id;
 }
 
-// ── Add Item picker (Lists / Meetings / Visits / Journal) ──
+// ── Add Item picker — spaces only carry lists now, so skip the picker
+// and open the new-list flow directly. Meetings / visits / journal /
+// finance / purchases / links / reviews are global features under More.
 function openAddItemPicker(spaceId) {
-  const modal = document.getElementById('modal-add-item');
-  if (!modal) return;
-  modal.dataset.targetSpaceId = spaceId;
-  modal.classList.add('open');
+  if (!spaceId) return;
+  pendingItemAttach = { spaceId, type: 'list' };
+  if (typeof openEntityModal === 'function') openEntityModal('robot');
 }
 
 function closeAddItemPicker() {
@@ -6214,31 +6215,17 @@ function renderHome() {
     spacesEl.innerHTML = spaces.map((sp, i) => {
       const color = SPACE_COLORS[i % SPACE_COLORS.length];
       const isOpen = open.has(sp.id);
-      const items = sp.items || [];
-      // Bucket by type
-      const byType = {};
-      items.forEach(it => { (byType[it.type] = byType[it.type] || []).push(it); });
+      // Spaces only carry lists now. Meetings / visits / journals / expenses
+      // / purchases / links / reviews are global features in More.
+      const lists = (sp.items || []).filter(it => it.type === 'list');
+      const meta = ITEM_TYPE_META.list;
 
-      const groupsHtml = TYPE_ORDER.filter(t => byType[t] && byType[t].length).map(t => {
-        const meta = ITEM_TYPE_META[t] || ITEM_TYPE_META.list;
-        const groupKey = sp.id + ':' + t;
-        const groupOpen = open.has(groupKey);
-        const itemsHtml = byType[t].map(it => `
-          <button class="home-space-item" data-space-id="${escapeAttr(sp.id)}" data-item-id="${escapeAttr(it.id)}" type="button">
-            <span class="home-space-item-icon" style="--c: ${meta.color};">${meta.svg}</span>
-            <span class="home-space-item-name">${escapeHtml(spaceItemTitle(it))}</span>
-          </button>
-        `).join('');
-        return `
-          <div class="home-type-group ${groupOpen ? 'open' : ''}">
-            <button class="home-type-head" type="button" data-toggle="${escapeAttr(groupKey)}">
-              <span class="home-type-label">${TYPE_LABEL[t] || t}</span>
-              <span class="home-type-count">${byType[t].length}</span>
-            </button>
-            <div class="home-type-items">${itemsHtml}</div>
-          </div>
-        `;
-      }).join('');
+      const itemsHtml = lists.map(it => `
+        <button class="home-space-item" data-space-id="${escapeAttr(sp.id)}" data-item-id="${escapeAttr(it.id)}" type="button">
+          <span class="home-space-item-icon" style="--c: ${meta.color};">${meta.svg}</span>
+          <span class="home-space-item-name">${escapeHtml(spaceItemTitle(it))}</span>
+        </button>
+      `).join('');
 
       return `
         <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">
@@ -6248,12 +6235,12 @@ function renderHome() {
             </span>
             <span class="home-space-body">
               <span class="home-space-name">${escapeHtml(sp.name)}</span>
-              <span class="home-space-meta">${items.length} item${items.length === 1 ? '' : 's'}</span>
+              <span class="home-space-meta">${lists.length} list${lists.length === 1 ? '' : 's'}</span>
             </span>
             <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
           </button>
           <div class="home-space-items">
-            ${groupsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">Empty space.</div>'}
+            ${itemsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">No lists in this space.</div>'}
             <button class="home-space-item-add" data-add-space="${escapeAttr(sp.id)}" type="button">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
               <span>Add to ${escapeHtml(sp.name)}</span>
@@ -6337,6 +6324,12 @@ function homeNavigate(target) {
   else if (target === 'add')       openQuickCapture();
   else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
   else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
+  else if (target === 'meetings')  { activateSection('meetings'); (typeof renderMeetingList === 'function') && renderMeetingList(); (typeof renderMeetingDetail === 'function') && renderMeetingDetail(); }
+  else if (target === 'journal')   { activateSection('journal'); (typeof renderJournalList === 'function') && renderJournalList(); }
+  else if (target === 'finance')   { activateSection('finance'); (typeof renderFinance === 'function') && renderFinance(); }
+  else if (target === 'purchases') { activateSection('purchases'); (typeof renderPurchases === 'function') && renderPurchases(); }
+  else if (target === 'links')     { activateSection('links'); (typeof renderLinks === 'function') && renderLinks(); }
+  else if (target === 'reviews')   { activateSection('reviews'); (typeof renderReviews === 'function') && renderReviews(); }
 }
 
 // Inbox = today/overdue tasks list (single source of "what's on me now")
@@ -6478,7 +6471,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.11.1';
+const APP_VERSION = '5.12.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
