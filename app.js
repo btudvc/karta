@@ -6107,18 +6107,51 @@ BackupManager.init();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
 document.getElementById('bnav-search-btn')?.addEventListener('click', () => openSearchModal());
 
+// Home grid: pill button + the colorful card row each navigate somewhere.
+function setBnavActiveFor(id) {
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  if (id === 'home') document.getElementById('bnav-home-btn')?.classList.add('active');
+  else if (id === 'all-tasks' || id === 'today') document.querySelector('.bnav-btn[data-cross="today"]')?.classList.add('active');
+  else if (id === 'calendar') document.querySelector('.bnav-btn[data-cross="calendar"]')?.classList.add('active');
+  else if (id === 'visits' || id === 'field-visits') document.querySelector('.bnav-btn[data-cross="visits"]')?.classList.add('active');
+  else if (id === 'more') document.querySelector('.tab.bnav-btn[data-tab="more"]')?.classList.add('active');
+}
+function openHome() {
+  state.currentItemId = null;
+  if (typeof activateSection === 'function') activateSection('home');
+  setBnavActiveFor('home');
+}
+document.getElementById('bnav-home-btn')?.addEventListener('click', openHome);
+document.querySelectorAll('[data-home-go]').forEach(b => {
+  b.addEventListener('click', () => {
+    const target = b.dataset.homeGo;
+    if (target === 'today')      showCrossView('today');
+    else if (target === 'calendar')  showCrossView('calendar');
+    else if (target === 'all-tasks') showCrossView('all-tasks');
+    else if (target === 'visits')    showCrossView('visits');
+    else if (target === 'spaces') {
+      if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
+      else document.body.classList.add('space-drawer-open');
+    }
+    else if (target === 'search')    openSearchModal();
+    else if (target === 'add')       openQuickCapture();
+    else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
+    else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
+  });
+});
+
 document.querySelectorAll('.theme-toggle-btn').forEach(b => {
   b.addEventListener('click', () => setTheme(b.dataset.themeSet));
 });
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.4.0';
+const APP_VERSION = '5.5.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
-// Default landing view: All Tasks
-showCrossView('all-tasks');
+// Default landing view: Home grid (colorful card overview of every section)
+openHome();
 
 // First-run welcome modal
 maybeShowWelcome();
