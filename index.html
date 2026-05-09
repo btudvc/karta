@@ -224,7 +224,7 @@
       </div>
     </section>
 
-    <!-- MORE TAB (mobile only — gathers Meetings/Journal/Settings) -->
+    <!-- MORE TAB — global feature shortcuts (Meetings/Visits/Journal/etc) -->
     <section id="more" class="section">
       <div class="more-page">
 
@@ -235,11 +235,47 @@
             </span>
             <span class="home-card-label">Calendar</span>
           </button>
+          <button class="home-card" data-home-go="meetings" type="button">
+            <span class="home-card-icon" style="--c: #f97316;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span class="home-card-label">Meetings</span>
+          </button>
           <button class="home-card" data-home-go="visits" type="button">
             <span class="home-card-icon" style="--c: #10b981;">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
             </span>
             <span class="home-card-label">Visits</span>
+          </button>
+          <button class="home-card" data-home-go="journal" type="button">
+            <span class="home-card-icon" style="--c: #14b8a6;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            </span>
+            <span class="home-card-label">Journal</span>
+          </button>
+          <button class="home-card" data-home-go="finance" type="button">
+            <span class="home-card-icon" style="--c: #eab308;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>
+            </span>
+            <span class="home-card-label">Expenses</span>
+          </button>
+          <button class="home-card" data-home-go="purchases" type="button">
+            <span class="home-card-icon" style="--c: #ec4899;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </span>
+            <span class="home-card-label">Purchases</span>
+          </button>
+          <button class="home-card" data-home-go="links" type="button">
+            <span class="home-card-icon" style="--c: #0ea5e9;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </span>
+            <span class="home-card-label">Links</span>
+          </button>
+          <button class="home-card" data-home-go="reviews" type="button">
+            <span class="home-card-icon" style="--c: #a855f7;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>
+            </span>
+            <span class="home-card-label">Reviews</span>
           </button>
           <button class="home-card owner-only" data-home-go="calc" type="button">
             <span class="home-card-icon" style="--c: #8b5cf6;">
@@ -249,24 +285,12 @@
           </button>
         </div>
 
-        <div class="more-section-title" data-i18n="more.section.pages">Sayfalar</div>
-        <div class="more-card-list">
-          <button class="more-card more-card-link job-only" data-go-tab="meetings">
-            <span class="more-card-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </span>
-            <span class="more-card-label" data-i18n="tab.meetings">Toplantılar</span>
-            <span class="more-card-arrow">›</span>
-          </button>
-          <button class="more-card more-card-link daily-only" data-go-tab="journal">
-            <span class="more-card-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-            </span>
-            <span class="more-card-label" data-i18n="tab.journal">Günlük</span>
-            <span class="more-card-arrow">›</span>
-          </button>
-        </div>
+      </div>
+    </section>
 
+    <!-- SETTINGS TAB (opened from the spaces drawer gear) -->
+    <section id="settings" class="section">
+      <div class="more-page">
         <div class="more-section-title" data-i18n="more.section.settings">Ayarlar</div>
         <div class="more-card-list">
           <button class="more-card more-card-link" id="more-drive-trigger">
@@ -301,7 +325,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v5.11.1</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.12.1</div>
       </div>
     </section>
 
@@ -439,8 +463,8 @@
     <div class="spaces-drawer-head">
       <span class="spaces-drawer-title">Spaces</span>
       <span class="home-section-actions">
-        <button class="home-section-icon-btn" id="drawer-search-btn" type="button" aria-label="Search">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <button class="home-section-icon-btn" id="drawer-settings-btn" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
         <button class="home-section-icon-btn" id="drawer-add-space-btn" type="button" aria-label="New space">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
