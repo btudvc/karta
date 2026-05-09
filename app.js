@@ -2021,6 +2021,14 @@ document.getElementById('save-visit').addEventListener('click', () => {
 // ── MEETINGS ───────────────────────────────────────────
 const MTG_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+function closeMeetingDetail() {
+  state.currentMeetingId = null;
+  const sectionEl = document.getElementById('meetings');
+  if (sectionEl) sectionEl.removeAttribute('data-detail-open');
+  if (typeof renderMeetingList === 'function') renderMeetingList();
+  if (typeof renderMeetingDetail === 'function') renderMeetingDetail();
+}
+
 function renderMeetingList() {
   const list = document.getElementById('meeting-list');
   if (!list) return;
@@ -2055,12 +2063,15 @@ function renderMeetingList() {
 
 function renderMeetingDetail() {
   const content = document.getElementById('meeting-content');
+  const sectionEl = document.getElementById('meetings');
   if (!content) return;
   const meeting = (state.meetings || []).find(m => m.id === state.currentMeetingId);
   if (!meeting) {
+    if (sectionEl) sectionEl.removeAttribute('data-detail-open');
     content.innerHTML = `<div class="empty-state"><div class="empty-icon">${ICO.users}</div><p>${t('empty.select_meeting')}</p></div>`;
     return;
   }
+  if (sectionEl) sectionEl.setAttribute('data-detail-open', 'true');
   const d = new Date(meeting.date + 'T00:00:00');
   const dateStr = `${d.getDate()} ${MTG_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   const actions = meeting.actions || [];
@@ -2068,6 +2079,9 @@ function renderMeetingDetail() {
 
   content.innerHTML = `
     <div class="robot-detail-header">
+      <button class="md-back-btn" onclick="closeMeetingDetail()" aria-label="Back" title="Back">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
       <div style="flex:1">
         <div class="robot-detail-name">${escapeHtml(meeting.title)}</div>
         <div class="meeting-meta">
@@ -2965,7 +2979,7 @@ function renderAll() {
 function renderWorkHours() {} // removed
 
 // ── ALL TASKS VIEW ─────────────────────────────────────
-let allTasksFilter = 'open'; // 'open' | 'today' | 'all'
+let allTasksFilter = 'all'; // single source — section title says "All Tasks"
 
 function renderAllTasks() {
   renderStreakWidget();
@@ -3473,6 +3487,7 @@ function initJournal() {
       jrnSelected = ymd(new Date());
       dateInput.value = jrnSelected;
       loadEntry();
+      document.getElementById('journal')?.setAttribute('data-detail-open', 'true');
       area.focus();
     });
   }
@@ -3513,8 +3528,13 @@ function renderJournalList() {
       if (area) area.value = (state.journal || {})[jrnSelected] || '';
       list.querySelectorAll('.jrn-entry').forEach(e => e.classList.remove('active'));
       el.classList.add('active');
+      document.getElementById('journal')?.setAttribute('data-detail-open', 'true');
     });
   });
+}
+
+function closeJournalDetail() {
+  document.getElementById('journal')?.removeAttribute('data-detail-open');
 }
 
 // ── THEME TOGGLE (light / dim / dark) ────────────────
@@ -4373,6 +4393,7 @@ function renderReviews() {
     listEl.querySelectorAll('.rev-row').forEach(b => {
       b.addEventListener('click', () => {
         currentReviewKey = b.dataset.revKey;
+        document.getElementById('reviews')?.setAttribute('data-detail-open', 'true');
         renderReviews();
       });
     });
@@ -4422,8 +4443,13 @@ function startCurrentReviewPeriod() {
     save();
   }
   currentReviewKey = key;
+  document.getElementById('reviews')?.setAttribute('data-detail-open', 'true');
   renderReviews();
   setTimeout(() => document.getElementById('rev-textarea')?.focus(), 60);
+}
+
+function closeReviewsDetail() {
+  document.getElementById('reviews')?.removeAttribute('data-detail-open');
 }
 
 function deleteCurrentReview() {
@@ -4590,12 +4616,7 @@ function setMode(m) {
     }
   }
 
-  // In daily mode, "Tasks" tab uses 'today' filter by default
-  allTasksFilter = m === 'daily' ? 'today' : 'open';
-  document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === allTasksFilter);
-  });
-
+  allTasksFilter = 'all';
   renderAll();
 }
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -4638,10 +4659,7 @@ applyI18n();
   document.querySelectorAll('.mode-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === m);
   });
-  allTasksFilter = m === 'daily' ? 'today' : 'open';
-  document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === allTasksFilter);
-  });
+  allTasksFilter = 'all';
 })();
 
 // ═════════════════════════════════════════════════════════
@@ -6043,12 +6061,9 @@ function openSpaceMenu(spaceId) {
 // ── Cross-space top nav (Today / Calendar / All Tasks) ──
 function showCrossView(name) {
   state.currentItemId = null;
-  if (name === 'today') {
+  if (name === 'today' || name === 'all-tasks') {
     activateSection('all-tasks');
-    allTasksFilter = 'today';
-    document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.filter === 'today');
-    });
+    allTasksFilter = 'all';
     if (typeof renderAllTasks === 'function') renderAllTasks();
   } else if (name === 'calendar') {
     activateSection('calendar');
@@ -6056,13 +6071,6 @@ function showCrossView(name) {
   } else if (name === 'visits') {
     activateSection('field-visits');
     if (typeof renderVisits === 'function') renderVisits();
-  } else if (name === 'all-tasks') {
-    activateSection('all-tasks');
-    allTasksFilter = 'open';
-    document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.filter === 'open');
-    });
-    if (typeof renderAllTasks === 'function') renderAllTasks();
   }
   document.querySelectorAll('.cross-nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.cross === name);
@@ -6160,13 +6168,39 @@ function spaceItemTitle(item) {
 }
 
 function renderHome() {
-  // Today summary
-  const subEl = document.getElementById('home-today-sub');
-  if (subEl) {
-    const s = computeStreakStats();
-    subEl.textContent = s.overdueOrToday > 0
-      ? `${s.overdueOrToday} task${s.overdueOrToday === 1 ? '' : 's'} due now`
-      : 'No tasks due today — nice';
+  // Today list — open tasks due today or overdue, grouped by list
+  const todayListEl = document.getElementById('home-today-list');
+  const todayCountEl = document.getElementById('home-today-count');
+  if (todayListEl) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const items = [];
+    (state.robots || []).forEach(p => {
+      (p.tasks || []).forEach(task => {
+        if (task.status === 'done' || !task.dueDate) return;
+        const due = new Date(task.dueDate + 'T00:00:00');
+        if (due <= today) items.push({ task, project: p });
+      });
+    });
+    items.sort((a, b) => (a.task.dueDate || '').localeCompare(b.task.dueDate || ''));
+    if (todayCountEl) todayCountEl.textContent = items.length || '';
+    if (!items.length) {
+      todayListEl.innerHTML = '<div class="home-list-empty">No tasks due today — nice</div>';
+    } else {
+      todayListEl.innerHTML = items.map(it => `
+        <button class="home-list-item" data-robot-id="${escapeAttr(it.project.id)}" data-task-id="${escapeAttr(it.task.id)}" type="button">
+          <span class="home-list-item-icon" style="--c: var(--accent);">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <span class="home-list-item-body">
+            <span class="home-list-item-title">${escapeHtml(it.task.title || '')}</span>
+            <span class="home-list-item-sub">${escapeHtml(it.project.name || '')}${it.task.dueDate ? ' · ' + formatDueShort(it.task.dueDate) : ''}</span>
+          </span>
+        </button>
+      `).join('');
+      todayListEl.querySelectorAll('[data-robot-id]').forEach(el => {
+        el.addEventListener('click', () => homeOpenRobot(el.dataset.robotId));
+      });
+    }
   }
 
   // Recents
@@ -6324,12 +6358,26 @@ function homeNavigate(target) {
   else if (target === 'add')       openQuickCapture();
   else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
   else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
-  else if (target === 'meetings')  { activateSection('meetings'); (typeof renderMeetingList === 'function') && renderMeetingList(); (typeof renderMeetingDetail === 'function') && renderMeetingDetail(); }
-  else if (target === 'journal')   { activateSection('journal'); (typeof renderJournalList === 'function') && renderJournalList(); }
+  else if (target === 'meetings')  {
+    state.currentMeetingId = null;
+    activateSection('meetings');
+    document.getElementById('meetings')?.removeAttribute('data-detail-open');
+    (typeof renderMeetingList === 'function') && renderMeetingList();
+    (typeof renderMeetingDetail === 'function') && renderMeetingDetail();
+  }
+  else if (target === 'journal')   {
+    activateSection('journal');
+    document.getElementById('journal')?.removeAttribute('data-detail-open');
+    (typeof renderJournalList === 'function') && renderJournalList();
+  }
   else if (target === 'finance')   { activateSection('finance'); (typeof renderFinance === 'function') && renderFinance(); }
   else if (target === 'purchases') { activateSection('purchases'); (typeof renderPurchases === 'function') && renderPurchases(); }
   else if (target === 'links')     { activateSection('links'); (typeof renderLinks === 'function') && renderLinks(); }
-  else if (target === 'reviews')   { activateSection('reviews'); (typeof renderReviews === 'function') && renderReviews(); }
+  else if (target === 'reviews')   {
+    activateSection('reviews');
+    document.getElementById('reviews')?.removeAttribute('data-detail-open');
+    (typeof renderReviews === 'function') && renderReviews();
+  }
 }
 
 // Inbox = today/overdue tasks list (single source of "what's on me now")
@@ -6449,7 +6497,6 @@ document.getElementById('home-search-pill')?.addEventListener('click', () => ope
     panel.hidden = true;
   });
 })();
-document.getElementById('home-today-card')?.addEventListener('click', () => showCrossView('today'));
 document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
@@ -6475,7 +6522,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.12.1';
+const APP_VERSION = '5.13.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 

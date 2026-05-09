@@ -4210,6 +4210,47 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
   }
 }
 
+/* ── Master-detail for Meetings / Journal / Reviews ──
+   These sections used to live inside Spaces (so the in-section sidebar was
+   hidden). Now they're global, so the list IS the primary view. */
+#meetings.section > .sidebar { display: flex !important; }
+#journal .jrn-sidebar         { display: flex !important; }
+
+/* Mobile-first stacked layout + master-detail toggle */
+#meetings.section { flex-direction: column; }
+#meetings.section > .sidebar {
+  width: 100%; height: 100%; flex: 1;
+  border-right: none; border-bottom: 1px solid var(--border);
+  max-height: none;
+}
+#meetings.section[data-detail-open="true"] > .sidebar { display: none !important; }
+#meetings.section:not([data-detail-open="true"]) > .content { display: none; }
+
+#journal .jrn-container { flex-direction: column; height: 100%; }
+#journal .jrn-sidebar {
+  width: 100%; height: 100%; flex: 1;
+  border-right: none; border-bottom: 1px solid var(--border);
+}
+#journal[data-detail-open="true"] .jrn-sidebar { display: none !important; }
+#journal:not([data-detail-open="true"]) .jrn-main { display: none; }
+
+#reviews[data-detail-open="true"] .reviews-list  { display: none; }
+#reviews:not([data-detail-open="true"]) .reviews-editor { display: none; }
+
+/* Detail back button — common to all three */
+.md-back-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  margin-right: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.md-back-btn:hover { background: var(--surface-2); color: var(--text); }
+
 /* ═══════════════════════════════════════════════════════════
    DENSITY PASS — tighter spacing, smaller radii, snappier UI
    Single-block override; safe to tune or remove together.
