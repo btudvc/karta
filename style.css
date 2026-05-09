@@ -1152,15 +1152,30 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .brief-empty { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin: 4px 0; }
 
 /* ── Streak / weekly stats widget ──────────────────── */
-/* ── Home dashboard (Asana-style) ──────────────────────── */
+/* ── Global top bar (hamburger + search) ─────────────────── */
+/* Persistent across every section. Lives above <main> in the DOM and is
+   pinned to the top so it stays visible while content scrolls. */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.app-topbar .home-search-pill { flex: 1; }
+
+/* ── Home dashboard ──────────────────────────────────────── */
 #home.section.active { display: block; overflow-y: auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .home-container {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  /* Top padding includes the device status-bar safe area so the workspace
-     header isn't clipped behind the notch / camera cutout. */
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0;
+  padding: 16px 16px 0;
 }
 .home-burger {
   width: 36px; height: 36px;
