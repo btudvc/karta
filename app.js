@@ -80,6 +80,9 @@ const I18N = {
     'journal.subtitle': 'Daily entries',
     'btn.add_short': '+ Add',
     'btn.add_meeting': '+ Add Meeting',
+    'btn.add_today': '+ Add today',
+    'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
+    'nav.spaces': 'Spaces',
     'task.tasks_label': 'Tasks',
     'task.issues_label': 'Known Issues',
     'task.actions_label': 'Action Items',
@@ -5022,19 +5025,6 @@ function renderHome() {
   const todayIso = ymd(today);
   const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate() + 7);
 
-  // Stats — single pass over all tasks for active+overdue counts
-  let activeCount = 0, overdueCount = 0;
-  (state.robots || []).forEach(p => {
-    (p.tasks || []).forEach(task => {
-      if (task.status === 'done') return;
-      activeCount++;
-      if (task.dueDate) {
-        const d = new Date(task.dueDate + 'T00:00:00');
-        if (d < today) overdueCount++;
-      }
-    });
-  });
-
   // This Week — meetings + visits in the next 7 days (today inclusive)
   const weekItems = [];
   (state.meetings || []).forEach(m => {
@@ -5048,14 +5038,6 @@ function renderHome() {
     if (d >= today && d < weekEnd) weekItems.push({ kind: 'visit', date: v.date, title: v.location || 'Visit', sub: v.robot || '', id: v.id });
   });
   weekItems.sort((a, b) => a.date.localeCompare(b.date));
-
-  const setNum = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = String(n); };
-  setNum('home-stat-active',  activeCount);
-  setNum('home-stat-overdue', overdueCount);
-  setNum('home-stat-week',    weekItems.length);
-
-  // Streak widget (shared with All Tasks via class selector)
-  renderStreakWidget();
 
   // Today list — strictly tasks due today (overdue moves to Inbox)
   const todayListEl = document.getElementById('home-today-list');
@@ -5149,17 +5131,6 @@ function renderHome() {
     });
   }
 
-  // Stat row click-throughs
-  document.querySelectorAll('#home-stat-row [data-home-stat]').forEach(b => {
-    if (b.dataset.wired === '1') return;
-    b.dataset.wired = '1';
-    b.addEventListener('click', () => {
-      const k = b.dataset.homeStat;
-      if (k === 'overdue') openInbox();
-      else if (k === 'active') showCrossView('all-tasks');
-      else if (k === 'week') showCrossView('calendar');
-    });
-  });
 
   // Recents
   const recentsEl = document.getElementById('home-recents');
@@ -5471,7 +5442,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.1.4';
+const APP_VERSION = '6.1.5';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
