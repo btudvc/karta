@@ -70,6 +70,8 @@ const I18N = {
     'empty.no_versions': 'No versions yet.',
     'empty.no_tasks_yet': 'No tasks yet.',
     'empty.no_tasks_add': 'No tasks yet. Add your first task!',
+    'all_tasks.title': 'All Tasks',
+    'all_tasks.subtitle': 'Tasks across every list',
     'empty.no_issues': 'No issues recorded.',
     'empty.no_notes': 'No notes yet.',
     'empty.no_journal': 'No entries yet. Start with today.',
@@ -362,7 +364,13 @@ Object.assign(I18N.tr, {
 let currentLang = 'en';
 
 function t(key, params) {
-  let s = (I18N[currentLang] && I18N[currentLang][key]) ?? I18N.en[key] ?? key;
+  // Fall back: current lang → en → tr → key. Many strings only have a tr
+  // translation (the app started Turkish-first), so for now showing the
+  // tr text is better than showing the literal key on the EN locale.
+  let s = (I18N[currentLang] && I18N[currentLang][key])
+       ?? I18N.en[key]
+       ?? I18N.tr[key]
+       ?? key;
   if (params) {
     for (const k in params) s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
   }
@@ -5342,7 +5350,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.1.1';
+const APP_VERSION = '6.1.2';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
