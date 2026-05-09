@@ -3544,7 +3544,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   left: 0;
   right: 0;
   height: calc(54px + env(safe-area-inset-bottom, 0px));
-  padding: 0 76px 0 0;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -3600,35 +3599,33 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .bnav-badge.has { display: inline-block; }
 
-/* Standalone circular FAB to the right of the pill — same frosted-glass
-   material as the pill so they feel like one nav surface. Sized to match
-   the pill height for a flush horizontal alignment. */
-.quick-fab {
+/* Centered FAB inside the nav: accent-coloured circle, raised above the bar. */
+.bnav-fab {
+  flex: 0 0 auto;
   display: inline-flex;
-  position: fixed;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  right: 14px;
-  width: 48px; height: 48px;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 46px; height: 46px;
+  margin: 0 6px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--on-accent);
   border: none;
   cursor: pointer;
-  align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, .18);
-  z-index: 101;
   transition: filter .12s var(--ease), transform .12s var(--ease);
 }
-.quick-fab:hover  { filter: brightness(1.05); }
-.quick-fab:active { transform: scale(.95); }
-.quick-fab svg { width: 22px; height: 22px; stroke-width: 2.4; }
+.bnav-fab:hover  { filter: brightness(1.05); }
+.bnav-fab:active { transform: scale(.95); }
+.bnav-fab svg { width: 22px; height: 22px; stroke-width: 2.4; }
 
 @media (max-width: 480px) {
-  .bottom-nav { height: calc(50px + env(safe-area-inset-bottom, 0px)); padding-right: 64px; }
+  .bottom-nav { height: calc(50px + env(safe-area-inset-bottom, 0px)); }
   .bnav-btn   { padding: 4px 2px; font-size: 10px; }
   .bnav-btn svg { width: 21px; height: 21px; }
-  .quick-fab  { width: 44px; height: 44px; right: 10px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
-  .quick-fab svg { width: 20px; height: 20px; }
+  .bnav-fab   { width: 42px; height: 42px; margin: 0 4px; }
+  .bnav-fab svg { width: 20px; height: 20px; }
 }
 @media (max-width: 380px) {
   .bnav-btn > span:not(.bnav-badge) { display: none; }
