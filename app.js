@@ -6267,10 +6267,27 @@ function renderHome() {
       btn.addEventListener('click', () => {
         const sid = btn.dataset.toggle;
         const open = loadHomeOpen();
-        if (open.has(sid)) open.delete(sid); else open.add(sid);
-        saveHomeOpen(open);
         const wrap = btn.closest('.home-space, .home-type-group');
-        if (wrap) wrap.classList.toggle('open');
+        // For top-level Space rows: opening should also expand every type
+        // group inside it (Lists, Meetings, …) so the user sees the whole
+        // tree in one tap. Closing the space collapses everything again.
+        if (wrap && wrap.classList.contains('home-space')) {
+          const space = (state.spaces || []).find(s => s.id === sid);
+          const typeKeys = space ? TYPE_ORDER.map(t => sid + ':' + t) : [];
+          if (open.has(sid)) {
+            open.delete(sid);
+            typeKeys.forEach(k => open.delete(k));
+          } else {
+            open.add(sid);
+            typeKeys.forEach(k => open.add(k));
+          }
+          saveHomeOpen(open);
+          renderHome();
+        } else {
+          if (open.has(sid)) open.delete(sid); else open.add(sid);
+          saveHomeOpen(open);
+          if (wrap) wrap.classList.toggle('open');
+        }
       });
     });
     spacesEl.querySelectorAll('[data-item-id]').forEach(btn => {
@@ -6414,7 +6431,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.9.1';
+const APP_VERSION = '5.10.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
