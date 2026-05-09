@@ -137,110 +137,6 @@ const I18N = {
     'reviews.week_label':    'Week',
     'reviews.placeholder':   'Wins, blockers, things to revisit, lessons…',
     'more.section.tools': 'Tools',
-    'purchases.title': 'Purchases',
-    'purchases.subtitle': 'Wishlist → buying → done',
-    'purchases.add': '+ Add Purchase',
-    'purchases.modal_add': 'Add Purchase',
-    'purchases.modal_edit': 'Edit Purchase',
-    'purchases.empty': 'No purchases yet. Click "+ Add Purchase" to start your wishlist.',
-    'purchases.confirm_delete': 'Delete this purchase?',
-    'purchases.filter.all': 'All',
-    'purchases.status.wishlist': 'Wishlist',
-    'purchases.status.buying':   'Buying',
-    'purchases.status.done':     'Done',
-    'purchases.f.name':          'Name',
-    'purchases.f.status':        'Status',
-    'purchases.f.project':       'Linked project',
-    'purchases.f.project_none':  '— None —',
-    'purchases.f.est':           'Estimated price',
-    'purchases.f.actual':        'Actual price',
-    'purchases.f.supplier':      'Supplier',
-    'purchases.f.url':           'Link',
-    'purchases.f.notes':         'Notes',
-    'purchases.f.date_request':  'Requested',
-    'purchases.f.date_order':    'Ordered',
-    'purchases.f.date_delivery': 'Delivered',
-    'cross.today': 'Today', 'cross.calendar': 'Calendar', 'cross.all_tasks': 'All Tasks', 'cross.visits': 'Visits',
-    'nav.spaces': 'Spaces',
-    'btn.add_short': '+ Add',
-    'btn.save': 'Save',
-    'btn.today_star': '★ Today',
-    'btn.add_to_today': '☆ Add to today',
-    'btn.start_today_title': 'Start today',
-    'btn.remove_today_title': 'Remove from today',
-    'aria.delete': 'Delete',
-    'aria.completed': 'Completed',
-    'ph.note_input': 'Write a note... (Ctrl+Enter to save)',
-    'due.today': 'today', 'due.tomorrow': 'tomorrow', 'due.yesterday': 'yesterday',
-    'due.days_from_now': '{n}d to go', 'due.days_ago': '{n}d ago',
-    'months.short': 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
-    'meeting.notes_label': 'Notes',
-    'space.name_prompt': 'Space name:',
-    'label.space': 'Space',
-    'bp.sign_in': 'Sign in with Google',
-    'bp.sign_out': 'Sign out',
-    'bp.signed_in_as': 'Signed in as',
-    'bp.web_subtitle': 'Sign in to back up to your Google Drive.',
-    'bp.web_hint': 'Files are stored in your Drive under a private "B-Less" folder. Same files are visible when you open B-Less on desktop.',
-    'bp.signing_in': 'Signing in…',
-    'bp.sign_in_failed': 'Sign-in failed: {msg}',
-    'bp.desktop_only': 'Only works in desktop app.',
-    'bp.filename': 'File',
-    'bp.rename': 'Rename',
-    'bp.rename_prompt': 'New backup file name (existing file will be renamed):',
-    'bp.custom_folder': 'Custom folder',
-    'bp.set_up': 'Set up backup',
-    'conf.delete_project': 'Delete this project and all its data?',
-    'conf.delete_list': 'Delete this list and all its data?',
-    'conf.delete_task': 'Delete this task?',
-    'conf.delete_release': 'Delete this release?',
-    'conf.delete_meeting': 'Delete this meeting?',
-    'conf.delete_visit': 'Delete this field visit?',
-    'conf.delete_issue': 'Delete this issue?',
-    'count.tasks_one': '1 active task',
-    'count.tasks_other': '{n} active tasks',
-    'count.tasks_zero': 'No active tasks',
-    'count.actions_short': '{open} action(s)',
-    'count.versions_one': '1 version',
-    'count.versions_other': '{n} versions',
-    'count.open': '{n} open',
-    'task.tasks_label': 'Tasks',
-    'task.issues_label': 'Known Issues',
-    'task.actions_label': 'Action Items',
-    'task.notes_label': 'Notes',
-    'task.changelog_label': 'Changelog',
-    'btn.done': 'Done', 'btn.reopen': 'Reopen', 'btn.pending': 'Pending',
-    'btn.activate': 'Activate', 'btn.investigating': 'Investigating',
-    'btn.resolved': 'Resolved',
-    'visits.title': 'Visits', 'visits.subtitle': 'Planned visits and trips',
-    'all_tasks.title': 'All Tasks',
-    'all_tasks.subtitle': 'Everything across your projects',
-    'note.add': '+ Add', 'note.empty': 'No notes yet.',
-    'days.future': '{n} days away', 'days.past': '{n} days ago', 'days.today': 'Today!',
-    'priority.normal': 'Normal', 'priority.high': 'High', 'priority.critical': 'Critical', 'priority.low': 'Low', 'priority.medium': 'Medium',
-    'status.active': 'Active', 'status.pending': 'Pending', 'status.done': 'Done',
-    'status.open': 'Open', 'status.investigating': 'Investigating', 'status.resolved': 'Resolved',
-    'status.testing': 'Testing', 'status.rc': 'RC', 'status.stable': 'Stable', 'status.deprecated': 'Deprecated',
-    'fin.title': 'Expenses',
-    'fin.subtitle': 'Subscriptions and recurring monthly costs',
-    'fin.add_subscription': 'Add Subscription',
-    'fin.modal_add': 'Add Subscription',
-    'fin.modal_edit': 'Edit Subscription',
-    'fin.name': 'Name',
-    'fin.amount': 'Amount',
-    'fin.currency': 'Currency',
-    'fin.cycle': 'Cycle',
-    'fin.monthly': 'Monthly',
-    'fin.yearly': 'Yearly',
-    'fin.category': 'Category',
-    'fin.due_day': 'Payment day',
-    'fin.monthly_total': 'Monthly total',
-    'fin.yearly_total': 'Yearly estimate',
-    'fin.count': '{n} active subscription(s)',
-    'fin.empty': 'No subscriptions yet.',
-    'fin.per_month': '/ month',
-    'fin.per_year': '/ year',
-    'fin.delete_confirm': 'Delete this subscription?',
   },
   tr: {
     'tab.more': 'Daha',
@@ -444,70 +340,6 @@ Object.assign(I18N.tr, {
   'reviews.week_label':    'Hafta',
   'reviews.placeholder':   'Kazanimlar, takiliklar, dersler, bir sonraki adim…',
   'more.section.tools': 'Araclar',
-  'purchases.title': 'Satin Alimlar',
-  'purchases.subtitle': 'Istek listesi -> satin alimda -> tamamlandi',
-  'purchases.add': '+ Satin Alim Ekle',
-  'purchases.modal_add': 'Satin Alim Ekle',
-  'purchases.modal_edit': 'Satin Alimi Duzenle',
-  'purchases.empty': 'Henuz satin alim yok. Istek listene baslamak icin "+ Satin Alim Ekle"a bas.',
-  'purchases.confirm_delete': 'Bu satin alimi sil?',
-  'purchases.filter.all': 'Tumu',
-  'purchases.status.wishlist': 'Istek listesi',
-  'purchases.status.buying':   'Satin alimda',
-  'purchases.status.done':     'Tamamlandi',
-  'purchases.f.name':          'Ad',
-  'purchases.f.status':        'Durum',
-  'purchases.f.project':       'Ilgili proje',
-  'purchases.f.project_none':  '- Yok -',
-  'purchases.f.est':           'Tahmini fiyat',
-  'purchases.f.actual':        'Gercek fiyat',
-  'purchases.f.supplier':      'Tedarikci',
-  'purchases.f.url':           'Link',
-  'purchases.f.notes':         'Notlar',
-  'purchases.f.date_request':  'Talep',
-  'purchases.f.date_order':    'Siparis',
-  'purchases.f.date_delivery': 'Teslim',
-  'fin.title': 'Harcamalar',
-  'fin.subtitle': 'Abonelikler ve aylik tekrar eden giderler',
-  'fin.add_subscription': 'Abonelik Ekle',
-  'fin.modal_add': 'Abonelik Ekle',
-  'fin.modal_edit': 'Aboneligi Duzenle',
-  'fin.name': 'Ad',
-  'fin.amount': 'Tutar',
-  'fin.currency': 'Para birimi',
-  'fin.cycle': 'Dongu',
-  'fin.monthly': 'Aylik',
-  'fin.yearly': 'Yillik',
-  'fin.category': 'Kategori',
-  'fin.due_day': 'Odeme gunu',
-  'fin.monthly_total': 'Aylik toplam',
-  'fin.yearly_total': 'Yillik tahmini',
-  'fin.count': '{n} aktif abonelik',
-  'fin.empty': 'Henuz abonelik yok.',
-  'fin.per_month': '/ ay',
-  'fin.per_year': '/ yil',
-  'fin.delete_confirm': 'Bu abonelik silinsin mi?',
-  'fin.add_expense': 'Harcama Ekle',
-  'fin.modal_expense_add': 'Harcama Ekle',
-  'fin.modal_expense_edit': 'Harcamayi Duzenle',
-  'fin.expenses_this_month': 'Bu ayki harcamalar',
-  'fin.subscriptions': 'Abonelikler',
-  'fin.expense_total': 'Bu ay harcama',
-  'fin.empty_expenses': 'Bu ay henuz harcama yok.',
-  'fin.auto_subscription': 'Otomatik abonelik',
-  'fin.delete_expense_confirm': 'Bu harcama silinsin mi?',
-});
-
-Object.assign(I18N.en, {
-  'fin.add_expense': 'Add Expense',
-  'fin.modal_expense_add': 'Add Expense',
-  'fin.modal_expense_edit': 'Edit Expense',
-  'fin.expenses_this_month': 'This month expenses',
-  'fin.subscriptions': 'Subscriptions',
-  'fin.expense_total': 'This month spent',
-  'fin.empty_expenses': 'No expenses this month yet.',
-  'fin.auto_subscription': 'Automatic subscription',
-  'fin.delete_expense_confirm': 'Delete this expense?',
 });
 
 // One-shot migration: copy any `karta-*` localStorage entries (from the previous
@@ -580,7 +412,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], finance: { subscriptions: [], expenses: [] }, purchases: [], reviews: { week: {}, month: {} }, links: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], reviews: { week: {}, month: {} }, links: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -590,10 +422,6 @@ let editingRobotId     = null;
 let editingTaskId      = null;
 let editingIssueId     = null;
 let editingMeetingId   = null;
-let editingSubscriptionId = null;
-let editingExpenseId = null;
-let editingPurchaseId = null;
-let purchasesFilter = 'all'; // 'all' | 'wishlist' | 'buying' | 'done'
 let reviewPeriod = 'week';   // 'week' | 'month'
 let currentReviewKey = null; // e.g. '2026-W19' or '2026-05'
 let editingLinkId = null;
@@ -1438,12 +1266,14 @@ window.deleteRobot = function(id) {
   renderRobotDetail();
 };
 
-// Mobile master-detail: clear the active project so the list takes over the screen again.
+// The Robots section has no in-page list (Spaces drawer drives nav), so
+// the detail back button just returns the user to Home where they came from.
 window.clearRobotSelection = function() {
   state.currentRobotId = null;
   save();
-  renderRobotList();
-  renderRobotDetail();
+  activateSection('home');
+  setBnavActiveFor('home');
+  if (typeof renderHome === 'function') renderHome();
 };
 
 window.deleteTopic = function(id) {
@@ -1654,9 +1484,6 @@ function closeModal(id) {
   // Reset editing state
   editingVisitId = null; editingRobotId = null; editingTaskId = null;
   editingIssueId = null; editingMeetingId = null;
-  editingSubscriptionId = null;
-  editingExpenseId = null;
-  editingPurchaseId = null;
   editingLinkId = null;
   // Reset modal titles/buttons to "add" mode
   const resets = {
@@ -1666,9 +1493,6 @@ function closeModal(id) {
     'modal-issue':     ['#modal-issue h3',      t('modal.add_issue'),   'save-issue',    t('btn.add_issue')],
     'modal-visit':     ['#modal-visit h3',      t('modal.add_visit'),   'save-visit',    t('btn.add_visit')],
     'modal-meeting':   ['#modal-meeting h3',    t('modal.add_meeting'), 'save-meeting',  t('btn.add_meeting')],
-    'modal-subscription': ['#modal-subscription h3', t('fin.modal_add'), 'save-subscription', t('fin.add_subscription')],
-    'modal-expense': ['#modal-expense h3', t('fin.modal_expense_add'), 'save-expense', t('fin.add_expense')],
-    'modal-purchase': ['#modal-purchase h3', t('purchases.modal_add'), 'save-purchase', t('btn.save')],
     'modal-link':     ['#modal-link h3',     t('links.modal_add'),     'save-link',     t('btn.save')],
   };
   const r = resets[id];
@@ -2034,23 +1858,20 @@ function renderMeetingDetail() {
   const doneCount = actions.filter(a => a.done).length;
 
   content.innerHTML = `
-    <div class="robot-detail-header">
+    <div class="md-detail-head">
       <button class="md-back-btn" onclick="closeMeetingDetail()" aria-label="Back" title="Back">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <div style="flex:1">
-        <div class="robot-detail-name">${escapeHtml(meeting.title)}</div>
-        <div class="meeting-meta">
-          <span>${ICO.calendar} ${dateStr}</span>
-          ${meeting.location   ? `<span>${ICO.pin} ${escapeHtml(meeting.location)}</span>`              : ''}
-          ${meeting.attendees  ? `<span>${ICO.group} ${escapeHtml(meeting.attendees)}</span>`             : ''}
-          ${meeting.robot      ? `<span class="visit-robot-tag">${ICO.bot} ${escapeHtml(meeting.robot)}</span>` : ''}
-        </div>
-      </div>
-      <div class="btn-group">
+      <h2 class="md-detail-title">${escapeHtml(meeting.title)}</h2>
+      <div class="md-detail-actions">
         <button class="btn-sm" onclick="editMeeting('${meeting.id}')">Edit</button>
         <button class="btn-sm danger" onclick="deleteMeeting('${meeting.id}')">Delete</button>
       </div>
+    </div>
+    <div class="md-detail-meta">
+      <span>${ICO.calendar} ${dateStr}</span>
+      ${meeting.location  ? `<span>${ICO.pin} ${escapeHtml(meeting.location)}</span>`   : ''}
+      ${meeting.attendees ? `<span>${ICO.group} ${escapeHtml(meeting.attendees)}</span>` : ''}
     </div>
 
     <div class="dsection">
@@ -2912,7 +2733,6 @@ function renderAll() {
   if (!state.topics)     state.topics = [];
   if (!state.workHours)  state.workHours = [];
   if (!state.meetings)   state.meetings = [];
-  ensureFinanceState();
   if (state.currentTopicId   === undefined) state.currentTopicId   = null;
   if (state.currentMeetingId === undefined) state.currentMeetingId = null;
   renderRobotList();
@@ -2923,8 +2743,6 @@ function renderAll() {
   renderWorkHours();
   renderMeetingList();
   renderMeetingDetail();
-  renderFinance();
-  if (typeof renderPurchases === 'function') renderPurchases();
   if (typeof renderReviews === 'function') renderReviews();
   if (typeof renderLinks === 'function') renderLinks();
 }
@@ -3481,487 +3299,6 @@ function setTheme(name) {
   applyTheme(saved || 'light');
 })();
 
-// ── DAILY / JOB MODE SWITCHER ──────────────────────────
-function ensureFinanceState() {
-  if (!state.finance || typeof state.finance !== 'object') state.finance = {};
-  if (!Array.isArray(state.finance.subscriptions)) state.finance.subscriptions = [];
-  if (!Array.isArray(state.finance.expenses)) state.finance.expenses = [];
-}
-
-function financeMonthKey(date = new Date()) {
-  return ymd(date).slice(0, 7);
-}
-
-function shiftMonthKey(monthKey, delta) {
-  const [y, m] = monthKey.split('-').map(Number);
-  const d = new Date(y, (m - 1) + delta, 1);
-  return ymd(d).slice(0, 7);
-}
-
-function formatMonthKey(monthKey) {
-  const [y, m] = monthKey.split('-').map(Number);
-  const d = new Date(y, m - 1, 1);
-  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function syncSubscriptionExpenses(month = financeMonthKey()) {
-  ensureFinanceState();
-  let changed = false;
-  state.finance.subscriptions.forEach(sub => {
-    const autoId = `sub:${sub.id}:${month}`;
-    if (state.finance.expenses.some(e => e.autoId === autoId)) return;
-    const due = Math.min(Math.max(Number(sub.dueDay) || 1, 1), 28);
-    state.finance.expenses.push({
-      id: uid(),
-      autoId,
-      subscriptionId: sub.id,
-      source: 'subscription',
-      name: sub.name,
-      amount: subMonthlyAmount(sub),
-      currency: sub.currency || 'TRY',
-      category: sub.category || t('fin.subscriptions'),
-      date: `${month}-${String(due).padStart(2, '0')}`,
-      createdAt: Date.now(),
-    });
-    changed = true;
-  });
-  if (changed) save();
-}
-
-function subMonthlyAmount(sub) {
-  const amount = Number(sub.amount) || 0;
-  return sub.cycle === 'yearly' ? amount / 12 : amount;
-}
-
-function formatMoney(amount, currency) {
-  const cur = currency || 'TRY';
-  try {
-    return new Intl.NumberFormat(currentLang === 'tr' ? 'tr-TR' : 'en-US', {
-      style: 'currency',
-      currency: cur,
-      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    }).format(amount || 0);
-  } catch {
-    return `${(amount || 0).toFixed(2)} ${cur}`;
-  }
-}
-
-function financeTotalsByCurrency() {
-  ensureFinanceState();
-  const month = financeSelectedMonth;
-  return state.finance.expenses.filter(e => (e.date || '').slice(0, 7) === month).reduce((acc, expense) => {
-    const cur = expense.currency || 'TRY';
-    acc[cur] = (acc[cur] || 0) + (Number(expense.amount) || 0);
-    return acc;
-  }, {});
-}
-
-function renderFinance() {
-  ensureFinanceState();
-  syncSubscriptionExpenses(financeSelectedMonth);
-  const summary = document.getElementById('finance-summary');
-  const list = document.getElementById('subscription-list');
-  const expenseList = document.getElementById('expense-list');
-  const monthLabel = document.getElementById('finance-month-label');
-  if (!summary || !list || !expenseList) return;
-  if (monthLabel) monthLabel.textContent = formatMonthKey(financeSelectedMonth);
-  const subs = state.finance.subscriptions.slice().sort((a, b) => (a.dueDay || 99) - (b.dueDay || 99) || a.name.localeCompare(b.name, 'tr'));
-  const totals = financeTotalsByCurrency();
-  const monthlyParts = Object.entries(totals).map(([cur, val]) => formatMoney(val, cur));
-  const month = financeSelectedMonth;
-  const monthExpenses = state.finance.expenses.filter(e => (e.date || '').slice(0, 7) === month)
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  summary.innerHTML = `
-    <div class="finance-summary-grid">
-      <div class="finance-summary-card"><span>${t('fin.expense_total')}</span><strong>${monthlyParts.join(' + ') || formatMoney(0, 'TRY')}</strong></div>
-      <div class="finance-summary-card"><span>${t('fin.monthly_total')}</span><strong>${Object.entries(financeSubscriptionTotals()).map(([cur, val]) => formatMoney(val, cur)).join(' + ') || formatMoney(0, 'TRY')}</strong></div>
-      <div class="finance-summary-card"><span>${t('fin.cycle')}</span><strong>${t('fin.count', { n: subs.length })}</strong></div>
-    </div>`;
-  expenseList.innerHTML = monthExpenses.length ? monthExpenses.map(expense => `
-    <div class="subscription-card expense-card ${expense.source === 'subscription' ? 'auto' : ''}">
-      <div class="subscription-main">
-        <div class="subscription-name">${escapeHtml(expense.name)}</div>
-        <div class="subscription-meta">
-          <span>${escapeHtml(expense.date || '')}</span>
-          ${expense.category ? `<span>${escapeHtml(expense.category)}</span>` : ''}
-          ${expense.source === 'subscription' ? `<span>${t('fin.auto_subscription')}</span>` : ''}
-        </div>
-      </div>
-      <div class="subscription-cost">
-        <strong>${formatMoney(Number(expense.amount) || 0, expense.currency)}</strong>
-      </div>
-      <div class="subscription-actions">
-        ${expense.source === 'subscription' ? '' : `<button class="btn-sm" onclick="editExpense('${expense.id}')">${t('btn.edit')}</button>`}
-        ${expense.source === 'subscription' ? '' : `<button class="btn-sm danger" onclick="deleteExpense('${expense.id}')">${t('btn.delete')}</button>`}
-      </div>
-    </div>`).join('') : `<div class="empty-visits"><p>${t('fin.empty_expenses')}</p></div>`;
-  if (!subs.length) {
-    list.innerHTML = `<div class="empty-visits"><p>${t('fin.empty')}</p></div>`;
-    return;
-  }
-  list.innerHTML = subs.map(sub => {
-    const monthly = subMonthlyAmount(sub);
-    const cycleLabel = sub.cycle === 'yearly' ? t('fin.per_year') : t('fin.per_month');
-    return `
-      <div class="subscription-card">
-        <div class="subscription-main">
-          <div class="subscription-name">${escapeHtml(sub.name)}</div>
-          <div class="subscription-meta">
-            ${sub.category ? `<span>${escapeHtml(sub.category)}</span>` : ''}
-            ${sub.dueDay ? `<span>${t('fin.due_day')}: ${escapeHtml(sub.dueDay)}</span>` : ''}
-          </div>
-        </div>
-        <div class="subscription-cost">
-          <strong>${formatMoney(Number(sub.amount) || 0, sub.currency)}</strong>
-          <span>${cycleLabel}</span>
-          ${sub.cycle === 'yearly' ? `<em>${formatMoney(monthly, sub.currency)} ${t('fin.per_month')}</em>` : ''}
-        </div>
-        <div class="subscription-actions">
-          <button class="btn-sm" onclick="editSubscription('${sub.id}')">${t('btn.edit')}</button>
-          <button class="btn-sm danger" onclick="deleteSubscription('${sub.id}')">${t('btn.delete')}</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function financeSubscriptionTotals() {
-  ensureFinanceState();
-  return state.finance.subscriptions.reduce((acc, sub) => {
-    const cur = sub.currency || 'TRY';
-    acc[cur] = (acc[cur] || 0) + subMonthlyAmount(sub);
-    return acc;
-  }, {});
-}
-
-function openSubscriptionModal(sub) {
-  ensureFinanceState();
-  editingSubscriptionId = sub ? sub.id : null;
-  document.getElementById('sub-name').value = sub ? sub.name : '';
-  document.getElementById('sub-amount').value = sub ? sub.amount : '';
-  document.getElementById('sub-currency').value = sub ? (sub.currency || 'TRY') : 'TRY';
-  document.getElementById('sub-category').value = sub ? (sub.category || '') : '';
-  document.getElementById('sub-due-day').value = sub && sub.dueDay ? sub.dueDay : '';
-  resetRadio('sub-cycle-group', sub ? (sub.cycle || 'monthly') : 'monthly');
-  initRadioGroup('sub-cycle-group');
-  document.querySelector('#modal-subscription h3').textContent = sub ? t('fin.modal_edit') : t('fin.modal_add');
-  document.getElementById('save-subscription').textContent = sub ? t('btn.save_changes') : t('fin.add_subscription');
-  openModal('modal-subscription');
-  setTimeout(() => document.getElementById('sub-name')?.focus(), 50);
-}
-
-window.editSubscription = function(id) {
-  ensureFinanceState();
-  const sub = state.finance.subscriptions.find(s => s.id === id);
-  if (sub) openSubscriptionModal(sub);
-};
-
-window.deleteSubscription = function(id) {
-  if (!confirm(t('fin.delete_confirm'))) return;
-  ensureFinanceState();
-  state.finance.subscriptions = state.finance.subscriptions.filter(s => s.id !== id);
-  state.finance.expenses = state.finance.expenses.filter(e => e.subscriptionId !== id);
-  save();
-  renderFinance();
-};
-
-function removeCurrentAutoExpenseForSub(subId) {
-  const prefix = `sub:${subId}:${financeMonthKey()}`;
-  state.finance.expenses = state.finance.expenses.filter(e => e.autoId !== prefix);
-}
-
-document.getElementById('add-subscription-btn')?.addEventListener('click', () => openSubscriptionModal(null));
-document.getElementById('save-subscription')?.addEventListener('click', () => {
-  ensureFinanceState();
-  const name = document.getElementById('sub-name').value.trim();
-  const amount = Number(document.getElementById('sub-amount').value);
-  if (!name) { document.getElementById('sub-name').focus(); return; }
-  if (!Number.isFinite(amount) || amount < 0) { document.getElementById('sub-amount').focus(); return; }
-  const dueRaw = Number(document.getElementById('sub-due-day').value);
-  const payload = {
-    name,
-    amount,
-    currency: document.getElementById('sub-currency').value || 'TRY',
-    cycle: getRadioValue('sub-cycle-group') || 'monthly',
-    category: document.getElementById('sub-category').value.trim(),
-    dueDay: Number.isFinite(dueRaw) && dueRaw >= 1 && dueRaw <= 31 ? dueRaw : null,
-  };
-  if (editingSubscriptionId) {
-    const sub = state.finance.subscriptions.find(s => s.id === editingSubscriptionId);
-    if (sub) {
-      Object.assign(sub, payload);
-      removeCurrentAutoExpenseForSub(sub.id);
-    }
-  } else {
-    state.finance.subscriptions.push({ id: uid(), ...payload, createdAt: Date.now() });
-  }
-  save();
-  renderFinance();
-  closeModal('modal-subscription');
-});
-
-function openExpenseModal(expense) {
-  ensureFinanceState();
-  editingExpenseId = expense ? expense.id : null;
-  const fallbackDay = Math.min(new Date().getDate(), 28);
-  document.getElementById('expense-name').value = expense ? expense.name : '';
-  document.getElementById('expense-amount').value = expense ? expense.amount : '';
-  document.getElementById('expense-currency').value = expense ? (expense.currency || 'TRY') : 'TRY';
-  document.getElementById('expense-date').value = expense ? expense.date : `${financeSelectedMonth}-${String(fallbackDay).padStart(2, '0')}`;
-  document.getElementById('expense-category').value = expense ? (expense.category || '') : '';
-  document.querySelector('#modal-expense h3').textContent = expense ? t('fin.modal_expense_edit') : t('fin.modal_expense_add');
-  document.getElementById('save-expense').textContent = expense ? t('btn.save_changes') : t('fin.add_expense');
-  openModal('modal-expense');
-  setTimeout(() => document.getElementById('expense-name')?.focus(), 50);
-}
-
-window.editExpense = function(id) {
-  ensureFinanceState();
-  const expense = state.finance.expenses.find(e => e.id === id && e.source !== 'subscription');
-  if (expense) openExpenseModal(expense);
-};
-
-window.deleteExpense = function(id) {
-  if (!confirm(t('fin.delete_expense_confirm'))) return;
-  ensureFinanceState();
-  state.finance.expenses = state.finance.expenses.filter(e => e.id !== id);
-  save();
-  renderFinance();
-};
-
-document.getElementById('add-expense-btn')?.addEventListener('click', () => openExpenseModal(null));
-document.getElementById('finance-prev-month')?.addEventListener('click', () => {
-  financeSelectedMonth = shiftMonthKey(financeSelectedMonth, -1);
-  renderFinance();
-});
-document.getElementById('finance-next-month')?.addEventListener('click', () => {
-  financeSelectedMonth = shiftMonthKey(financeSelectedMonth, 1);
-  renderFinance();
-});
-document.getElementById('save-expense')?.addEventListener('click', () => {
-  ensureFinanceState();
-  const name = document.getElementById('expense-name').value.trim();
-  const amount = Number(document.getElementById('expense-amount').value);
-  const date = document.getElementById('expense-date').value || ymd(new Date());
-  if (!name) { document.getElementById('expense-name').focus(); return; }
-  if (!Number.isFinite(amount) || amount < 0) { document.getElementById('expense-amount').focus(); return; }
-  const payload = {
-    name,
-    amount,
-    date,
-    currency: document.getElementById('expense-currency').value || 'TRY',
-    category: document.getElementById('expense-category').value.trim(),
-    source: 'manual',
-  };
-  if (editingExpenseId) {
-    const expense = state.finance.expenses.find(e => e.id === editingExpenseId);
-    if (expense) Object.assign(expense, payload);
-  } else {
-    state.finance.expenses.push({ id: uid(), ...payload, createdAt: Date.now() });
-  }
-  save();
-  renderFinance();
-  closeModal('modal-expense');
-});
-
-// ── PURCHASES ──────────────────────────────────────────
-// Lightweight procurement tracker: each item moves through
-// wishlist → buying → done, optionally linked to a project (robot).
-const PURCHASE_STATUSES = ['wishlist', 'buying', 'done'];
-
-function ensurePurchases() {
-  if (!Array.isArray(state.purchases)) state.purchases = [];
-}
-
-function refreshPurchaseRobotSelect(selectedRobotId) {
-  const sel = document.getElementById('purchase-robot');
-  if (!sel) return;
-  const noneLabel = t('purchases.f.project_none') || '— None —';
-  const opts = [`<option value="">${escapeHtml(noneLabel)}</option>`];
-  (state.robots || [])
-    .slice()
-    .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'))
-    .forEach(r => {
-      opts.push(`<option value="${r.id}" ${r.id === selectedRobotId ? 'selected' : ''}>${escapeHtml(r.name || '?')}</option>`);
-    });
-  sel.innerHTML = opts.join('');
-}
-
-function purchaseStatusLabel(status) {
-  return t('purchases.status.' + status) || status;
-}
-
-function renderPurchases() {
-  ensurePurchases();
-  const listEl = document.getElementById('purchases-list');
-  const sumEl  = document.getElementById('purchases-summary');
-  if (!listEl) return;
-
-  // Summary counts
-  const counts = { wishlist: 0, buying: 0, done: 0 };
-  state.purchases.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
-  if (sumEl) {
-    sumEl.innerHTML = `
-      <div class="finance-summary-grid">
-        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('wishlist'))}</span><strong>${counts.wishlist}</strong></div>
-        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('buying'))}</span><strong>${counts.buying}</strong></div>
-        <div class="finance-summary-card"><span>${escapeHtml(purchaseStatusLabel('done'))}</span><strong>${counts.done}</strong></div>
-      </div>`;
-  }
-
-  // Filter buttons reflect current state
-  document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(b => {
-    b.classList.toggle('active', b.dataset.purchasesFilter === purchasesFilter);
-  });
-
-  const filtered = state.purchases.filter(p =>
-    purchasesFilter === 'all' ? true : p.status === purchasesFilter
-  );
-
-  if (!filtered.length) {
-    listEl.innerHTML = `<div class="space-empty" style="padding:24px;text-align:center;">${escapeHtml(t('purchases.empty') || 'No purchases yet.')}</div>`;
-    return;
-  }
-
-  // Sort: wishlist → buying → done, then most recently created first
-  const order = { wishlist: 0, buying: 1, done: 2 };
-  filtered.sort((a, b) => {
-    const so = (order[a.status] ?? 9) - (order[b.status] ?? 9);
-    if (so !== 0) return so;
-    return (b.createdAt || 0) - (a.createdAt || 0);
-  });
-
-  listEl.innerHTML = filtered.map(p => {
-    const robot = p.robotId ? (state.robots || []).find(r => r.id === p.robotId) : null;
-    const priceParts = [];
-    if (p.estPrice != null && p.estPrice !== '')   priceParts.push(`<span class="purchase-price-est">${escapeHtml(t('purchases.f.est') || 'Est')}: ${formatMoney(Number(p.estPrice), p.currency || 'TRY')}</span>`);
-    if (p.actPrice != null && p.actPrice !== '')   priceParts.push(`<span class="purchase-price-act">${escapeHtml(t('purchases.f.actual') || 'Actual')}: ${formatMoney(Number(p.actPrice), p.currency || 'TRY')}</span>`);
-    const meta = [];
-    const ico = {
-      folder:   '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
-      supplier: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-      link:     '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-    };
-    if (robot)      meta.push(`<span class="purchase-meta-chip">${ico.folder}${escapeHtml(robot.name)}</span>`);
-    if (p.supplier) meta.push(`<span class="purchase-meta-chip">${ico.supplier}${escapeHtml(p.supplier)}</span>`);
-    if (p.url)      meta.push(`<a class="purchase-meta-chip" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer">${ico.link}${escapeHtml(t('purchases.f.url') || 'Link')}</a>`);
-    const dates = [];
-    if (p.dateRequest)  dates.push(`<span>${escapeHtml(t('purchases.f.date_request') || 'Req')}: ${escapeHtml(p.dateRequest)}</span>`);
-    if (p.dateOrder)    dates.push(`<span>${escapeHtml(t('purchases.f.date_order') || 'Ord')}: ${escapeHtml(p.dateOrder)}</span>`);
-    if (p.dateDelivery) dates.push(`<span>${escapeHtml(t('purchases.f.date_delivery') || 'Del')}: ${escapeHtml(p.dateDelivery)}</span>`);
-
-    const statusOpts = PURCHASE_STATUSES.map(s =>
-      `<option value="${s}" ${p.status === s ? 'selected' : ''}>${escapeHtml(purchaseStatusLabel(s))}</option>`
-    ).join('');
-
-    return `
-      <div class="purchase-row purchase-status-${p.status}" data-purchase-id="${p.id}">
-        <div class="purchase-row-main">
-          <div class="purchase-row-head">
-            <div class="purchase-name">${escapeHtml(p.name || '(no name)')}</div>
-            <select class="purchase-status-select" data-purchase-status="${p.id}">${statusOpts}</select>
-          </div>
-          ${meta.length ? `<div class="purchase-row-meta">${meta.join('')}</div>` : ''}
-          ${priceParts.length ? `<div class="purchase-row-prices">${priceParts.join(' ')}</div>` : ''}
-          ${dates.length ? `<div class="purchase-row-dates">${dates.join(' · ')}</div>` : ''}
-          ${p.notes ? `<div class="purchase-row-notes">${escapeHtml(p.notes)}</div>` : ''}
-        </div>
-        <div class="purchase-row-actions">
-          <button class="btn-sm" data-purchase-edit="${p.id}">${escapeHtml(t('btn.edit') || 'Edit')}</button>
-        </div>
-      </div>`;
-  }).join('');
-
-  // Wire up
-  listEl.querySelectorAll('[data-purchase-edit]').forEach(b => {
-    b.addEventListener('click', () => openPurchaseModal(state.purchases.find(p => p.id === b.dataset.purchaseEdit)));
-  });
-  listEl.querySelectorAll('.purchase-status-select').forEach(sel => {
-    sel.addEventListener('click', e => e.stopPropagation());
-    sel.addEventListener('change', () => {
-      const p = state.purchases.find(x => x.id === sel.dataset.purchaseStatus);
-      if (!p) return;
-      p.status = sel.value;
-      // Auto-stamp delivery date when moving to done
-      if (p.status === 'done' && !p.dateDelivery) p.dateDelivery = ymd(new Date());
-      save();
-      renderPurchases();
-    });
-  });
-}
-
-function openPurchaseModal(purchase) {
-  ensurePurchases();
-  editingPurchaseId = purchase ? purchase.id : null;
-  refreshPurchaseRobotSelect(purchase ? purchase.robotId : null);
-  document.getElementById('purchase-name').value     = purchase ? (purchase.name || '') : '';
-  document.getElementById('purchase-status').value   = purchase ? (purchase.status || 'wishlist') : 'wishlist';
-  document.getElementById('purchase-est').value      = purchase && purchase.estPrice != null ? purchase.estPrice : '';
-  document.getElementById('purchase-actual').value   = purchase && purchase.actPrice != null ? purchase.actPrice : '';
-  document.getElementById('purchase-currency').value = purchase ? (purchase.currency || 'TRY') : 'TRY';
-  document.getElementById('purchase-supplier').value = purchase ? (purchase.supplier || '') : '';
-  document.getElementById('purchase-url').value      = purchase ? (purchase.url || '') : '';
-  document.getElementById('purchase-date-request').value  = purchase ? (purchase.dateRequest  || '') : '';
-  document.getElementById('purchase-date-order').value    = purchase ? (purchase.dateOrder    || '') : '';
-  document.getElementById('purchase-date-delivery').value = purchase ? (purchase.dateDelivery || '') : '';
-  document.getElementById('purchase-notes').value    = purchase ? (purchase.notes || '') : '';
-  const titleEl = document.getElementById('modal-purchase-title');
-  if (titleEl) titleEl.textContent = purchase ? (t('purchases.modal_edit') || 'Edit Purchase') : (t('purchases.modal_add') || 'Add Purchase');
-  const delBtn = document.getElementById('purchase-delete-btn');
-  if (delBtn) delBtn.style.display = purchase ? '' : 'none';
-  openModal('modal-purchase');
-}
-
-document.getElementById('add-purchase-btn')?.addEventListener('click', () => openPurchaseModal(null));
-
-document.getElementById('save-purchase')?.addEventListener('click', () => {
-  ensurePurchases();
-  const name = (document.getElementById('purchase-name').value || '').trim();
-  if (!name) {
-    document.getElementById('purchase-name').focus();
-    return;
-  }
-  const robotSel = document.getElementById('purchase-robot');
-  const payload = {
-    name,
-    status:       document.getElementById('purchase-status').value || 'wishlist',
-    robotId:      robotSel ? (robotSel.value || null) : null,
-    estPrice:     document.getElementById('purchase-est').value    || null,
-    actPrice:     document.getElementById('purchase-actual').value || null,
-    currency:     document.getElementById('purchase-currency').value || 'TRY',
-    supplier:     (document.getElementById('purchase-supplier').value || '').trim(),
-    url:          (document.getElementById('purchase-url').value || '').trim(),
-    dateRequest:  document.getElementById('purchase-date-request').value || null,
-    dateOrder:    document.getElementById('purchase-date-order').value   || null,
-    dateDelivery: document.getElementById('purchase-date-delivery').value || null,
-    notes:        (document.getElementById('purchase-notes').value || '').trim(),
-  };
-  if (editingPurchaseId) {
-    const p = state.purchases.find(x => x.id === editingPurchaseId);
-    if (p) Object.assign(p, payload);
-  } else {
-    state.purchases.push({ id: uid(), ...payload, createdAt: Date.now() });
-  }
-  save();
-  renderPurchases();
-  closeModal('modal-purchase');
-});
-
-document.getElementById('purchase-delete-btn')?.addEventListener('click', () => {
-  if (!editingPurchaseId) return;
-  if (!confirm(t('purchases.confirm_delete') || 'Delete this purchase?')) return;
-  state.purchases = state.purchases.filter(p => p.id !== editingPurchaseId);
-  save();
-  renderPurchases();
-  closeModal('modal-purchase');
-});
-
-document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    purchasesFilter = btn.dataset.purchasesFilter;
-    renderPurchases();
-  });
-});
-
 // ── REVIEWS (weekly + monthly summaries) ────────────────
 // Two parallel maps: state.reviews.week['2026-W19'], state.reviews.month['2026-05'].
 // Notes are plain text; the editor autosaves on input (debounced).
@@ -4314,8 +3651,6 @@ const ITEM_ICONS = {
   meeting: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   visit:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
-  finance: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>',
-  purchases: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
   review:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>',
   links:     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
 };
@@ -4767,7 +4102,7 @@ function renderStreakWidget() {
     </div>
     <div class="streak-stat">
       <span class="streak-num">${s.streak}</span>
-      <span class="streak-lbl">day streak${s.streak ? ' 🔥' : ''}</span>
+      <span class="streak-lbl">day streak</span>
     </div>
     <div class="streak-stat">
       <span class="streak-num">${s.overdueOrToday}</span>
@@ -5076,8 +4411,6 @@ function migrateToSpaces() {
   const work     = state.spaces.find(s => s.name === 'Work')     || state.spaces[0];
   const personal = state.spaces.find(s => s.name === 'Personal') || state.spaces[1] || work;
 
-  // Ensure purchases collection exists (older saves may not have it)
-  if (!Array.isArray(state.purchases)) state.purchases = [];
   // Ensure reviews exists
   if (!state.reviews || typeof state.reviews !== 'object') state.reviews = { week: {}, month: {} };
   if (!state.reviews.week)  state.reviews.week  = {};
@@ -5086,7 +4419,7 @@ function migrateToSpaces() {
   if (!Array.isArray(state.links)) state.links = [];
 
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), finance: new Set(), purchases: new Set(), review: new Set(), links: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), review: new Set(), links: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -5121,20 +4454,12 @@ function migrateToSpaces() {
     added = true;
   }
 
-  const hasFinance = state.spaces.some(s => s.items.some(i => i.type === 'finance'));
-  if (!hasFinance) {
-    personal.items.push({ id: uid(), type: 'finance', refId: 'default' });
-    added = true;
-  }
-
   // Drop dead refs (robot/meeting/visit deleted from legacy but still in space.items)
   const liveIds = {
     list:    new Set((state.robots      || []).map(r => r.id)),
     meeting: new Set((state.meetings    || []).map(m => m.id)),
     visit:   new Set((state.fieldVisits || []).map(v => v.id)),
     journal: new Set(['default']),
-    finance: new Set(['default']),
-    purchases: new Set(['default']),
     review: new Set(['default']),
     links: new Set(['default']),
   };
@@ -5196,8 +4521,6 @@ function resolveItemData(item) {
   if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
   if (item.type === 'journal') return { name: 'Journal' };
-  if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
-  if (item.type === 'purchases') return { name: t('purchases.title') || 'Purchases' };
   if (item.type === 'review')    return { name: t('reviews.title') || 'Reviews' };
   if (item.type === 'links')     return { name: t('links.title') || 'Links' };
   return null;
@@ -5291,8 +4614,6 @@ function renderSidebar() {
     const meetings = sp.items.filter(i => i.type === 'meeting');
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
-    const finances = sp.items.filter(i => i.type === 'finance');
-    const purchases = sp.items.filter(i => i.type === 'purchases');
     const reviews   = sp.items.filter(i => i.type === 'review');
     const links     = sp.items.filter(i => i.type === 'links');
 
@@ -5302,11 +4623,9 @@ function renderSidebar() {
     const meetingsHtml = subgroup(t('sidebar.meetings') || 'Meetings', 'meeting', meetings, sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
-    const financeHtml   = finances.map(it => itemRow(it, sp.id)).join('');
-    const purchasesHtml = purchases.map(it => itemRow(it, sp.id)).join('');
     const reviewsHtml   = reviews.map(it => itemRow(it, sp.id)).join('');
     const linksHtml     = links.map(it => itemRow(it, sp.id)).join('');
-    const body = listsHtml + financeHtml + purchasesHtml + reviewsHtml + linksHtml + meetingsHtml + journalsHtml;
+    const body = listsHtml + reviewsHtml + linksHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -5483,12 +4802,6 @@ function selectSpaceItem(spaceId, itemId) {
     if (typeof renderVisits === 'function') renderVisits();
   } else if (item.type === 'journal') {
     activateSection('journal');
-  } else if (item.type === 'finance') {
-    activateSection('finance');
-    renderFinance();
-  } else if (item.type === 'purchases') {
-    activateSection('purchases');
-    if (typeof renderPurchases === 'function') renderPurchases();
   } else if (item.type === 'review') {
     activateSection('reviews');
     if (typeof renderReviews === 'function') renderReviews();
@@ -5530,7 +4843,7 @@ function activateSection(id) {
 
 // ── Add Item picker — spaces only carry lists now, so skip the picker
 // and open the new-list flow directly. Meetings / visits / journal /
-// finance / purchases / links / reviews are global features under More.
+// links / reviews are global features under More.
 function openAddItemPicker(spaceId) {
   if (!spaceId) return;
   pendingItemAttach = { spaceId, type: 'list' };
@@ -5660,8 +4973,6 @@ const ITEM_TYPE_META = {
   meeting: { color: '#f97316', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' },
   visit:   { color: '#10b981', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>' },
   journal: { color: '#14b8a6', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>' },
-  finance: { color: '#eab308', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>' },
-  purchases: { color: '#ec4899', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' },
   links:   { color: '#06b6d4', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>' },
   reviews: { color: '#8b5cf6', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9 9l-7 1 5 5-1 7 6-3 6 3-1-7 5-5-7-1z"/></svg>' },
 };
@@ -5680,8 +4991,6 @@ function spaceItemTitle(item) {
     return v && v.location ? v.location : 'Visit';
   }
   if (item.type === 'journal') return 'Journal';
-  if (item.type === 'finance') return 'Expenses';
-  if (item.type === 'purchases') return 'Purchases';
   if (item.type === 'links')   return 'Links';
   if (item.type === 'reviews') return 'Reviews';
   return item.type;
@@ -5709,7 +5018,7 @@ function renderHome() {
       todayListEl.innerHTML = items.map(it => `
         <button class="home-list-item" data-robot-id="${escapeAttr(it.project.id)}" data-task-id="${escapeAttr(it.task.id)}" type="button">
           <span class="home-list-item-icon" style="--c: var(--accent);">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
           </span>
           <span class="home-list-item-body">
             <span class="home-list-item-title">${escapeHtml(it.task.title || '')}</span>
@@ -5761,16 +5070,15 @@ function renderHome() {
     const spaces = state.spaces || [];
     const TYPE_LABEL = {
       list: 'Lists', meeting: 'Meetings', visit: 'Visits',
-      journal: 'Journals', finance: 'Expenses',
-      purchases: 'Purchases', links: 'Links', reviews: 'Reviews',
+      journal: 'Journals', links: 'Links', reviews: 'Reviews',
     };
-    const TYPE_ORDER = ['list', 'meeting', 'visit', 'journal', 'finance', 'purchases', 'links', 'reviews'];
+    const TYPE_ORDER = ['list', 'meeting', 'visit', 'journal', 'links', 'reviews'];
 
     spacesEl.innerHTML = spaces.map((sp, i) => {
       const color = SPACE_COLORS[i % SPACE_COLORS.length];
       const isOpen = open.has(sp.id);
-      // Spaces only carry lists now. Meetings / visits / journals / expenses
-      // / purchases / links / reviews are global features in More.
+      // Spaces only carry lists now. Meetings / visits / journals /
+      // links / reviews are global features in More.
       const lists = (sp.items || []).filter(it => it.type === 'list');
       const meta = ITEM_TYPE_META.list;
 
@@ -5889,8 +5197,6 @@ function homeNavigate(target) {
     document.getElementById('journal')?.removeAttribute('data-detail-open');
     (typeof renderJournalList === 'function') && renderJournalList();
   }
-  else if (target === 'finance')   { activateSection('finance'); (typeof renderFinance === 'function') && renderFinance(); }
-  else if (target === 'purchases') { activateSection('purchases'); (typeof renderPurchases === 'function') && renderPurchases(); }
   else if (target === 'links')     { activateSection('links'); (typeof renderLinks === 'function') && renderLinks(); }
   else if (target === 'reviews')   {
     activateSection('reviews');
@@ -6036,7 +5342,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.0.0';
+const APP_VERSION = '6.1.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
