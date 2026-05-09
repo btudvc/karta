@@ -1153,6 +1153,56 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .brief-empty { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin: 4px 0; }
 
 /* ── Streak / weekly stats widget ──────────────────── */
+/* ── Home: colorful card grid ──────────────────────────── */
+#home.section.active { display: block; overflow-y: auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+.home-container {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 18px 0;
+}
+.home-title    { font-size: 28px; font-weight: 800; letter-spacing: -.02em; color: var(--text); }
+.home-subtitle { color: var(--muted); font-size: 14px; margin: 4px 0 22px; }
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.home-card {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px;
+  padding: 14px 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform .12s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease);
+}
+.home-card:hover  { border-color: var(--border-2); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.home-card:active { transform: scale(.97); }
+.home-card-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--c, var(--accent));
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--c, var(--accent)) 40%, transparent), 0 1px 2px rgba(0,0,0,.08);
+}
+.home-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+@media (max-width: 380px) {
+  .home-grid       { gap: 10px; }
+  .home-card       { padding: 12px 6px 10px; border-radius: 16px; }
+  .home-card-icon  { width: 50px; height: 50px; border-radius: 14px; }
+  .home-card-label { font-size: 12px; }
+}
+
 .streak-widget {
   display: flex;
   gap: 8px;
