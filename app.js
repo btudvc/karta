@@ -6457,7 +6457,11 @@ document.getElementById('home-spaces-search-btn')?.addEventListener('click', () 
 document.getElementById('home-burger-btn')?.addEventListener('click', openSpacesDrawer);
 document.getElementById('topbar-burger-btn')?.addEventListener('click', openSpacesDrawer);
 document.getElementById('spaces-drawer-backdrop')?.addEventListener('click', closeSpacesDrawer);
-document.getElementById('drawer-search-btn')?.addEventListener('click', () => { closeSpacesDrawer(); openSearchModal(); });
+document.getElementById('drawer-settings-btn')?.addEventListener('click', () => {
+  closeSpacesDrawer();
+  activateSection('settings');
+  setBnavActiveFor(null);
+});
 document.getElementById('drawer-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
@@ -6471,7 +6475,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.12.0';
+const APP_VERSION = '5.12.1';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 

@@ -224,7 +224,7 @@
       </div>
     </section>
 
-    <!-- MORE TAB (mobile only — gathers Meetings/Journal/Settings) -->
+    <!-- MORE TAB — global feature shortcuts (Meetings/Visits/Journal/etc) -->
     <section id="more" class="section">
       <div class="more-page">
 
@@ -285,6 +285,12 @@
           </button>
         </div>
 
+      </div>
+    </section>
+
+    <!-- SETTINGS TAB (opened from the spaces drawer gear) -->
+    <section id="settings" class="section">
+      <div class="more-page">
         <div class="more-section-title" data-i18n="more.section.settings">Ayarlar</div>
         <div class="more-card-list">
           <button class="more-card more-card-link" id="more-drive-trigger">
@@ -319,7 +325,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v5.12.0</div>
+        <div class="more-version" id="more-version">B-Less Planner v5.12.1</div>
       </div>
     </section>
 
@@ -457,8 +463,8 @@
     <div class="spaces-drawer-head">
       <span class="spaces-drawer-title">Spaces</span>
       <span class="home-section-actions">
-        <button class="home-section-icon-btn" id="drawer-search-btn" type="button" aria-label="Search">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <button class="home-section-icon-btn" id="drawer-settings-btn" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
         <button class="home-section-icon-btn" id="drawer-add-space-btn" type="button" aria-label="New space">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
