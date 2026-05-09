@@ -3333,6 +3333,20 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   .bnav-btn[data-mobile-spaces] { display: none; }
 }
 
+/* Tight pill at narrow widths — 8 icons (Spaces + 4 cross-views + Search +
+   Calculators[owner] + Add + Settings) won't fit at 44px each on a 360-wide
+   phone. Shrink the touch targets and trim chrome but keep them tappable. */
+@media (max-width: 480px) {
+  .bottom-nav { padding: 4px 5px; gap: 1px; max-width: calc(100vw - 16px); }
+  .bnav-btn   { width: 40px; height: 40px; }
+  .bnav-btn svg { width: 19px; height: 19px; }
+}
+@media (max-width: 380px) {
+  .bottom-nav { padding: 3px 4px; gap: 0; }
+  .bnav-btn   { width: 36px; height: 36px; }
+  .bnav-btn svg { width: 18px; height: 18px; }
+}
+
 .space-drawer-backdrop { display: none; }
 
 /* Master-detail back button — hidden on desktop, re-shown inside the mobile @media block */
