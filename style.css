@@ -167,42 +167,6 @@ svg { display: inline-block; vertical-align: -0.18em; flex-shrink: 0; }
 header { display: none; }
 
 
-/* ── Daily / Job mode switcher ────────────────────────── */
-.mode-switcher {
-  display: inline-flex;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3px;
-  flex-shrink: 0;
-}
-.mode-btn {
-  padding: 5px 14px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-xs);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s var(--ease);
-}
-.mode-btn:hover  { color: var(--text); }
-.mode-btn.active {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ── Mode-aware label/tab visibility ──────────────────── */
-.daily-label                         { display: none; }
-body[data-mode="daily"] .job-label   { display: none; }
-body[data-mode="daily"] .daily-label { display: inline; }
-
-.tab[data-modes="daily"]                            { display: none; }
-body[data-mode="daily"] .tab[data-modes="job"]      { display: none; }
-body[data-mode="daily"] .tab[data-modes="daily"]    { display: inline-flex; }
-
 /* ── Language switcher ────────────────────────────────── */
 .lang-switcher {
   display: inline-flex;
@@ -748,25 +712,22 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   main { max-width: 720px; margin: 0 auto; width: 100%; }
 }
 
-/* v4: hide legacy navigation that the sidebar replaces */
-.v4-hidden { display: none !important; }
-/* The per-section sidebars (legacy) inside #robots, #meetings, #firmware
-   become redundant once the global Space sidebar shows their items. */
-.section > .sidebar { display: none; }
+/* The Robots in-section sidebar is redundant — Spaces drawer drives nav. */
+#robots.section > .sidebar { display: none; }
 
 .section { display: none; height: 100%; flex: 1; min-width: 0; }
 .section.active { display: flex; }
 /* Bottom clearance on every section so the final item can scroll above the
    floating pill + home indicator. */
 .section.active { scroll-padding-bottom: 96px; }
-#more.section.active {
+#more.section.active,
+#settings.section.active {
   display: block;
   overflow-y: auto;
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 #field-visits.active { display: block; overflow-y: auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 #finance.active { display: block; overflow-y: auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-body[data-owner="1"] #tools.section.active { display: block !important; overflow-y: auto; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── v4 Space sidebar (global navigation) ─────────────── */
 .space-sidebar {
@@ -1302,34 +1263,6 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 }
 .home-search-pill:hover { border-color: var(--border-2); }
 .home-search-pill svg { flex-shrink: 0; }
-
-/* Today summary card — flat surface with a subtle border */
-.home-today-card {
-  display: flex; align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 14px 16px;
-  margin-bottom: 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
-.home-today-card:hover { border-color: var(--border-2); }
-.home-today-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: var(--accent);
-  color: #fff;
-  display: inline-flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.home-today-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.home-today-title { font-size: 14px; font-weight: 700; color: var(--text); }
-.home-today-sub   { font-size: 13px; color: var(--muted); }
-.home-today-arrow { font-size: 22px; color: var(--muted); flex-shrink: 0; }
 
 .home-ws-name-static {
   font-size: 16px; font-weight: 700; color: var(--text);
@@ -1883,48 +1816,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   .irem-welcome-title { font-size: 22px; }
   .irem-welcome-sub { font-size: 14px; }
 }
-.add-item-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 6px;
-}
-.add-item-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 14px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  text-align: left;
-  transition: all .15s var(--ease);
-}
-.add-item-card:hover {
-  border-color: var(--accent);
-  background: var(--surface-3);
-}
-.add-item-icon {
-  display: inline-flex;
-  align-items: center; justify-content: center;
-  width: 36px; height: 36px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-radius: var(--radius-sm);
-}
-.add-item-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.add-item-hint {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
 /* Mobile: sidebar collapses to a drawer accessible from a button */
 @media all { /* mobile-first universal */
   .space-sidebar {
@@ -1935,8 +1826,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
     border-bottom: 1px solid var(--border);
   }
   main { flex-direction: column; }
-  .add-item-grid { grid-template-columns: 1fr; }
-  .modal-picker { width: 100%; }
 }
 
 /* ─── SIDEBAR ──────────────────────────────────────────── */
@@ -2880,24 +2769,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 
 /* ─── RESPONSIVE / MOBILE ──────────────────────────────── */
 @media all { /* mobile-first universal */
-  .mode-switcher { padding: 2px; }
-  .mode-btn { padding: 5px 10px; font-size: 12px; }
-
-  .tabs {
-    overflow-x: auto;
-    flex: 1;
-    min-width: 0;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { padding: 6px 11px; font-size: 12.5px; flex-shrink: 0; }
-  .tab span:not(.job-label):not(.daily-label) { display: none; }
-  .tab .job-label, .tab .daily-label { display: none; }
-  body[data-mode="daily"] .tab[data-modes="daily"] .daily-label { display: none; }
-  /* Show only icon on phone — title attribute can carry name */
-  .tab .ico { width: 18px; height: 18px; }
-
   .header-right { gap: 6px; }
   .lang-switcher { padding: 1px; }
   .lang-btn { padding: 3px 6px; font-size: 10px; }
@@ -3228,14 +3099,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
-.at-filter {
-  display: inline-flex;
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 3px;
-}
 .at-filter-btn {
   padding: 5px 14px;
   background: transparent;
@@ -4045,17 +3908,9 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   padding: 16px 4px 8px;
 }
 .more-section-title:first-child { padding-top: 4px; }
-.more-section-title[data-i18n="more.section.pages"],
-.more-section-title[data-i18n="more.section.pages"] + .more-card-list {
-  display: none;
-}
 .more-section-title[data-i18n="more.section.settings"] {
   padding-top: 4px;
 }
-
-/* Mode-scoped visibility for More-page cards */
-body[data-mode="job"]   .more-card.daily-only { display: none; }
-body[data-mode="daily"] .more-card.job-only   { display: none; }
 
 /* ─── MOBILE: bottom nav + collapsed header ───────────── */
 @media all { /* mobile-first universal */
@@ -4113,17 +3968,16 @@ body[data-mode="daily"] .more-card.job-only   { display: none; }
     padding-bottom: 0;
   }
 
-  .bnav-btn span:not(.job-label):not(.daily-label) { display: none; }
+  .bnav-btn span { display: none; }
 
-  /* Collapse top tabs and header right-side controls — these live in bottom nav / More now */
-  header .tabs        { display: none; }
+  /* Collapse header right-side controls — these live in bottom nav / More now */
   header .cross-nav   { display: none; }
   header .settings-nav-btn { display: none; }
   header .header-right { display: none; }
-  header .mode-switcher { margin-left: auto; }
 
   /* "More" section stays scrollable above the bottom nav */
-  #more.section.active { display: block; overflow-y: auto; }
+  #more.section.active,
+  #settings.section.active { display: block; overflow-y: auto; }
 
   /* On mobile the calendar becomes a single vertical scroll: month grid first,
      then the selected-day panel below. The `1fr 320px` desktop layout would
@@ -4491,194 +4345,6 @@ body { font-size: 13px; }
   #modal-purchase .row-2, #modal-purchase .row-3 { grid-template-columns: 1fr; }
   .purchase-row-head { flex-wrap: wrap; }
 }
-
-/* ── Owner-only UI (visibility gate) ──────────────────── */
-.owner-only { display: none !important; }
-/* Only reveal specific owner-only chrome to the owner. The blanket
-   `display: revert !important` rule that used to live here also
-   un-hid <section class="owner-only">, which made #tools render
-   side-by-side with whatever section was actually .active. */
-body[data-owner="1"] .more-card-list.owner-only { display: flex !important; }
-body[data-owner="1"] .more-section-title.owner-only { display: block !important; }
-body[data-owner="1"] section.owner-only.active { display: flex !important; }
-body[data-owner="1"] .bnav-btn.owner-only { display: inline-flex !important; }
-
-/* ── Tools / Calculators ──────────────────────────────── */
-.tools-container {
-  padding: 28px 32px 80px;
-  max-width: 980px;
-  margin: 0 auto;
-  width: 100%;
-}
-@media all { /* mobile-first universal */
-  .tools-container { padding: 18px 14px 96px; }
-}
-#tools-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-
-.tool-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  text-align: left;
-  padding: 16px 18px;
-  border-radius: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: background .12s var(--ease), border-color .12s var(--ease);
-  color: var(--text);
-  font: inherit;
-}
-.tool-card:hover { background: var(--surface-2); border-color: var(--border-strong, var(--border)); }
-.tool-card-icon {
-  width: 42px; height: 42px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 10px;
-  background: var(--surface-2);
-  color: var(--text);
-  flex-shrink: 0;
-}
-.tool-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.tool-card-title { font-weight: 600; font-size: 15px; }
-.tool-card-sub   { font-size: 13px; color: var(--muted); }
-.tool-card-arrow { color: var(--muted); font-size: 20px; }
-
-#tools-back-btn { display: none; }
-
-#tools-detail .calc-card {
-  margin-top: 18px;
-  padding: 22px;
-  border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-.calc-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
-.calc-help  { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.calc-subtitle { margin: 22px 0 10px; font-size: 14px; font-weight: 600; }
-
-.calc-rows { display: flex; flex-direction: column; gap: 8px; }
-.calc-row {
-  display: grid;
-  grid-template-columns: 1fr 140px 32px;
-  gap: 10px;
-  align-items: center;
-}
-.calc-row input {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 14px;
-}
-.calc-row-num { display: flex; align-items: center; gap: 6px; }
-.calc-row-unit { font-size: 12px; color: var(--muted); }
-.calc-row-rm {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  font-size: 18px; line-height: 1;
-  cursor: pointer;
-}
-.calc-row-rm:hover { color: var(--text); border-color: rgba(255,80,80,.5); background: rgba(255,80,80,.08); }
-
-.calc-row-actions { margin-top: 12px; }
-
-.calc-result { margin-top: 22px; }
-.calc-result-empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
-.calc-result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-}
-.calc-stat {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.calc-stat-lbl { font-size: 12px; color: var(--muted); }
-.calc-stat strong { font-size: 18px; font-weight: 600; color: var(--text); }
-.calc-stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-.calc-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 6px;
-  font-size: 13px;
-}
-.calc-table th, .calc-table td {
-  text-align: left;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-}
-.calc-table th { font-weight: 600; color: var(--muted); font-size: 12px; }
-.calc-foot { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
-
-@media (max-width: 720px) {
-  .tools-container { padding: 18px 14px; }
-  .calc-row { grid-template-columns: 1fr 110px 32px; }
-  #tools-detail .calc-card { padding: 16px; }
-}
-
-/* ── Calculators modal ─────────────────────────────────── */
-/* Modal: list view on tap, detail view after picking */
-.modal.modal-calc {
-  width: 560px;
-  max-width: 96vw;
-  max-height: min(86vh, 760px);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-}
-.modal.modal-calc .modal-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.modal.modal-calc .modal-header h3 {
-  flex: 1;
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: left;
-}
-.modal-back-btn {
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  visibility: hidden; /* shown only inside a calculator */
-}
-.modal-back-btn:hover { background: var(--surface-2); color: var(--text); }
-
-.modal-calc-body {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-  -webkit-overflow-scrolling: touch;
-}
-.tool-card-list { display: flex; flex-direction: column; gap: 10px; }
-
-/* Reuse .tool-card / .calc-* styles already defined above. Nothing extra. */
-
-@media (max-width: 720px) {
-  .modal.modal-calc { max-height: 92vh; border-radius: 14px 14px 0 0; }
-  .modal-calc-body { padding: 14px; }
-}
-
 
 /* ── Reviews (weekly + monthly summaries) ───────────────── */
 .reviews-container {

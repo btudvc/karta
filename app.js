@@ -1,14 +1,10 @@
 // ── i18n ───────────────────────────────────────────────
 const I18N = {
   en: {
-    'mode.job': 'Job', 'mode.daily': 'Personal',
-    'tab.projects': 'Projects', 'tab.lists': 'Lists', 'tab.tasks': 'Tasks',
-    'tab.today': 'Today', 'tab.calendar': 'Calendar', 'tab.journal': 'Journal',
-    'tab.meetings': 'Meetings', 'tab.visits': 'Visits', 'tab.releases': 'Releases',
     'tab.more': 'More',
     'more.language': 'Language', 'more.theme': 'Theme', 'more.drive': 'Google Drive',
-    'more.section.pages': 'Pages', 'more.section.settings': 'Settings',
-    'sidebar.projects': 'Projects', 'sidebar.lists': 'Lists',
+    'more.section.settings': 'Settings',
+    'sidebar.lists': 'Lists',
     'sidebar.meetings': 'Meetings', 'sidebar.releases': 'Releases',
     'sidebar.entries': 'Entries',
     'btn.add': '+ Add', 'btn.cancel': 'Cancel', 'btn.save_changes': 'Save Changes',
@@ -63,7 +59,6 @@ const I18N = {
     'ph.note': 'Write a note... (Ctrl+Enter to save)',
     'ph.action_item': 'New action item... (Enter to add)',
     'ph.brainstorm_notes': 'Meeting notes, decisions, topics discussed...',
-    'empty.select_project': 'Select a project from the sidebar\nor add a new one to get started.',
     'empty.select_list': 'Select a list from the sidebar\nor add a new one to get started.',
     'empty.select_release': 'Select a release or add a new one.',
     'empty.select_meeting': 'Select a meeting or add a new one.',
@@ -73,15 +68,12 @@ const I18N = {
     'empty.no_meetings': 'No meetings yet',
     'empty.no_visits': 'No visits planned yet.',
     'empty.no_versions': 'No versions yet.',
-    'empty.no_tasks_open': 'No tasks open.',
-    'empty.no_tasks_today': 'No tasks for today.',
     'empty.no_tasks_yet': 'No tasks yet.',
     'empty.no_tasks_add': 'No tasks yet. Add your first task!',
     'empty.no_issues': 'No issues recorded.',
     'empty.no_notes': 'No notes yet.',
     'empty.no_journal': 'No entries yet. Start with today.',
     'empty.select_day': 'Select a day',
-    'filter.open': 'Open', 'filter.today': 'Today', 'filter.all': 'All',
     'cal.meetings': 'Meetings', 'cal.visits': 'Visits', 'cal.notes': 'Notes',
     'cal.notes_placeholder': 'Add a note for this day...',
     'jrn.entries': 'Entries',
@@ -119,15 +111,6 @@ const I18N = {
     'att.desktop_only': 'Attachments work in the desktop app only.',
     'att.signin_required': 'Sign in to Google Drive to attach files.',
     'att.failed': 'Could not save: {msg}',
-    'add_item.title': 'Add to space',
-    'add_item.list': 'List', 'add_item.list_hint': 'Tasks grouped under a name',
-    'add_item.meeting': 'Meeting', 'add_item.meeting_hint': 'Notes + action items for a single meeting',
-    'add_item.visit': 'Visit', 'add_item.visit_hint': 'Plan a place + date',
-    'add_item.journal': 'Journal', 'add_item.journal_hint': 'Daily free-form entries',
-    'add_item.finance': 'Expenses', 'add_item.finance_hint': 'Subscriptions and monthly costs',
-    'add_item.purchases': 'Purchases', 'add_item.purchases_hint': 'Wishlist & procurement tracking',
-    'add_item.review': 'Reviews', 'add_item.review_hint': 'Weekly & monthly summary notes',
-    'add_item.links': 'Links', 'add_item.links_hint': 'Save URLs you don’t want to lose',
     'links.title':         'Links',
     'links.subtitle':      'Bookmarks you don’t want to lose',
     'links.add':           '+ Add Link',
@@ -154,9 +137,6 @@ const I18N = {
     'reviews.week_label':    'Week',
     'reviews.placeholder':   'Wins, blockers, things to revisit, lessons…',
     'more.section.tools': 'Tools',
-    'tools.title': 'Calculators',
-    'tools.subtitle': 'Engineering calculators',
-    'tools.back': '‹ Back to list',
     'purchases.title': 'Purchases',
     'purchases.subtitle': 'Wishlist → buying → done',
     'purchases.add': '+ Add Purchase',
@@ -263,14 +243,10 @@ const I18N = {
     'fin.delete_confirm': 'Delete this subscription?',
   },
   tr: {
-    'mode.job': 'İş', 'mode.daily': 'Kişisel',
-    'tab.projects': 'Projeler', 'tab.lists': 'Listeler', 'tab.tasks': 'Görevler',
-    'tab.today': 'Bugün', 'tab.calendar': 'Takvim', 'tab.journal': 'Günlük',
-    'tab.meetings': 'Toplantılar', 'tab.visits': 'Ziyaretler', 'tab.releases': 'Sürümler',
     'tab.more': 'Daha',
     'more.language': 'Dil', 'more.theme': 'Tema', 'more.drive': 'Google Drive',
-    'more.section.pages': 'Sayfalar', 'more.section.settings': 'Ayarlar',
-    'sidebar.projects': 'Projeler', 'sidebar.lists': 'Listeler',
+    'more.section.settings': 'Ayarlar',
+    'sidebar.lists': 'Listeler',
     'sidebar.meetings': 'Toplantılar', 'sidebar.releases': 'Sürümler',
     'sidebar.entries': 'Girdiler',
     'btn.add': '+ Ekle', 'btn.cancel': 'İptal', 'btn.save_changes': 'Kaydet',
@@ -325,7 +301,6 @@ const I18N = {
     'ph.note': 'Not yaz... (Ctrl+Enter ile kaydet)',
     'ph.action_item': 'Yeni aksiyon... (Enter ile ekle)',
     'ph.brainstorm_notes': 'Toplantı notları, kararlar, konuşulanlar...',
-    'empty.select_project': 'Sol taraftan bir proje seç\nveya yeni bir proje ekle.',
     'empty.select_list': 'Sol taraftan bir liste seç\nveya yeni bir liste ekle.',
     'empty.select_release': 'Bir sürüm seç veya yeni ekle.',
     'empty.select_meeting': 'Bir toplantı seç veya yeni ekle.',
@@ -335,15 +310,12 @@ const I18N = {
     'empty.no_meetings': 'Henüz toplantı yok',
     'empty.no_visits': 'Henüz planlanmış ziyaret yok.',
     'empty.no_versions': 'Henüz versiyon yok.',
-    'empty.no_tasks_open': 'Açık görev yok.',
-    'empty.no_tasks_today': 'Bugün için görev yok.',
     'empty.no_tasks_yet': 'Henüz görev yok.',
     'empty.no_tasks_add': 'Henüz görev yok. İlk görevini ekle!',
     'empty.no_issues': 'Kayıtlı sorun yok.',
     'empty.no_notes': 'Henüz not yok.',
     'empty.no_journal': 'Henüz girdi yok. Bugünden başla.',
     'empty.select_day': 'Bir gün seç',
-    'filter.open': 'Açık', 'filter.today': 'Bugün', 'filter.all': 'Hepsi',
     'cal.meetings': 'Toplantılar', 'cal.visits': 'Ziyaretler', 'cal.notes': 'Notlar',
     'cal.notes_placeholder': 'Bu güne ait not...',
     'jrn.entries': 'Girdiler',
@@ -381,11 +353,6 @@ const I18N = {
     'att.desktop_only': 'Ekler sadece masaüstü uygulamada çalışır.',
     'att.signin_required': 'Dosya eklemek için Google Drive\'a giriş yap.',
     'att.failed': 'Kaydedilemedi: {msg}',
-    'add_item.title': 'Space\'e ekle',
-    'add_item.list': 'Liste', 'add_item.list_hint': 'Bir başlık altında görevler',
-    'add_item.meeting': 'Toplantı', 'add_item.meeting_hint': 'Tek bir toplantının notları + aksiyonları',
-    'add_item.visit': 'Ziyaret', 'add_item.visit_hint': 'Yer + tarih planla',
-    'add_item.journal': 'Günlük', 'add_item.journal_hint': 'Gün-bazlı serbest girdiler',
     'cross.today': 'Bugün', 'cross.calendar': 'Takvim', 'cross.all_tasks': 'Tüm Görevler', 'cross.visits': 'Ziyaretler',
     'nav.spaces': 'Alanlar',
     'btn.add_short': '+ Ekle',
@@ -451,14 +418,6 @@ const I18N = {
 };
 
 Object.assign(I18N.tr, {
-  'add_item.finance': 'Harcamalar',
-  'add_item.finance_hint': 'Abonelikler ve aylik giderler',
-  'add_item.purchases': 'Satin Alimlar',
-  'add_item.purchases_hint': 'Istek listesi ve satin alim takibi',
-  'add_item.review': 'Ozetler',
-  'add_item.review_hint': 'Haftalik ve aylik ozet notlar',
-  'add_item.links': 'Linkler',
-  'add_item.links_hint': 'Kaybetmek istemedigin URLler',
   'links.title':         'Linkler',
   'links.subtitle':      'Kaybolmasin istedigin linkler',
   'links.add':           '+ Link Ekle',
@@ -485,9 +444,6 @@ Object.assign(I18N.tr, {
   'reviews.week_label':    'Hafta',
   'reviews.placeholder':   'Kazanimlar, takiliklar, dersler, bir sonraki adim…',
   'more.section.tools': 'Araclar',
-  'tools.title': 'Hesaplar',
-  'tools.subtitle': 'Muhendislik hesap araclari',
-  'tools.back': '< Listeye don',
   'purchases.title': 'Satin Alimlar',
   'purchases.subtitle': 'Istek listesi -> satin alimda -> tamamlandi',
   'purchases.add': '+ Satin Alim Ekle',
@@ -2463,9 +2419,6 @@ const DriveAPI = (() => {
     if (typeof window.celebrateIfBeloved === 'function') {
       try { window.celebrateIfBeloved(userInfo.email); } catch {}
     }
-    if (typeof applyOwnerGate === 'function') {
-      try { applyOwnerGate(userInfo.email); } catch {}
-    }
   }
 
   async function ensureToken() {
@@ -2979,33 +2932,16 @@ function renderAll() {
 function renderWorkHours() {} // removed
 
 // ── ALL TASKS VIEW ─────────────────────────────────────
-let allTasksFilter = 'all'; // single source — section title says "All Tasks"
-
 function renderAllTasks() {
   renderStreakWidget();
   const list = document.getElementById('all-tasks-list');
   if (!list) return;
 
-  // Collect tasks across projects (current mode)
-  const items = [];
+  // Collect tasks across all projects/lists
+  const filtered = [];
   projectsByMode().forEach(p => {
-    (p.tasks || []).forEach(t => items.push({ task: t, project: p }));
+    (p.tasks || []).forEach(t => filtered.push({ task: t, project: p }));
   });
-
-  // Apply filter
-  let filtered = items;
-  if (allTasksFilter === 'open') {
-    filtered = items.filter(it => it.task.status !== 'done');
-  } else if (allTasksFilter === 'today') {
-    const today = new Date(); today.setHours(0,0,0,0);
-    filtered = items.filter(it => {
-      if (it.task.status === 'done') return false;
-      if (!it.task.dueDate) return false;
-      const due = new Date(it.task.dueDate + 'T00:00:00');
-      // Today filter: due today OR overdue (still open)
-      return due <= today;
-    });
-  }
 
   // Group: active → pending → done
   const order = { active: 0, pending: 1, done: 2 };
@@ -3018,12 +2954,7 @@ function renderAllTasks() {
   });
 
   if (!filtered.length) {
-    const msg = allTasksFilter === 'open'
-      ? t('empty.no_tasks_open')
-      : allTasksFilter === 'today'
-        ? t('empty.no_tasks_today')
-        : t('empty.no_tasks_yet');
-    list.innerHTML = `<div class="empty-visits"><p>${escapeHtml(msg)}</p></div>`;
+    list.innerHTML = `<div class="empty-visits"><p>${escapeHtml(t('empty.no_tasks_yet'))}</p></div>`;
     return;
   }
 
@@ -3087,15 +3018,6 @@ function renderAllTasks() {
     });
   });
 }
-
-document.querySelectorAll('#at-filter .at-filter-btn').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('#at-filter .at-filter-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    allTasksFilter = b.dataset.filter;
-    renderAllTasks();
-  });
-});
 
 // ── CALENDAR ───────────────────────────────────────────
 // Compact month grid: each day cell renders the date number plus 1–3 thin
@@ -4040,250 +3962,6 @@ document.querySelectorAll('#purchases-filter [data-purchases-filter]').forEach(b
   });
 });
 
-// ── TOOLS / CALCULATORS (owner-only) ───────────────────
-// Extensible registry. To add a new calculator, push an entry to CALCULATORS:
-//   { id, title, subtitle, icon, render(container) }
-// Each render() builds the calculator's UI inside the given container.
-
-// Standard Turkish "gırtlak hortum" / spiral conduit sizes (PA/PE).
-// Inner diameter (ID) values are nominal — verify on the actual product datasheet.
-const HOSE_SIZES = [
-  { name: 'AD 7,5',  od: 7.5,  id: 4.5  },
-  { name: 'AD 10',   od: 10,   id: 6.5  },
-  { name: 'AD 13',   od: 13,   id: 9.7  },
-  { name: 'AD 15,5', od: 15.5, id: 11.7 },
-  { name: 'AD 18',   od: 18.0, id: 14.0 },
-  { name: 'AD 21,2', od: 21.2, id: 17.0 },
-  { name: 'AD 25',   od: 25.0, id: 20.0 },
-  { name: 'AD 28,5', od: 28.5, id: 23.0 },
-  { name: 'AD 34,5', od: 34.5, id: 29.0 },
-  { name: 'AD 42,5', od: 42.5, id: 36.0 },
-  { name: 'AD 54,5', od: 54.5, id: 48.0 },
-];
-
-function _circleArea(d) { return Math.PI * (d / 2) * (d / 2); }
-function _idForFill(sumArea, fill) { return 2 * Math.sqrt(sumArea / (Math.PI * fill)); }
-
-function computeConduitFromCables(diameters) {
-  const ds = diameters.filter(d => Number.isFinite(d) && d > 0);
-  if (!ds.length) return null;
-  const sumArea = ds.reduce((s, d) => s + _circleArea(d), 0);
-  const sumDia  = ds.reduce((s, d) => s + d, 0);
-  const maxDia  = Math.max(...ds);
-
-  // Geometric minimum (cables can't be smaller than this physically)
-  let geomMin;
-  if (ds.length === 1)      geomMin = ds[0];
-  else if (ds.length === 2) geomMin = ds[0] + ds[1]; // 2 circles tangent
-  else                       geomMin = 2 * Math.sqrt(sumArea / (Math.PI * 0.9069)); // close-pack limit
-
-  // Practical fill-based recommendations
-  const idTight   = ds.length >= 2 ? Math.max(geomMin + 0.5, _idForFill(sumArea, 0.55)) : maxDia + 0.5;
-  const idStd     = _idForFill(sumArea, 0.40);   // 2+ cable NEC standard
-  const idComfort = _idForFill(sumArea, 0.30);   // long / bendy runs
-
-  // Find smallest standard hose ≥ idStd
-  const pickHose = (minId) => HOSE_SIZES.find(h => h.id >= minId) || HOSE_SIZES[HOSE_SIZES.length - 1];
-
-  return {
-    ds, sumArea, sumDia, geomMin,
-    idTight, idStd, idComfort,
-    hoseTight:   pickHose(idTight),
-    hoseStd:     pickHose(idStd),
-    hoseComfort: pickHose(idComfort),
-  };
-}
-
-const CALCULATORS = [
-  {
-    id: 'cable-conduit',
-    title: 'Cable conduit',
-    subtitle: 'Compute the minimum conduit inner diameter and a suitable nominal size to fit multiple cables.',
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2 0 2-3 4-3s2 6 4 6 2-6 4-6 2 3 4 3"/><circle cx="3" cy="12" r="1.6"/><circle cx="21" cy="12" r="1.6"/></svg>',
-    render(container) {
-      // Default rows reflect the use case the owner asked about
-      let cables = [
-        { label: '6×0.22 (Ø5.30)', d: 5.30 },
-        { label: 'Cable 2',         d: 5.40 },
-      ];
-
-      const html = `
-        <div class="calc-card">
-          <h3 class="calc-title">Cable → conduit diameter</h3>
-          <p class="calc-help">Enter the <strong>outer diameter</strong> in mm of every cable you want to pull through the conduit. The result shows the geometric minimum, the inner diameter required at 40% and 30% fill ratios, and the matching nominal conduit size.</p>
-          <div class="calc-rows" id="cc-rows"></div>
-          <div class="calc-row-actions">
-            <button class="btn-ghost" id="cc-add-row" type="button">+ Add cable</button>
-          </div>
-          <div id="cc-result" class="calc-result"></div>
-        </div>
-      `;
-      container.innerHTML = html;
-
-      const rowsEl = container.querySelector('#cc-rows');
-      const resEl  = container.querySelector('#cc-result');
-
-      function renderRows() {
-        rowsEl.innerHTML = cables.map((c, i) => `
-          <div class="calc-row" data-row-idx="${i}">
-            <input type="text" class="calc-row-label" placeholder="Label (optional)" value="${escapeHtml(c.label || '')}" />
-            <div class="calc-row-num">
-              <input type="number" class="calc-row-d" min="0" step="0.01" placeholder="Ø mm" value="${c.d ?? ''}" />
-              <span class="calc-row-unit">mm</span>
-            </div>
-            <button class="calc-row-rm" type="button" title="Remove" aria-label="Remove">×</button>
-          </div>
-        `).join('');
-
-        rowsEl.querySelectorAll('.calc-row').forEach(row => {
-          const idx = Number(row.dataset.rowIdx);
-          row.querySelector('.calc-row-label').addEventListener('input', e => { cables[idx].label = e.target.value; });
-          row.querySelector('.calc-row-d').addEventListener('input', e => {
-            cables[idx].d = e.target.value === '' ? null : Number(e.target.value);
-            recompute();
-          });
-          row.querySelector('.calc-row-rm').addEventListener('click', () => {
-            cables.splice(idx, 1);
-            renderRows();
-            recompute();
-          });
-        });
-      }
-
-      function fmt(n, dec = 2) { return Number.isFinite(n) ? n.toFixed(dec) : '—'; }
-
-      function recompute() {
-        const r = computeConduitFromCables(cables.map(c => Number(c.d)));
-        if (!r) {
-          resEl.innerHTML = `<div class="calc-result-empty">Enter at least one valid diameter.</div>`;
-          return;
-        }
-        const fillAt = (id) => (r.sumArea / (Math.PI * (id/2) * (id/2))) * 100;
-
-        resEl.innerHTML = `
-          <div class="calc-result-grid">
-            <div class="calc-stat">
-              <span class="calc-stat-lbl">Total cable area</span>
-              <strong>${fmt(r.sumArea, 1)} mm²</strong>
-            </div>
-            <div class="calc-stat">
-              <span class="calc-stat-lbl">Geometric min. ID</span>
-              <strong>${fmt(r.geomMin)} mm</strong>
-              <span class="calc-stat-sub">cables physically can't fit below this</span>
-            </div>
-            <div class="calc-stat">
-              <span class="calc-stat-lbl">Tight fill (55%) ID</span>
-              <strong>${fmt(r.idTight)} mm</strong>
-              <span class="calc-stat-sub">"don't waste space" scenario</span>
-            </div>
-            <div class="calc-stat">
-              <span class="calc-stat-lbl">Standard (40%) ID</span>
-              <strong>${fmt(r.idStd)} mm</strong>
-              <span class="calc-stat-sub">NEC recommended upper limit</span>
-            </div>
-            <div class="calc-stat">
-              <span class="calc-stat-lbl">Comfort (30%) ID</span>
-              <strong>${fmt(r.idComfort)} mm</strong>
-              <span class="calc-stat-sub">long / bendy runs</span>
-            </div>
-          </div>
-
-          <h4 class="calc-subtitle">Recommended nominal conduit size</h4>
-          <table class="calc-table">
-            <thead><tr><th>Scenario</th><th>Min ID</th><th>Recommended</th><th>Fill @ ID</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>Tight (little slack)</td>
-                <td>${fmt(r.idTight)} mm</td>
-                <td><strong>${r.hoseTight.name}</strong> (ID ~${r.hoseTight.id} mm)</td>
-                <td>${fmt(fillAt(r.hoseTight.id), 0)} %</td>
-              </tr>
-              <tr>
-                <td>Standard</td>
-                <td>${fmt(r.idStd)} mm</td>
-                <td><strong>${r.hoseStd.name}</strong> (ID ~${r.hoseStd.id} mm)</td>
-                <td>${fmt(fillAt(r.hoseStd.id), 0)} %</td>
-              </tr>
-              <tr>
-                <td>Comfort</td>
-                <td>${fmt(r.idComfort)} mm</td>
-                <td><strong>${r.hoseComfort.name}</strong> (ID ~${r.hoseComfort.id} mm)</td>
-                <td>${fmt(fillAt(r.hoseComfort.id), 0)} %</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="calc-foot">Note: actual ID for an AD size can vary ±0.5 mm by manufacturer; verify the ID printed on the product label before buying.</p>
-        `;
-      }
-
-      container.querySelector('#cc-add-row').addEventListener('click', () => {
-        cables.push({ label: '', d: null });
-        renderRows();
-      });
-
-      renderRows();
-      recompute();
-    },
-  },
-];
-
-let currentCalcId = null;
-
-function _calcModalEls() {
-  return {
-    body:  document.getElementById('modal-calc-body'),
-    title: document.getElementById('modal-calc-title'),
-    back:  document.getElementById('calc-back-btn'),
-  };
-}
-
-function renderToolsList() {
-  const { body, title, back } = _calcModalEls();
-  if (!body) return;
-  currentCalcId = null;
-  if (title) title.textContent = t('tools.title') || 'Hesaplar';
-  if (back)  back.style.visibility = 'hidden';
-
-  body.innerHTML = `
-    <div class="tool-card-list">
-      ${CALCULATORS.map(c => `
-        <button class="tool-card" data-calc-id="${c.id}" type="button">
-          <span class="tool-card-icon">${c.icon || ''}</span>
-          <span class="tool-card-body">
-            <span class="tool-card-title">${escapeHtml(c.title)}</span>
-            <span class="tool-card-sub">${escapeHtml(c.subtitle || '')}</span>
-          </span>
-          <span class="tool-card-arrow">›</span>
-        </button>
-      `).join('')}
-    </div>
-  `;
-
-  body.querySelectorAll('.tool-card').forEach(b => {
-    b.addEventListener('click', () => openCalculator(b.dataset.calcId));
-  });
-}
-
-function openCalculator(id) {
-  const c = CALCULATORS.find(x => x.id === id);
-  if (!c) return;
-  const { body, title, back } = _calcModalEls();
-  if (!body) return;
-  currentCalcId = id;
-  if (title) title.textContent = c.title;
-  if (back)  back.style.visibility = 'visible';
-  body.innerHTML = '';
-  c.render(body);
-}
-
-function openCalculatorsModal() {
-  if (typeof openModal === 'function') openModal('modal-calc');
-  renderToolsList();
-}
-
-document.getElementById('calc-fab')?.addEventListener('click', openCalculatorsModal);
-document.getElementById('calc-back-btn')?.addEventListener('click', () => renderToolsList());
-
 // ── REVIEWS (weekly + monthly summaries) ────────────────
 // Two parallel maps: state.reviews.week['2026-W19'], state.reviews.month['2026-05'].
 // Notes are plain text; the editor autosaves on input (debounced).
@@ -4595,40 +4273,10 @@ function getMode() { return state.mode || 'job'; }
 function applyModeAttr() {
   document.body.setAttribute('data-mode', getMode());
 }
-function setMode(m) {
-  state.mode = m;
-  save();
-  applyModeAttr();
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === m);
-  });
-  // Reset selection that may now be invisible after filtering
-  state.currentRobotId   = null;
-  state.currentMeetingId = null;
-
-  // If active tab isn't visible in this mode, redirect to projects/lists
-  const activeTab = document.querySelector('.tab.active');
-  if (activeTab) {
-    const allowed = activeTab.dataset.modes;
-    if (allowed && allowed !== m) {
-      const fallback = document.querySelector('.tab[data-tab="robots"]');
-      if (fallback) fallback.click();
-    }
-  }
-
-  allTasksFilter = 'all';
-  renderAll();
-}
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => setMode(btn.dataset.mode));
-});
-
-// Filter helpers (default missing mode → 'job' for backwards compat)
-// v4: Spaces replace Job/Daily mode. Filters stay as no-ops so cross-space
-// views (All Tasks, Calendar) include everything.
-function inMode(_item) { return true; }
-function projectsByMode()  { return state.robots      || []; }
-function meetingsByMode()  { return state.meetings    || []; }
+// Spaces replaced the legacy Job/Daily mode toggle. These thin wrappers stay
+// because cross-space views (All Tasks, Calendar) still call them everywhere.
+function projectsByMode() { return state.robots   || []; }
+function meetingsByMode() { return state.meetings || []; }
 
 // ── PWA: register service worker ───────────────────────
 // We deliberately do NOT auto-reload on SW activation. The earlier auto-reload
@@ -4652,15 +4300,7 @@ document.querySelectorAll('.lang-btn').forEach(b => {
   b.classList.toggle('active', b.dataset.lang === currentLang);
 });
 applyI18n();
-// Apply mode initial state
-(function() {
-  const m = getMode();
-  applyModeAttr();
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === m);
-  });
-  allTasksFilter = 'all';
-})();
+applyModeAttr();
 
 // ═════════════════════════════════════════════════════════
 //  V4 — Spaces (ClickUp-inspired hierarchy)
@@ -4807,43 +4447,6 @@ function seedSampleData() {
 // This is a *visibility* gate, not a security boundary — anyone with devtools
 // could flip the flag. The data shown is non-sensitive, just personal/clutter
 // hiding for other users who happen to sign in.
-const OWNER_EMAIL = 'batuhandeveci.bd@gmail.com';
-const OWNER_FLAG_KEY = 'b-less-owner';
-
-function applyOwnerGate(email) {
-  const isOwner = !!email && email.toLowerCase() === OWNER_EMAIL;
-  if (isOwner) {
-    document.body.dataset.owner = '1';
-    try { localStorage.setItem(OWNER_FLAG_KEY, '1'); } catch {}
-  } else if (email) {
-    // Explicit non-match → revoke
-    delete document.body.dataset.owner;
-    try { localStorage.removeItem(OWNER_FLAG_KEY); } catch {}
-  }
-}
-
-// On boot, restore from localStorage so owner UI shows immediately (before Drive
-// silent re-auth completes). The Drive auth callback re-applies/revokes later.
-(function restoreOwnerFlag() {
-  try {
-    if (localStorage.getItem(OWNER_FLAG_KEY) === '1') {
-      document.body.dataset.owner = '1';
-      return;
-    }
-    // Fallback: derive from cached Drive userinfo (set by fetchUserInfo on the
-    // last successful sign-in). Lets the gate apply on the very first paint
-    // after this code is deployed, without waiting for silent re-auth.
-    const raw = localStorage.getItem('b-less-drive-user');
-    if (raw) {
-      const u = JSON.parse(raw);
-      if (u && u.email && u.email.toLowerCase() === OWNER_EMAIL) {
-        document.body.dataset.owner = '1';
-        localStorage.setItem(OWNER_FLAG_KEY, '1');
-      }
-    }
-  } catch {}
-})();
-
 // ── Easter egg: greet a specific Drive account with hearts ──
 const BELOVED_EMAIL = 'irem.arayan@gmail.com';
 const IREM_FLAG_KEY = 'b-less-irem-celebrated';
@@ -5592,7 +5195,7 @@ function resolveItemData(item) {
   if (item.type === 'list')    return (state.robots      || []).find(r => r.id === item.refId);
   if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
-  if (item.type === 'journal') return { name: t('add_item.journal') || 'Journal' };
+  if (item.type === 'journal') return { name: 'Journal' };
   if (item.type === 'finance') return { name: t('fin.title') || 'Expenses' };
   if (item.type === 'purchases') return { name: t('purchases.title') || 'Purchases' };
   if (item.type === 'review')    return { name: t('reviews.title') || 'Reviews' };
@@ -5674,7 +5277,7 @@ function renderSidebar() {
         <div class="space-subheader">
           <span class="space-subchev">${ICO.chevron}</span>
           <span class="space-item-icon space-subicon">${ITEM_ICONS.journal}</span>
-          <span class="space-subname">${t('add_item.journal') || 'Journal'}</span>
+          <span class="space-subname">${'Journal'}</span>
           <span class="space-subcount">${dates.length}</span>
           <button class="space-jrn-today-btn" data-jrn-today="${spaceId}" data-jrn-item-id="${headerItemId}" title="${t('btn.today') || 'Today'}" aria-label="${t('btn.today') || 'Today'}">+</button>
         </div>
@@ -5934,75 +5537,6 @@ function openAddItemPicker(spaceId) {
   if (typeof openEntityModal === 'function') openEntityModal('robot');
 }
 
-function closeAddItemPicker() {
-  document.getElementById('modal-add-item')?.classList.remove('open');
-}
-
-function handleAddItemPick(type) {
-  const modal = document.getElementById('modal-add-item');
-  const spaceId = modal?.dataset.targetSpaceId;
-  if (!spaceId) return;
-  closeAddItemPicker();
-
-  // Defer space-attach until the underlying entity is created. We listen for
-  // the next save() and pick up newly added robot/meeting/visit ids.
-  pendingItemAttach = { spaceId, type };
-
-  if (type === 'list') {
-    if (typeof openEntityModal === 'function') openEntityModal('robot');
-  } else if (type === 'meeting') {
-    document.getElementById('add-meeting-btn')?.click();
-  } else if (type === 'visit') {
-    document.getElementById('add-visit-btn')?.click();
-  } else if (type === 'journal') {
-    // Journal: single global instance; just attach a ref item if not already there
-    const sp = findSpace(spaceId);
-    if (sp && !sp.items.some(i => i.type === 'journal')) {
-      sp.items.push({ id: uid(), type: 'journal', refId: 'default' });
-      save();
-      renderSidebar();
-    }
-    pendingItemAttach = null;
-    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'journal').id);
-  } else if (type === 'finance') {
-    const sp = findSpace(spaceId);
-    if (sp && !sp.items.some(i => i.type === 'finance')) {
-      sp.items.push({ id: uid(), type: 'finance', refId: 'default' });
-      save();
-      renderSidebar();
-    }
-    pendingItemAttach = null;
-    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'finance').id);
-  } else if (type === 'purchases') {
-    const sp = findSpace(spaceId);
-    if (sp && !sp.items.some(i => i.type === 'purchases')) {
-      sp.items.push({ id: uid(), type: 'purchases', refId: 'default' });
-      save();
-      renderSidebar();
-    }
-    pendingItemAttach = null;
-    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'purchases').id);
-  } else if (type === 'review') {
-    const sp = findSpace(spaceId);
-    if (sp && !sp.items.some(i => i.type === 'review')) {
-      sp.items.push({ id: uid(), type: 'review', refId: 'default' });
-      save();
-      renderSidebar();
-    }
-    pendingItemAttach = null;
-    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'review').id);
-  } else if (type === 'links') {
-    const sp = findSpace(spaceId);
-    if (sp && !sp.items.some(i => i.type === 'links')) {
-      sp.items.push({ id: uid(), type: 'links', refId: 'default' });
-      save();
-      renderSidebar();
-    }
-    pendingItemAttach = null;
-    selectSpaceItem(spaceId, sp.items.find(i => i.type === 'links').id);
-  }
-}
-
 let pendingItemAttach = null;
 
 // Watch for saves; if a new robot/meeting/visit appeared, attach to pending space
@@ -6063,7 +5597,6 @@ function showCrossView(name) {
   state.currentItemId = null;
   if (name === 'today' || name === 'all-tasks') {
     activateSection('all-tasks');
-    allTasksFilter = 'all';
     if (typeof renderAllTasks === 'function') renderAllTasks();
   } else if (name === 'calendar') {
     activateSection('calendar');
@@ -6087,18 +5620,6 @@ document.querySelectorAll('.cross-nav-btn').forEach(b => {
 migrateToSpaces();
 seedSampleData(); // self-gates on state.onboarded + empty data
 renderSidebar();
-const _addSpaceBtn = document.getElementById('add-space-btn');
-if (_addSpaceBtn) _addSpaceBtn.addEventListener('click', addSpace);
-const _addItemModal = document.getElementById('modal-add-item');
-if (_addItemModal) {
-  _addItemModal.querySelectorAll('[data-add-type]').forEach(b => {
-    b.addEventListener('click', () => handleAddItemPick(b.dataset.addType));
-  });
-  _addItemModal.querySelectorAll('[data-close="modal-add-item"]').forEach(b => {
-    b.addEventListener('click', closeAddItemPicker);
-  });
-  _addItemModal.addEventListener('click', e => { if (e.target === _addItemModal) closeAddItemPicker(); });
-}
 
 // Re-render sidebar whenever data changes. Also re-run the (idempotent)
 // migration so legacy entities restored from a backup get attached to a space.
@@ -6114,7 +5635,6 @@ initJournal();
 BackupManager.initUI();
 BackupManager.init();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
-document.getElementById('bnav-search-btn')?.addEventListener('click', () => openSearchModal());
 
 // Home grid: pill button + the colorful card row each navigate somewhere.
 function setBnavActiveFor(id) {
@@ -6356,7 +5876,6 @@ function homeNavigate(target) {
   else if (target === 'visits')    showCrossView('visits');
   else if (target === 'search')    openSearchModal();
   else if (target === 'add')       openQuickCapture();
-  else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
   else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
   else if (target === 'meetings')  {
     state.currentMeetingId = null;
@@ -6497,11 +6016,6 @@ document.getElementById('home-search-pill')?.addEventListener('click', () => ope
     panel.hidden = true;
   });
 })();
-document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
-  if (typeof addSpace === 'function') { addSpace(); renderHome(); }
-});
-document.getElementById('home-spaces-search-btn')?.addEventListener('click', () => openSearchModal());
-document.getElementById('home-burger-btn')?.addEventListener('click', openSpacesDrawer);
 document.getElementById('topbar-burger-btn')?.addEventListener('click', openSpacesDrawer);
 document.getElementById('spaces-drawer-backdrop')?.addEventListener('click', closeSpacesDrawer);
 document.getElementById('drawer-settings-btn')?.addEventListener('click', () => {
@@ -6522,7 +6036,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.13.0';
+const APP_VERSION = '6.0.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
