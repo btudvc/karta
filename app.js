@@ -78,6 +78,17 @@ const I18N = {
     'meetings.subtitle': 'Notes, decisions, action items',
     'journal.title': 'Journal',
     'journal.subtitle': 'Daily entries',
+    'btn.add_short': '+ Add',
+    'btn.add_meeting': '+ Add Meeting',
+    'task.tasks_label': 'Tasks',
+    'task.issues_label': 'Known Issues',
+    'task.actions_label': 'Action Items',
+    'task.notes_label': 'Notes',
+    'task.changelog_label': 'Changelog',
+    'count.actions_short': '{open} action',
+    'meeting.notes_label': 'Notes',
+    'space.name_prompt': 'Space name:',
+    'label.space': 'Space',
     'empty.no_issues': 'No issues recorded.',
     'empty.no_notes': 'No notes yet.',
     'empty.no_journal': 'No entries yet. Start with today.',
@@ -1749,23 +1760,23 @@ function renderVisits() {
     else if (diff <= 14) badge = `<span class="days-badge soon">${t('days.future', { n: diff })}</span>`;
     else                 badge = `<span class="days-badge future">${t('days.future', { n: diff })}</span>`;
 
+    const dateStr = `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
     return `
-      <div class="visit-card" id="visit-${visit.id}">
-        <div class="visit-date-block">
-          <div class="visit-day">${d.getDate()}</div>
-          <div class="visit-month">${MONTHS[d.getMonth()]}</div>
-          <div class="visit-year">${d.getFullYear()}</div>
+      <div class="visit-row" id="visit-${visit.id}">
+        <div class="visit-row-main">
+          <span class="visit-row-icon">${ICO.pin}</span>
+          <span class="visit-row-body">
+            <span class="visit-row-title">${escapeHtml(visit.location)}</span>
+            <span class="visit-row-meta">
+              <span class="visit-row-date">${dateStr}</span>
+              ${visit.robot ? `<span class="visit-row-tag">${ICO.bot} ${escapeHtml(visit.robot)}</span>` : ''}
+              ${badge}
+            </span>
+            ${visit.notes ? `<span class="visit-row-notes">${escapeHtml(visit.notes)}</span>` : ''}
+            ${renderAttachments('visit', visit.id, visit.attachments)}
+          </span>
         </div>
-        <div class="visit-info">
-          <div class="visit-location">${ICO.pin} <span>${escapeHtml(visit.location)}</span></div>
-          <div class="visit-tags">
-            ${visit.robot ? `<span class="visit-robot-tag">${ICO.bot} ${escapeHtml(visit.robot)}</span>` : ''}
-            ${badge}
-          </div>
-          ${visit.notes ? `<div class="visit-notes-text">${escapeHtml(visit.notes)}</div>` : ''}
-          ${renderAttachments('visit', visit.id, visit.attachments)}
-        </div>
-        <div class="visit-delete">
+        <div class="visit-row-actions">
           <button class="btn-sm" onclick="editVisit('${visit.id}')">${t('btn.edit')}</button>
           <button class="btn-sm danger" onclick="deleteVisit('${visit.id}')">${t('btn.delete')}</button>
         </div>
@@ -1914,12 +1925,11 @@ function renderMeetingDetail() {
             <button class="nb-delete-btn" onclick="deleteMeetingAction('${meeting.id}','${a.id}')" aria-label="${t('aria.delete')}">${ICO.close}</button>
           </div>`).join('')}
       </div>
-      <div class="nb-input-row" style="margin-top:8px">
-        <input type="text" class="nb-input" id="mtg-action-input"
+      <div class="action-input-row">
+        <input type="text" class="action-input" id="mtg-action-input"
           placeholder="${t('ph.action_item')}"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();addMeetingAction('${meeting.id}')}"
-          style="padding:8px 12px;height:auto;font-size:14px" />
-        <button class="nb-add-btn" onclick="addMeetingAction('${meeting.id}')">${t('btn.add_short')}</button>
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMeetingAction('${meeting.id}')}" />
+        <button class="action-add-btn" onclick="addMeetingAction('${meeting.id}')">${t('btn.add_short')}</button>
       </div>
     </div>
   `;
@@ -4098,18 +4108,11 @@ function computeStreakStats() {
 }
 
 function renderStreakWidget() {
-  const el = document.getElementById('streak-widget');
-  if (!el) return;
+  const els = document.querySelectorAll('.streak-widget');
+  if (!els.length) return;
   const s = computeStreakStats();
-  // Hide entirely until there's something to show — avoids visual noise on a
-  // brand-new install.
-  if (s.last7 === 0 && s.streak === 0 && s.overdueOrToday === 0) {
-    el.innerHTML = '';
-    el.style.display = 'none';
-    return;
-  }
-  el.style.display = '';
-  el.innerHTML = `
+  const empty = (s.last7 === 0 && s.streak === 0 && s.overdueOrToday === 0);
+  const html = empty ? '' : `
     <div class="streak-stat">
       <span class="streak-num">${s.last7}</span>
       <span class="streak-lbl">done this week</span>
@@ -4123,6 +4126,10 @@ function renderStreakWidget() {
       <span class="streak-lbl">due now</span>
     </div>
   `;
+  els.forEach(el => {
+    el.innerHTML = html;
+    el.style.display = empty ? 'none' : '';
+  });
 }
 
 // ── iCal export ────────────────────────────────────────
@@ -5011,23 +5018,59 @@ function spaceItemTitle(item) {
 }
 
 function renderHome() {
-  // Today list — open tasks due today or overdue, grouped by list
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayIso = ymd(today);
+  const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate() + 7);
+
+  // Stats — single pass over all tasks for active+overdue counts
+  let activeCount = 0, overdueCount = 0;
+  (state.robots || []).forEach(p => {
+    (p.tasks || []).forEach(task => {
+      if (task.status === 'done') return;
+      activeCount++;
+      if (task.dueDate) {
+        const d = new Date(task.dueDate + 'T00:00:00');
+        if (d < today) overdueCount++;
+      }
+    });
+  });
+
+  // This Week — meetings + visits in the next 7 days (today inclusive)
+  const weekItems = [];
+  (state.meetings || []).forEach(m => {
+    if (!m.date) return;
+    const d = new Date(m.date + 'T00:00:00');
+    if (d >= today && d < weekEnd) weekItems.push({ kind: 'meeting', date: m.date, title: m.title || 'Meeting', sub: m.location || '', id: m.id });
+  });
+  (state.fieldVisits || []).forEach(v => {
+    if (!v.date) return;
+    const d = new Date(v.date + 'T00:00:00');
+    if (d >= today && d < weekEnd) weekItems.push({ kind: 'visit', date: v.date, title: v.location || 'Visit', sub: v.robot || '', id: v.id });
+  });
+  weekItems.sort((a, b) => a.date.localeCompare(b.date));
+
+  const setNum = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = String(n); };
+  setNum('home-stat-active',  activeCount);
+  setNum('home-stat-overdue', overdueCount);
+  setNum('home-stat-week',    weekItems.length);
+
+  // Streak widget (shared with All Tasks via class selector)
+  renderStreakWidget();
+
+  // Today list — strictly tasks due today (overdue moves to Inbox)
   const todayListEl = document.getElementById('home-today-list');
   const todayCountEl = document.getElementById('home-today-count');
   if (todayListEl) {
-    const today = new Date(); today.setHours(0,0,0,0);
     const items = [];
     (state.robots || []).forEach(p => {
       (p.tasks || []).forEach(task => {
         if (task.status === 'done' || !task.dueDate) return;
-        const due = new Date(task.dueDate + 'T00:00:00');
-        if (due <= today) items.push({ task, project: p });
+        if (task.dueDate === todayIso) items.push({ task, project: p });
       });
     });
-    items.sort((a, b) => (a.task.dueDate || '').localeCompare(b.task.dueDate || ''));
     if (todayCountEl) todayCountEl.textContent = items.length || '';
     if (!items.length) {
-      todayListEl.innerHTML = '<div class="home-list-empty">No tasks due today — nice</div>';
+      todayListEl.innerHTML = '<div class="home-list-empty">Nothing due today.</div>';
     } else {
       todayListEl.innerHTML = items.map(it => `
         <button class="home-list-item" data-robot-id="${escapeAttr(it.project.id)}" data-task-id="${escapeAttr(it.task.id)}" type="button">
@@ -5036,7 +5079,7 @@ function renderHome() {
           </span>
           <span class="home-list-item-body">
             <span class="home-list-item-title">${escapeHtml(it.task.title || '')}</span>
-            <span class="home-list-item-sub">${escapeHtml(it.project.name || '')}${it.task.dueDate ? ' · ' + formatDueShort(it.task.dueDate) : ''}</span>
+            <span class="home-list-item-sub">${escapeHtml(it.project.name || '')}</span>
           </span>
         </button>
       `).join('');
@@ -5045,6 +5088,78 @@ function renderHome() {
       });
     }
   }
+
+  // This Week — upcoming meetings + visits
+  const weekListEl = document.getElementById('home-week-list');
+  const weekCountEl = document.getElementById('home-week-count');
+  if (weekListEl) {
+    if (weekCountEl) weekCountEl.textContent = weekItems.length || '';
+    if (!weekItems.length) {
+      weekListEl.innerHTML = '<div class="home-list-empty">No meetings or visits in the next 7 days.</div>';
+    } else {
+      const ICO_M = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+      const ICO_V = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>';
+      weekListEl.innerHTML = weekItems.map(it => {
+        const color = it.kind === 'meeting' ? '#f97316' : '#10b981';
+        const icon  = it.kind === 'meeting' ? ICO_M : ICO_V;
+        const sub   = [formatDueShort(it.date), it.sub].filter(Boolean).join(' · ');
+        return `
+          <button class="home-list-item" data-week-kind="${it.kind}" data-week-id="${escapeAttr(it.id)}" type="button">
+            <span class="home-list-item-icon" style="--c: ${color};">${icon}</span>
+            <span class="home-list-item-body">
+              <span class="home-list-item-title">${escapeHtml(it.title)}</span>
+              <span class="home-list-item-sub">${escapeHtml(sub)}</span>
+            </span>
+          </button>
+        `;
+      }).join('');
+      weekListEl.querySelectorAll('[data-week-kind]').forEach(el => {
+        el.addEventListener('click', () => {
+          const k = el.dataset.weekKind, id = el.dataset.weekId;
+          if (k === 'meeting' && typeof goToMeeting === 'function') goToMeeting(id);
+          else if (k === 'visit' && typeof goToVisit === 'function') goToVisit(id);
+        });
+      });
+    }
+  }
+
+  // Today's Journal — preview if exists, otherwise prompt
+  const jrnEl = document.getElementById('home-journal-preview');
+  if (jrnEl) {
+    const entry = (state.journal || {})[todayIso];
+    if (entry && entry.trim()) {
+      const snippet = entry.trim().slice(0, 180);
+      const more = entry.trim().length > 180 ? '…' : '';
+      jrnEl.innerHTML = `
+        <button class="home-journal-card" type="button">
+          <span class="home-journal-snippet">${escapeHtml(snippet)}${more}</span>
+          <span class="home-journal-cta">Open journal →</span>
+        </button>
+      `;
+    } else {
+      jrnEl.innerHTML = `
+        <button class="home-journal-card empty" type="button">
+          <span class="home-journal-snippet">No entry yet for today.</span>
+          <span class="home-journal-cta">Start today's entry →</span>
+        </button>
+      `;
+    }
+    jrnEl.querySelector('.home-journal-card')?.addEventListener('click', () => {
+      if (typeof homeNavigate === 'function') homeNavigate('journal');
+    });
+  }
+
+  // Stat row click-throughs
+  document.querySelectorAll('#home-stat-row [data-home-stat]').forEach(b => {
+    if (b.dataset.wired === '1') return;
+    b.dataset.wired = '1';
+    b.addEventListener('click', () => {
+      const k = b.dataset.homeStat;
+      if (k === 'overdue') openInbox();
+      else if (k === 'active') showCrossView('all-tasks');
+      else if (k === 'week') showCrossView('calendar');
+    });
+  });
 
   // Recents
   const recentsEl = document.getElementById('home-recents');
@@ -5229,7 +5344,7 @@ function renderInbox() {
     (r.tasks || []).forEach(task => {
       if (task.status === 'done' || !task.dueDate) return;
       const d = new Date(task.dueDate + 'T00:00:00');
-      if (d <= today) items.push({ task, project: r });
+      if (d < today) items.push({ task, project: r });
     });
   });
   // Update pill badge
@@ -5239,7 +5354,7 @@ function renderInbox() {
     else { badge.textContent = ''; badge.classList.remove('has'); }
   }
   if (!items.length) {
-    list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing waiting on you.</div>';
+    list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing past due.</div>';
     return;
   }
   list.innerHTML = items.map(it => `
@@ -5281,7 +5396,7 @@ function refreshInboxBadge() {
   (state.robots || []).forEach(r => (r.tasks || []).forEach(task => {
     if (task.status === 'done' || !task.dueDate) return;
     const d = new Date(task.dueDate + 'T00:00:00');
-    if (d <= today) count++;
+    if (d < today) count++;
   }));
   if (count) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.add('has'); }
   else { badge.textContent = ''; badge.classList.remove('has'); }
@@ -5356,7 +5471,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.1.3';
+const APP_VERSION = '6.1.4';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
