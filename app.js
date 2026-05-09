@@ -6111,55 +6111,64 @@ document.getElementById('bnav-search-btn')?.addEventListener('click', () => open
 function setBnavActiveFor(id) {
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
   if (id === 'home') document.getElementById('bnav-home-btn')?.classList.add('active');
+  else if (id === 'inbox') document.getElementById('bnav-inbox-btn')?.classList.add('active');
   else if (id === 'all-tasks') document.getElementById('bnav-mytasks-btn')?.classList.add('active');
-  else if (id === 'today') document.querySelector('.bnav-btn[data-cross="today"]')?.classList.add('active');
   else if (id === 'more') document.querySelector('.tab.bnav-btn[data-tab="more"]')?.classList.add('active');
 }
 
-// Home dashboard renderer — stats from computeStreakStats, recents from
-// the most-recently-touched robots, spaces from state.spaces.
-function renderHome() {
-  // Workspace name → current space's name (drawer-pickable)
-  const sp = (state.spaces || []).find(s => s.id === state.currentSpaceId) || (state.spaces || [])[0];
-  const wsEl = document.getElementById('home-current-space');
-  if (wsEl) wsEl.textContent = (sp && sp.name) || 'Workspace';
+// ── Home dashboard ─────────────────────────────────────
+const HOME_SPACE_OPEN_KEY = 'b-less-home-spaces-open';
+function loadHomeOpen() {
+  try { return new Set(JSON.parse(localStorage.getItem(HOME_SPACE_OPEN_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveHomeOpen(set) {
+  try { localStorage.setItem(HOME_SPACE_OPEN_KEY, JSON.stringify(Array.from(set))); } catch {}
+}
+const SPACE_COLORS = ['#4f8cff', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+const ITEM_TYPE_META = {
+  list:    { color: '#a855f7', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' },
+  meeting: { color: '#f97316', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' },
+  visit:   { color: '#10b981', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>' },
+  journal: { color: '#14b8a6', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>' },
+  finance: { color: '#eab308', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>' },
+  purchases: { color: '#ec4899', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' },
+  links:   { color: '#06b6d4', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>' },
+  reviews: { color: '#8b5cf6', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9 9l-7 1 5 5-1 7 6-3 6 3-1-7 5-5-7-1z"/></svg>' },
+};
 
-  // Stats cards: today/overdue, open this week, done this week
-  const statsEl = document.getElementById('home-stats');
-  if (statsEl) {
+function spaceItemTitle(item) {
+  if (item.type === 'list') {
+    const r = (state.robots || []).find(x => x.id === item.refId);
+    return r && r.name ? r.name : 'List';
+  }
+  if (item.type === 'meeting') {
+    const m = (state.meetings || []).find(x => x.id === item.refId);
+    return m && m.title ? m.title : 'Meeting';
+  }
+  if (item.type === 'visit') {
+    const v = (state.fieldVisits || []).find(x => x.id === item.refId);
+    return v && v.location ? v.location : 'Visit';
+  }
+  if (item.type === 'journal') return 'Journal';
+  if (item.type === 'finance') return 'Expenses';
+  if (item.type === 'purchases') return 'Purchases';
+  if (item.type === 'links')   return 'Links';
+  if (item.type === 'reviews') return 'Reviews';
+  return item.type;
+}
+
+function renderHome() {
+  // Today summary
+  const subEl = document.getElementById('home-today-sub');
+  if (subEl) {
     const s = computeStreakStats();
-    statsEl.innerHTML = `
-      <button class="home-stat" data-home-go="today" type="button" style="--c: #ff6b6b;">
-        <span class="home-stat-icon">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-        </span>
-        <span class="home-stat-num">${s.overdueOrToday}</span>
-        <span class="home-stat-lbl">Today</span>
-        <span class="home-stat-sub">due now</span>
-      </button>
-      <button class="home-stat" data-home-go="all-tasks" type="button" style="--c: #4f8cff;">
-        <span class="home-stat-icon">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </span>
-        <span class="home-stat-num">${s.last7}</span>
-        <span class="home-stat-lbl">Done</span>
-        <span class="home-stat-sub">this week</span>
-      </button>
-      <button class="home-stat" data-home-go="all-tasks" type="button" style="--c: #a855f7;">
-        <span class="home-stat-icon">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-        </span>
-        <span class="home-stat-num">${s.streak}</span>
-        <span class="home-stat-lbl">Streak</span>
-        <span class="home-stat-sub">days${s.streak ? ' 🔥' : ''}</span>
-      </button>
-    `;
-    statsEl.querySelectorAll('[data-home-go]').forEach(el => {
-      el.addEventListener('click', () => homeNavigate(el.dataset.homeGo));
-    });
+    subEl.textContent = s.overdueOrToday > 0
+      ? `${s.overdueOrToday} task${s.overdueOrToday === 1 ? '' : 's'} due now`
+      : 'No tasks due today — nice';
   }
 
-  // Recents: top 5 robots by latest activity (createdAt + last task added)
+  // Recents
   const recentsEl = document.getElementById('home-recents');
   if (recentsEl) {
     const robots = (state.robots || []).slice();
@@ -6173,10 +6182,9 @@ function renderHome() {
     if (!top.length) {
       recentsEl.innerHTML = '<div class="home-list-empty">No lists yet. Tap + to create your first.</div>';
     } else {
-      const colors = ['#a855f7', '#4f8cff', '#10b981', '#f59e0b', '#ec4899'];
       recentsEl.innerHTML = top.map((r, i) => `
         <button class="home-list-item" data-robot-id="${escapeAttr(r.id)}" type="button">
-          <span class="home-list-item-icon" style="--c: ${colors[i % colors.length]};">
+          <span class="home-list-item-icon" style="--c: ${SPACE_COLORS[i % SPACE_COLORS.length]};">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           </span>
           <span class="home-list-item-body">
@@ -6186,66 +6194,145 @@ function renderHome() {
         </button>
       `).join('');
       recentsEl.querySelectorAll('[data-robot-id]').forEach(el => {
-        el.addEventListener('click', () => {
-          const rid = el.dataset.robotId;
-          if (typeof goToTask === 'function') {
-            // Reuse selectSpaceItem path via goToTask without taskId
-            let spaceId = null, itemId = null;
-            (state.spaces || []).forEach(s => (s.items || []).forEach(it => {
-              if (it.type === 'list' && it.refId === rid) { spaceId = s.id; itemId = it.id; }
-            }));
-            if (spaceId && itemId && typeof selectSpaceItem === 'function') selectSpaceItem(spaceId, itemId);
-            else { state.currentRobotId = rid; activateSection('robots'); renderRobotList(); renderRobotDetail(); }
-            setBnavActiveFor(null);
-          }
-        });
+        el.addEventListener('click', () => homeOpenRobot(el.dataset.robotId));
       });
     }
   }
 
-  // Spaces list
+  // Spaces accordion
   const spacesEl = document.getElementById('home-spaces');
   if (spacesEl) {
+    const open = loadHomeOpen();
     const spaces = state.spaces || [];
-    const colors = ['#4f8cff', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
-    spacesEl.innerHTML = spaces.map((sp, i) => `
-      <button class="home-list-item" data-space-id="${escapeAttr(sp.id)}" type="button">
-        <span class="home-list-item-icon" style="--c: ${colors[i % colors.length]};">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
-        </span>
-        <span class="home-list-item-body">
-          <span class="home-list-item-title">${escapeHtml(sp.name)}</span>
-          <span class="home-list-item-sub">${(sp.items || []).length} items</span>
-        </span>
-      </button>
-    `).join('');
-    spacesEl.querySelectorAll('[data-space-id]').forEach(el => {
-      el.addEventListener('click', () => {
-        state.currentSpaceId = el.dataset.spaceId;
-        save();
-        if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
-        else document.body.classList.add('space-drawer-open');
+    spacesEl.innerHTML = spaces.map((sp, i) => {
+      const color = SPACE_COLORS[i % SPACE_COLORS.length];
+      const isOpen = open.has(sp.id);
+      const items = sp.items || [];
+      const itemsHtml = items.map(it => {
+        const meta = ITEM_TYPE_META[it.type] || ITEM_TYPE_META.list;
+        return `
+          <button class="home-space-item" data-space-id="${escapeAttr(sp.id)}" data-item-id="${escapeAttr(it.id)}" type="button">
+            <span class="home-space-item-icon" style="--c: ${meta.color};">${meta.svg}</span>
+            <span class="home-space-item-name">${escapeHtml(spaceItemTitle(it))}</span>
+          </button>
+        `;
+      }).join('');
+      return `
+        <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">
+          <button class="home-space-head" type="button" data-toggle="${escapeAttr(sp.id)}">
+            <span class="home-space-icon" style="--c: ${color};">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
+            </span>
+            <span class="home-space-body">
+              <span class="home-space-name">${escapeHtml(sp.name)}</span>
+              <span class="home-space-meta">${items.length} item${items.length === 1 ? '' : 's'}</span>
+            </span>
+            <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+          <div class="home-space-items">
+            ${itemsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">Empty space.</div>'}
+            <button class="home-space-item-add" data-add-space="${escapeAttr(sp.id)}" type="button">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>Add to ${escapeHtml(sp.name)}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    // Bind handlers
+    spacesEl.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sid = btn.dataset.toggle;
+        const open = loadHomeOpen();
+        if (open.has(sid)) open.delete(sid); else open.add(sid);
+        saveHomeOpen(open);
+        const spaceEl = btn.closest('.home-space');
+        if (spaceEl) spaceEl.classList.toggle('open');
+      });
+    });
+    spacesEl.querySelectorAll('[data-item-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sid = btn.dataset.spaceId;
+        const iid = btn.dataset.itemId;
+        if (typeof selectSpaceItem === 'function') selectSpaceItem(sid, iid);
+        setBnavActiveFor(null);
+      });
+    });
+    spacesEl.querySelectorAll('[data-add-space]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sid = btn.dataset.addSpace;
+        if (typeof openAddItemPicker === 'function') openAddItemPicker(sid);
       });
     });
   }
 }
 
+function homeOpenRobot(rid) {
+  let spaceId = null, itemId = null;
+  (state.spaces || []).forEach(s => (s.items || []).forEach(it => {
+    if (it.type === 'list' && it.refId === rid) { spaceId = s.id; itemId = it.id; }
+  }));
+  if (spaceId && itemId && typeof selectSpaceItem === 'function') selectSpaceItem(spaceId, itemId);
+  else { state.currentRobotId = rid; activateSection('robots'); renderRobotList(); renderRobotDetail(); }
+  setBnavActiveFor(null);
+}
+
 function homeNavigate(target) {
-  if (target === 'today')      showCrossView('today');
+  if (target === 'today')          showCrossView('today');
   else if (target === 'calendar')  showCrossView('calendar');
   else if (target === 'all-tasks') showCrossView('all-tasks');
   else if (target === 'visits')    showCrossView('visits');
-  else if (target === 'meetings')  { activateSection('meetings'); setBnavActiveFor(null); if (typeof renderMeetingList === 'function') renderMeetingList(); if (typeof renderMeetingDetail === 'function') renderMeetingDetail(); }
-  else if (target === 'journal')   { activateSection('journal'); setBnavActiveFor(null); }
-  else if (target === 'finance')   { activateSection('finance'); setBnavActiveFor(null); if (typeof renderFinance === 'function') renderFinance(); }
-  else if (target === 'spaces') {
-    if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
-    else document.body.classList.add('space-drawer-open');
-  }
   else if (target === 'search')    openSearchModal();
   else if (target === 'add')       openQuickCapture();
   else if (target === 'calc')      (typeof openCalculatorsModal === 'function') && openCalculatorsModal();
   else if (target === 'more')      { activateSection('more'); setBnavActiveFor('more'); }
+}
+
+// Inbox = today/overdue tasks list (single source of "what's on me now")
+function renderInbox() {
+  const list = document.getElementById('inbox-list');
+  if (!list) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const items = [];
+  (state.robots || []).forEach(r => {
+    (r.tasks || []).forEach(task => {
+      if (task.status === 'done' || !task.dueDate) return;
+      const d = new Date(task.dueDate + 'T00:00:00');
+      if (d <= today) items.push({ task, project: r });
+    });
+  });
+  // Update pill badge
+  const badge = document.getElementById('inbox-badge');
+  if (badge) {
+    if (items.length) { badge.textContent = items.length > 99 ? '99+' : String(items.length); badge.classList.add('has'); }
+    else { badge.textContent = ''; badge.classList.remove('has'); }
+  }
+  if (!items.length) {
+    list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing waiting on you.</div>';
+    return;
+  }
+  list.innerHTML = items.map(it => `
+    <button class="home-list-item" data-pid="${escapeAttr(it.project.id)}" data-tid="${escapeAttr(it.task.id)}" type="button">
+      <span class="home-list-item-icon" style="--c: #ff6b6b;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+      </span>
+      <span class="home-list-item-body">
+        <span class="home-list-item-title">${escapeHtml(it.task.title)}</span>
+        <span class="home-list-item-sub">${escapeHtml(it.project.name || 'List')} · ${escapeHtml(it.task.dueDate)}</span>
+      </span>
+    </button>
+  `).join('');
+  list.querySelectorAll('[data-pid]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (typeof goToTask === 'function') goToTask(el.dataset.pid, el.dataset.tid);
+    });
+  });
+}
+function openInbox() {
+  state.currentItemId = null;
+  activateSection('inbox');
+  setBnavActiveFor('inbox');
+  renderInbox();
 }
 
 function openHome() {
@@ -6254,13 +6341,25 @@ function openHome() {
   setBnavActiveFor('home');
   renderHome();
 }
+// Refresh the inbox badge count regardless of which section is showing
+function refreshInboxBadge() {
+  const badge = document.getElementById('inbox-badge');
+  if (!badge) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  let count = 0;
+  (state.robots || []).forEach(r => (r.tasks || []).forEach(task => {
+    if (task.status === 'done' || !task.dueDate) return;
+    const d = new Date(task.dueDate + 'T00:00:00');
+    if (d <= today) count++;
+  }));
+  if (count) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.add('has'); }
+  else { badge.textContent = ''; badge.classList.remove('has'); }
+}
 document.getElementById('bnav-home-btn')?.addEventListener('click', openHome);
-document.getElementById('bnav-mytasks-btn')?.addEventListener('click', () => showCrossView('all-tasks'));
+document.getElementById('bnav-inbox-btn')?.addEventListener('click', openInbox);
+document.getElementById('bnav-mytasks-btn')?.addEventListener('click', () => { showCrossView('all-tasks'); setBnavActiveFor('all-tasks'); });
 document.getElementById('home-search-pill')?.addEventListener('click', () => openSearchModal());
-document.getElementById('home-space-picker')?.addEventListener('click', () => {
-  if (typeof openSpaceDrawer === 'function') openSpaceDrawer();
-  else document.body.classList.add('space-drawer-open');
-});
+document.getElementById('home-today-card')?.addEventListener('click', () => showCrossView('today'));
 document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
@@ -6274,7 +6373,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.6.0';
+const APP_VERSION = '5.7.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
