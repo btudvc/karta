@@ -911,7 +911,6 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
     font-size: 13.5px;
   }
 }
-}
 
 /* Collapsible sub-groups inside a space (Meetings / Visits) */
 .space-subgroup { margin: 2px 0; }
@@ -3582,9 +3581,11 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   align-items: center;
   position: fixed;
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  /* Shift the pill left of center so the standalone FAB can sit beside it */
-  left: 50%;
-  transform: translateX(calc(-50% - 36px));
+  /* Pill takes the available horizontal space minus a slot for the FAB on
+     the right. left/right anchoring keeps both visible on every viewport. */
+  left: 12px;
+  right: 84px;
+  justify-content: center;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -3615,7 +3616,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
 .bnav-btn svg  { width: 22px; height: 22px; stroke-width: 1.7; }
 .bnav-btn:hover { color: var(--text); }
 .bnav-btn.active { color: var(--accent); }
-.bnav-btn-icon-wrap { position: relative; display: inline-flex; }
+.bnav-btn-icon-wrap { position: relative; display: inline-flex; font-style: normal; }
 .bnav-badge {
   position: absolute;
   top: -4px; right: -8px;
@@ -3636,9 +3637,7 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   display: inline-flex;
   position: fixed;
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  /* Pair distance so the FAB lands just to the right of the pill */
-  transform: translateX(calc(-50% + 162px));
+  right: 16px;
   width: 56px; height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #a855f7, #6366f1);
@@ -3651,21 +3650,17 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   transition: transform .12s var(--ease), filter .12s var(--ease);
 }
 .quick-fab:hover  { filter: brightness(1.05); }
-.quick-fab:active { transform: translateX(calc(-50% + 162px)) scale(.95); }
+.quick-fab:active { transform: scale(.95); }
 .quick-fab svg { width: 24px; height: 24px; stroke-width: 2.4; }
 
 @media (max-width: 480px) {
-  .bottom-nav { padding: 5px 6px; gap: 2px; }
-  .bnav-btn   { min-width: 56px; padding: 5px 6px; font-size: 10px; }
-  .bottom-nav { transform: translateX(calc(-50% - 32px)); }
-  .quick-fab  { width: 50px; height: 50px; transform: translateX(calc(-50% + 144px)); }
-  .quick-fab:active { transform: translateX(calc(-50% + 144px)) scale(.95); }
+  .bottom-nav { padding: 5px 6px; gap: 2px; left: 8px; right: 76px; }
+  .bnav-btn   { min-width: 0; flex: 1; padding: 5px 4px; font-size: 10px; }
+  .bnav-btn svg { width: 21px; height: 21px; }
+  .quick-fab  { width: 50px; height: 50px; right: 12px; }
 }
 @media (max-width: 380px) {
-  .bottom-nav { padding: 4px 4px; }
-  .bnav-btn   { min-width: 50px; padding: 4px 4px; }
-  .bnav-btn span { display: none; }
-  .bnav-btn svg { width: 21px; height: 21px; }
+  .bnav-btn > span:not(.bnav-badge) { display: none; }
 }
 @media (max-width: 380px) {
   .bottom-nav { padding: 4px 6px; gap: 4px; }
