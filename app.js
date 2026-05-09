@@ -6363,6 +6363,7 @@ document.getElementById('home-today-card')?.addEventListener('click', () => show
 document.getElementById('home-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
+document.getElementById('home-spaces-search-btn')?.addEventListener('click', () => openSearchModal());
 document.querySelectorAll('[data-home-go]').forEach(b => {
   b.addEventListener('click', () => homeNavigate(b.dataset.homeGo));
 });
@@ -6373,7 +6374,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '5.7.1';
+const APP_VERSION = '5.8.0';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
