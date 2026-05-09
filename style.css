@@ -1060,29 +1060,6 @@ body[data-owner="1"] #tools.section.active { display: block !important; overflow
   display: flex; justify-content: flex-end;
 }
 
-/* ── Quick-capture FAB (now visible on every viewport) ───────── */
-.quick-fab {
-  display: inline-flex;
-  position: fixed;
-  right: 18px;
-  bottom: calc(82px + env(safe-area-inset-bottom));
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--accent);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  z-index: 90;
-  align-items: center; justify-content: center;
-  transition: transform .12s var(--ease), background .12s var(--ease);
-}
-.quick-fab:hover  { background: var(--surface-2); }
-.quick-fab:active { transform: scale(.96); }
-@media (max-width: 800px) {
-  .quick-fab { display: inline-flex; }
-}
-
 .modal-quick { width: 480px; max-width: 92vw; }
 .modal-quick .search-bar { border-bottom: 1px solid var(--border); margin-bottom: 12px; padding: 12px 14px; }
 .quick-meta {
@@ -3918,7 +3895,7 @@ body { font-size: 13px; }
 body[data-owner="1"] .more-card-list.owner-only { display: flex !important; }
 body[data-owner="1"] .more-section-title.owner-only { display: block !important; }
 body[data-owner="1"] section.owner-only.active { display: flex !important; }
-body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
+body[data-owner="1"] .bnav-btn.owner-only { display: inline-flex !important; }
 
 /* ── Tools / Calculators ──────────────────────────────── */
 .tools-container {
@@ -4045,12 +4022,7 @@ body[data-owner="1"] .quick-fab.owner-only { display: inline-flex !important; }
   #tools-detail .calc-card { padding: 16px; }
 }
 
-/* ── Calculators FAB & modal ──────────────────────────── */
-/* FAB sits 60px above the quick-fab; same frosted-glass look */
-.calc-fab {
-  bottom: calc(142px + env(safe-area-inset-bottom));
-}
-
+/* ── Calculators modal ─────────────────────────────────── */
 /* Modal: list view on tap, detail view after picking */
 .modal.modal-calc {
   width: 560px;
