@@ -5025,8 +5025,18 @@ function renderHome() {
   const todayIso = ymd(today);
   const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate() + 7);
 
-  // This Week — meetings + visits in the next 7 days (today inclusive)
+  // This Week — tasks (due) + meetings + visits in the next 7 days
+  // (today inclusive). Mixed list, sorted by date.
   const weekItems = [];
+  (state.robots || []).forEach(p => {
+    (p.tasks || []).forEach(task => {
+      if (task.status === 'done' || !task.dueDate) return;
+      const d = new Date(task.dueDate + 'T00:00:00');
+      if (d >= today && d < weekEnd) {
+        weekItems.push({ kind: 'task', date: task.dueDate, title: task.title || 'Task', sub: p.name || '', id: task.id, projectId: p.id });
+      }
+    });
+  });
   (state.meetings || []).forEach(m => {
     if (!m.date) return;
     const d = new Date(m.date + 'T00:00:00');
@@ -5039,55 +5049,23 @@ function renderHome() {
   });
   weekItems.sort((a, b) => a.date.localeCompare(b.date));
 
-  // Today list — strictly tasks due today (overdue moves to Inbox)
-  const todayListEl = document.getElementById('home-today-list');
-  const todayCountEl = document.getElementById('home-today-count');
-  if (todayListEl) {
-    const items = [];
-    (state.robots || []).forEach(p => {
-      (p.tasks || []).forEach(task => {
-        if (task.status === 'done' || !task.dueDate) return;
-        if (task.dueDate === todayIso) items.push({ task, project: p });
-      });
-    });
-    if (todayCountEl) todayCountEl.textContent = items.length || '';
-    if (!items.length) {
-      todayListEl.innerHTML = '<div class="home-list-empty">Nothing due today.</div>';
-    } else {
-      todayListEl.innerHTML = items.map(it => `
-        <button class="home-list-item" data-robot-id="${escapeAttr(it.project.id)}" data-task-id="${escapeAttr(it.task.id)}" type="button">
-          <span class="home-list-item-icon" style="--c: var(--accent);">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
-          </span>
-          <span class="home-list-item-body">
-            <span class="home-list-item-title">${escapeHtml(it.task.title || '')}</span>
-            <span class="home-list-item-sub">${escapeHtml(it.project.name || '')}</span>
-          </span>
-        </button>
-      `).join('');
-      todayListEl.querySelectorAll('[data-robot-id]').forEach(el => {
-        el.addEventListener('click', () => homeOpenRobot(el.dataset.robotId));
-      });
-    }
-  }
-
-  // This Week — upcoming meetings + visits
   const weekListEl = document.getElementById('home-week-list');
   const weekCountEl = document.getElementById('home-week-count');
   if (weekListEl) {
     if (weekCountEl) weekCountEl.textContent = weekItems.length || '';
     if (!weekItems.length) {
-      weekListEl.innerHTML = '<div class="home-list-empty">No meetings or visits in the next 7 days.</div>';
+      weekListEl.innerHTML = '<div class="home-list-empty">Nothing scheduled this week.</div>';
     } else {
+      const ICO_T = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>';
       const ICO_M = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
       const ICO_V = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>';
+      const COLORS = { task: 'var(--accent)', meeting: '#f97316', visit: '#10b981' };
+      const ICONS  = { task: ICO_T, meeting: ICO_M, visit: ICO_V };
       weekListEl.innerHTML = weekItems.map(it => {
-        const color = it.kind === 'meeting' ? '#f97316' : '#10b981';
-        const icon  = it.kind === 'meeting' ? ICO_M : ICO_V;
-        const sub   = [formatDueShort(it.date), it.sub].filter(Boolean).join(' · ');
+        const sub = [formatDueShort(it.date), it.sub].filter(Boolean).join(' · ');
         return `
-          <button class="home-list-item" data-week-kind="${it.kind}" data-week-id="${escapeAttr(it.id)}" type="button">
-            <span class="home-list-item-icon" style="--c: ${color};">${icon}</span>
+          <button class="home-list-item" data-week-kind="${it.kind}" data-week-id="${escapeAttr(it.id)}" data-week-pid="${escapeAttr(it.projectId || '')}" type="button">
+            <span class="home-list-item-icon" style="--c: ${COLORS[it.kind]};">${ICONS[it.kind]}</span>
             <span class="home-list-item-body">
               <span class="home-list-item-title">${escapeHtml(it.title)}</span>
               <span class="home-list-item-sub">${escapeHtml(sub)}</span>
@@ -5097,8 +5075,9 @@ function renderHome() {
       }).join('');
       weekListEl.querySelectorAll('[data-week-kind]').forEach(el => {
         el.addEventListener('click', () => {
-          const k = el.dataset.weekKind, id = el.dataset.weekId;
-          if (k === 'meeting' && typeof goToMeeting === 'function') goToMeeting(id);
+          const k = el.dataset.weekKind, id = el.dataset.weekId, pid = el.dataset.weekPid;
+          if (k === 'task' && pid && typeof goToTask === 'function') goToTask(pid, id);
+          else if (k === 'meeting' && typeof goToMeeting === 'function') goToMeeting(id);
           else if (k === 'visit' && typeof goToVisit === 'function') goToVisit(id);
         });
       });
@@ -5442,7 +5421,7 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-const APP_VERSION = '6.1.9';
+const APP_VERSION = '6.1.10';
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
