@@ -735,7 +735,7 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 /* The Robots in-section sidebar is redundant — Spaces drawer drives nav. */
 #robots.section > .sidebar { display: none; }
 
-.section { display: none; height: 100%; flex: 1; min-width: 0; }
+.section { display: none; height: 100%; flex: 1; min-width: 0; overflow-x: hidden; }
 .section.active { display: flex; }
 /* Bottom clearance on every section so the final item can scroll above the
    floating pill + home indicator. */
@@ -2001,7 +2001,9 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 /* ─── CONTENT ──────────────────────────────────────────── */
 .content {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 28px 32px calc(88px + env(safe-area-inset-bottom, 0px));
   /* Transparent so the body gradient (and any underlying frosted glass)
      reads through, instead of stamping a flat dark rectangle on top. */
@@ -2011,13 +2013,13 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 /* Improve content padding on mobile */
 @media (max-width: 600px) {
   .content {
-    padding: 20px 16px;
+    padding: 20px 16px calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 16px 12px;
+    padding: 16px 12px calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -3538,7 +3540,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   flex-shrink: 0;
 }
 @media (max-width: 768px) {
-  .section > .fv-header.section-head-pad { padding: 18px 14px 0; margin-bottom: 14px; }
+  .section > .fv-header.section-head-pad { padding: 18px 18px 0; margin-bottom: 14px; }
 }
 
 .jrn-container {
@@ -3606,6 +3608,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-x: hidden;
   padding: 24px 32px calc(88px + env(safe-area-inset-bottom, 0px));
   gap: 12px;
 }
@@ -3737,40 +3740,10 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .bnav-badge.has { display: inline-block; }
 
-/* Centered FAB inside the nav: frosted-glass disc that picks up
-   whatever's behind the bar, with the +/- icon in the theme's
-   text colour for contrast. */
-.bnav-fab {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  width: 52px; height: 52px;
-  margin: 0 8px;
-  border-radius: 50%;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--text);
-  border: 1px solid var(--glass-border);
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
-  transition: filter .12s var(--ease), transform .12s var(--ease), background .12s var(--ease);
-}
-.bnav-fab:hover  { filter: brightness(1.08); }
-.bnav-fab:active { transform: scale(.95); }
-.bnav-fab svg { width: 24px; height: 24px; stroke-width: 2.4; }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .bnav-fab { background: var(--surface-2); border-color: var(--border); }
-}
-
 @media (max-width: 480px) {
   .bottom-nav { height: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .bnav-btn   { padding: 4px 2px; font-size: 10.5px; }
   .bnav-btn svg { width: 23px; height: 23px; }
-  .bnav-fab   { width: 48px; height: 48px; margin: 0 6px; }
-  .bnav-fab svg { width: 22px; height: 22px; }
 }
 @media (max-width: 380px) {
   .bnav-btn > span:not(.bnav-badge) { display: none; }
