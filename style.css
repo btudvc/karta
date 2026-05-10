@@ -1762,16 +1762,19 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   .search-bar     { padding: 10px 12px; }
 }
 
-/* ── Easter egg: irem'e hoşgeldin overlay ─────────────── */
+/* ── Easter egg: irem'e hoşgeldin overlay ───────────────
+   Themed to match the rest of the app — frosted glass over a
+   dimmed backdrop, accent-coloured card, theme tokens for text
+   and surface. The hearts/emoji keep the personality. */
 .irem-welcome-overlay {
   position: fixed; inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  background: radial-gradient(ellipse at center, rgba(255, 192, 218, .35), rgba(255, 105, 180, .55));
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   animation: iremFadeIn .3s ease-out;
   overflow: hidden;
   cursor: pointer;
@@ -1792,7 +1795,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   animation-name: iremFloat;
   animation-timing-function: ease-in;
   animation-iteration-count: infinite;
-  filter: drop-shadow(0 2px 4px rgba(255, 105, 180, .35));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .35));
   user-select: none;
 }
 @keyframes iremFloat {
@@ -1805,15 +1808,20 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .irem-welcome-card {
   position: relative;
   z-index: 1;
-  background: linear-gradient(135deg, #fff0f6, #ffe1ec);
-  border: 2px solid rgba(255, 105, 180, .4);
-  border-radius: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   padding: 32px 36px;
   max-width: 92vw;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(255, 105, 180, .35), 0 0 0 6px rgba(255, 255, 255, .35);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-soft) inset;
   animation: iremPop .55s cubic-bezier(.22, 1.2, .36, 1) both;
   cursor: default;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .irem-welcome-card { background: var(--surface); border-color: var(--border-2); }
 }
 @keyframes iremPop {
   0%   { transform: scale(.6) rotate(-4deg); opacity: 0; }
@@ -1834,37 +1842,37 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 
 .irem-welcome-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
-  color: #d6336c;
+  color: var(--text);
   letter-spacing: -.01em;
-  line-height: 1.15;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 8px rgba(255, 105, 180, .25);
+  line-height: 1.2;
+  margin-bottom: 8px;
 }
 .irem-welcome-sub {
-  font-size: 16px;
-  color: #c2255c;
+  font-size: 14px;
+  color: var(--muted);
   margin-bottom: 22px;
   font-weight: 500;
 }
 .irem-welcome-close {
-  background: linear-gradient(135deg, #ff6fa8, #ff85c1);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
-  border-radius: 999px;
-  padding: 11px 26px;
-  font-size: 14px;
-  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(214, 51, 108, .35);
-  transition: transform .15s ease, box-shadow .15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: filter .15s var(--ease), transform .12s var(--ease);
   font-family: inherit;
 }
 .irem-welcome-close:hover {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 8px 22px rgba(214, 51, 108, .45);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
+.irem-welcome-close:active { transform: translateY(0); }
 
 @media (max-width: 480px) {
   .irem-welcome-card { padding: 26px 22px; border-radius: 20px; }
