@@ -744,9 +744,9 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 #settings.section.active {
   display: block;
   overflow-y: auto;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 }
-#field-visits.active { display: block; overflow-y: auto; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+#field-visits.active { display: block; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── v4 Space sidebar (global navigation) ─────────────── */
 .space-sidebar {
@@ -1918,7 +1918,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   color: var(--muted);
 }
 
-.robot-list { flex: 1; overflow-y: auto; padding: 6px 6px calc(88px + env(safe-area-inset-bottom, 0px)); }
+.robot-list { flex: 1; overflow-y: auto; padding: 6px 6px calc(100px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── Category groups in sidebar ── */
 .cat-group { margin-bottom: 4px; }
@@ -2012,7 +2012,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 28px 32px calc(88px + env(safe-area-inset-bottom, 0px));
+  padding: 28px 32px calc(100px + env(safe-area-inset-bottom, 0px));
   /* Transparent so the body gradient (and any underlying frosted glass)
      reads through, instead of stamping a flat dark rectangle on top. */
   background: transparent;
@@ -2021,13 +2021,13 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 /* Improve content padding on mobile */
 @media (max-width: 600px) {
   .content {
-    padding: 20px 16px calc(88px + env(safe-area-inset-bottom, 0px));
+    padding: 20px 16px calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 16px 12px calc(88px + env(safe-area-inset-bottom, 0px));
+    padding: 16px 12px calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -2969,7 +2969,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .jrn-main { padding: 16px 14px calc(88px + env(safe-area-inset-bottom, 0px)); }
+  .jrn-main { padding: 16px 14px calc(100px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* Touch-friendly hit areas */
@@ -3577,7 +3577,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .jrn-list {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 6px calc(88px + env(safe-area-inset-bottom, 0px));
+  padding: 6px 6px calc(100px + env(safe-area-inset-bottom, 0px));
 }
 .jrn-entry {
   padding: 9px 11px;
@@ -3617,7 +3617,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   flex-direction: column;
   min-width: 0;
   overflow-x: hidden;
-  padding: 24px 32px calc(88px + env(safe-area-inset-bottom, 0px));
+  padding: 24px 32px calc(100px + env(safe-area-inset-bottom, 0px));
   gap: 12px;
 }
 .jrn-header {
@@ -4069,19 +4069,21 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 /* Mobile-first stacked layout + master-detail toggle */
 #meetings.section { flex-direction: column; }
 #meetings.section > .sidebar {
-  width: 100%; height: 100%; flex: 1;
+  width: 100%; flex: 1; min-height: 0;
   border-right: none; border-bottom: 1px solid var(--border);
   max-height: none;
 }
+#meetings.section > .content { flex: 1; min-height: 0; }
 #meetings.section[data-detail-open="true"] > .sidebar { display: none !important; }
 #meetings.section:not([data-detail-open="true"]) > .content { display: none; }
 
-#journal .jrn-container { flex-direction: column; height: 100%; }
+#journal .jrn-container { flex-direction: column; flex: 1; min-height: 0; }
 #journal .jrn-sidebar {
-  width: 100%; height: 100%; flex: 1;
+  width: 100%; flex: 1; min-height: 0;
   max-height: none;
   border-right: none; border-bottom: 1px solid var(--border);
 }
+#journal .jrn-main { flex: 1; min-height: 0; }
 #journal[data-detail-open="true"] .jrn-sidebar { display: none !important; }
 #journal:not([data-detail-open="true"]) .jrn-main { display: none; }
 
