@@ -5366,6 +5366,28 @@ function openShareSpaceModal(spaceId) {
   if (titleEl) titleEl.textContent = `Share — ${sp.name}`;
   renderShareSpaceBody();
   if (typeof openModal === 'function') openModal('modal-share-space');
+
+  // Auto-push the latest local content when the owner opens the share
+  // modal. Catches the case where the Drive file was created with the
+  // old (metadata-only) payload — that's why early collaborators saw
+  // empty "List" entries. Best-effort: silent on success, the existing
+  // error UI surfaces failures.
+  if (sp.shared && sp.driveFileId && (sp.myRole === 'owner' || sp.myRole === 'writer') && DriveAPI && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
+    setTimeout(async () => {
+      try {
+        const r = await DriveAPI.pushSpaceFile(sp.driveFileId, sp, sp.lastSyncedRevision);
+        sp.lastSyncedRevision = r.revisionId;
+        sp.lastSyncedAt       = Date.now();
+        save();
+        // Re-render only if the share modal is still showing this space
+        if (_shareTargetSpaceId === sp.id && document.getElementById('modal-share-space')?.classList.contains('open')) {
+          renderShareSpaceBody({ status: 'Synced to Drive.' });
+        }
+      } catch {
+        // Conflict or transient error — user can manually pull/push.
+      }
+    }, 250);
+  }
 }
 
 function renderShareSpaceBody(extra) {
@@ -5476,6 +5498,11 @@ function renderShareSpaceBody(extra) {
   document.getElementById('share-stop-btn')?.addEventListener('click', stopSharingCurrentSpace);
   document.getElementById('share-pull-btn')?.addEventListener('click', pullCurrentSharedSpace);
   document.getElementById('share-push-btn')?.addEventListener('click', pushCurrentSharedSpace);
+  // The global [data-close] listener only runs once at page load, so the
+  // dynamically-rendered Done button never got wired. Bind it here.
+  body.querySelectorAll('[data-close]').forEach(b => {
+    b.addEventListener('click', () => closeModal(b.dataset.close));
+  });
   body.querySelectorAll('.share-collab-remove').forEach(b => {
     b.addEventListener('click', () => removeCollaboratorFromCurrentSpace(b.dataset.permId));
   });
