@@ -278,7 +278,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v6.10.1</div>
+        <div class="more-version" id="more-version">B-Less Planner v6.11.0</div>
       </div>
     </section>
 
@@ -536,6 +536,10 @@
       <input type="text" id="robot-name" data-i18n-ph="ph.project_name" />
       <label data-i18n="label.space">Alan</label>
       <select id="robot-space"></select>
+      <label id="robot-template-label">Start from template (optional)</label>
+      <select id="robot-template">
+        <option value="">— No template —</option>
+      </select>
       <label data-i18n="label.description">Açıklama</label>
       <textarea id="robot-desc" data-i18n-ph="ph.description"></textarea>
       <div class="modal-actions">
@@ -570,6 +574,14 @@
       </div>
       <label data-i18n="label.due_date">Bitiş Tarihi</label>
       <input type="date" id="task-due-date" />
+      <label>Recurring</label>
+      <select id="task-recurrence">
+        <option value="none">None — one-off task</option>
+        <option value="daily">Every day</option>
+        <option value="weekly">Every week</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Every month</option>
+      </select>
       <label data-i18n="label.tags">Etiketler</label>
       <div class="tag-picker" id="task-tag-picker"></div>
       <input type="text" id="task-tags-input" placeholder="Comma separated tags…" />

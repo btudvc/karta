@@ -512,7 +512,7 @@ const ICO = {
 // ── STATE ──────────────────────────────────────────────
 // state.firmware (and state.currentFwId) may still exist in old saves/backups; we leave the data
 // dormant so a restore doesn't lose it, but no UI surface reads it anymore.
-let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], reviews: { week: {}, month: {} }, links: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
+let state = { robots: [], topics: [], fieldVisits: [], firmware: [], meetings: [], reviews: { week: {}, month: {} }, links: [], templates: [], currentRobotId: null, currentTopicId: null, currentMeetingId: null };
 let robotTab = 'tasks'; // 'tasks' | 'issues'
 let topicTab = 'tasks';
 let activeSection    = 'robots'; // 'robots' | 'topics'
@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.10.1';
+var APP_VERSION = '6.11.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -841,6 +841,7 @@ function renderRobotDetail() {
         ${robot.description ? `<div class="robot-detail-desc">${escapeHtml(robot.description)}</div>` : ''}
       </div>
       <div class="btn-group">
+        <button class="btn-sm" onclick="saveListAsTemplate('${robot.id}')" title="Save list as template">Template</button>
         <button class="btn-sm" onclick="editRobot('${robot.id}')">${t('btn.edit')}</button>
         <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">${t('btn.delete_list')}</button>
       </div>
@@ -1173,7 +1174,10 @@ function renderTask(task) {
     <div class="task-item ${task.status} ${task.expanded ? 'expanded' : ''}" id="task-${task.id}">
       <div class="task-header" onclick="toggleTask('${task.id}')">
         <div class="task-dot ${task.status}"></div>
-        <div class="task-title-text">${escapeHtml(task.title)}</div>
+        <div class="task-title-text">
+          ${task.recurrence && task.recurrence.type ? `<span class="task-recurring-ico" title="Repeats ${escapeAttr(task.recurrence.type)}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>` : ''}
+          ${escapeHtml(task.title)}
+        </div>
         <div class="task-tags">
           ${(task.tags || []).map(tg => `<span class="task-label-chip" data-tag="${escapeAttr(tg)}">${escapeHtml(tg)}</span>`).join('')}
           ${task.dueDate ? `<span class="task-due ${dueClass(task.dueDate, task.status)}">${formatDueShort(task.dueDate)}</span>` : ''}
@@ -1370,15 +1374,70 @@ window.deleteNoteEntry = function(taskId, entryId) {
 window.setStatus = function(id, status) {
   const robot = getCurrentContainer();
   const task = robot.tasks.find(t => t.id === id);
+  const wasNotDone = task.status !== 'done';
   task.status = status;
   // Stamp completion time on transitions into done so the streak widget can
   // count what was finished in the last N days. Cleared on reopen.
   if (status === 'done') task.completedAt = Date.now();
   else delete task.completedAt;
+  // Recurring tasks: when a task is marked done for the first time and
+  // has a recurrence rule, spawn the next instance with a fresh due date.
+  // The completed instance stays in place as history.
+  if (wasNotDone && status === 'done' && task.recurrence && task.recurrence.type) {
+    spawnNextRecurrenceFromTask(robot, task);
+  }
   save();
   renderCurrentDetail();
   if (activeSection === 'topics') renderTopicList(); else renderRobotList();
 };
+
+// Compute the next due date for a recurring task.
+function nextRecurrenceDate(fromIso, type) {
+  // Base: existing dueDate if set, otherwise today.
+  let base;
+  if (fromIso) base = new Date(fromIso + 'T00:00:00');
+  else { base = new Date(); base.setHours(0, 0, 0, 0); }
+  if (isNaN(base.getTime())) { base = new Date(); base.setHours(0, 0, 0, 0); }
+  switch (type) {
+    case 'daily':    base.setDate(base.getDate() + 1); break;
+    case 'weekly':   base.setDate(base.getDate() + 7); break;
+    case 'biweekly': base.setDate(base.getDate() + 14); break;
+    case 'monthly':  base.setMonth(base.getMonth() + 1); break;
+    default: return null;
+  }
+  return ymd(base);
+}
+
+function spawnNextRecurrenceFromTask(robot, doneTask) {
+  const next = nextRecurrenceDate(doneTask.dueDate, doneTask.recurrence && doneTask.recurrence.type);
+  if (!next) return;
+  // Avoid duplicate spawn: if a sibling task with the same recurrence and
+  // dueDate already exists (e.g. user toggled done twice), bail.
+  const dup = (robot.tasks || []).some(t =>
+    t.title === doneTask.title &&
+    t.dueDate === next &&
+    t.recurrence && t.recurrence.type === doneTask.recurrence.type
+  );
+  if (dup) return;
+  robot.tasks.push({
+    id: uid(),
+    title: doneTask.title,
+    priority: doneTask.priority || 'normal',
+    status: 'active',
+    dueDate: next,
+    tags: Array.isArray(doneTask.tags) ? [...doneTask.tags] : [],
+    recurrence: { ...doneTask.recurrence },
+    subtasks: (doneTask.subtasks || []).map(s => ({
+      id: uid(),
+      title: s.title || '',
+      done: false,
+      createdAt: Date.now(),
+    })),
+    notebook: [],
+    expanded: false,
+    createdAt: Date.now(),
+  });
+}
 
 window.deleteTask = function(id) {
   if (!confirm(t('conf.delete_task'))) return;
@@ -1551,6 +1610,8 @@ window.editTask = function(id) {
   if (dd) dd.value = task.dueDate || '';
   const ti = document.getElementById('task-tags-input');
   if (ti) ti.value = (task.tags || []).join(', ');
+  const rc = document.getElementById('task-recurrence');
+  if (rc) rc.value = (task.recurrence && task.recurrence.type) || 'none';
   renderTagPicker(task.tags || []);
   document.querySelector('#modal-task h3').textContent = t('modal.edit_task');
   document.getElementById('save-task').textContent = t('btn.save_changes');
@@ -1688,8 +1749,31 @@ function openEntityModal(type) {
       || (state.spaces && state.spaces[0] && state.spaces[0].id);
     refreshSpaceSelect(targetSpace);
   }
+  // Populate template dropdown — disabled when editing an existing list
+  refreshTemplateSelect(!!editingRobotId);
   openModal('modal-robot');
   setTimeout(() => document.getElementById('robot-name').focus(), 50);
+}
+
+function refreshTemplateSelect(disabled) {
+  ensureTemplatesState();
+  const sel = document.getElementById('robot-template');
+  const lbl = document.getElementById('robot-template-label');
+  if (!sel) return;
+  if (!state.templates.length) {
+    if (lbl) lbl.style.display = 'none';
+    sel.style.display = 'none';
+    sel.value = '';
+    return;
+  }
+  if (lbl) lbl.style.display = '';
+  sel.style.display = '';
+  sel.value = '';
+  sel.disabled = !!disabled;
+  sel.innerHTML = `<option value="">— No template —</option>` +
+    state.templates.map(t =>
+      `<option value="${escapeAttr(t.id)}">${escapeHtml(t.name)} (${(t.tasks || []).length} tasks)</option>`
+    ).join('');
 }
 
 document.getElementById('add-robot-btn').addEventListener('click', () => openEntityModal('robot'));
@@ -1717,20 +1801,41 @@ document.getElementById('save-robot').addEventListener('click', () => {
       state.currentSpaceId = targetSpaceId;
     }
   } else {
-    const robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now() };
-    state.robots.push(robot);
-    state.currentRobotId = robot.id;
-    // v4: attach list item to selected Space (skip auto-migration default)
-    if (targetSpaceId && typeof findSpace === 'function') {
-      const sp = findSpace(targetSpaceId);
-      if (sp) {
-        const newItem = { id: uid(), type: 'list', refId: robot.id };
-        sp.items.push(newItem);
-        state.currentSpaceId = targetSpaceId;
-        state.currentItemId  = newItem.id;
-        // Clear pendingItemAttach so save() hook doesn't double-add
-        if (typeof pendingItemAttach !== 'undefined') pendingItemAttach = null;
+    // Template-based creation: if a template is selected, spawn the
+    // list with the template's tasks/subtasks already in place.
+    const tplSel = document.getElementById('robot-template');
+    const tplId = tplSel && tplSel.value;
+    let robot;
+    if (tplId) {
+      robot = createListFromTemplate(tplId, targetSpaceId, name);
+      if (robot) {
+        robot.description = desc;
+        robot.category = category;
+        robot.mode = getMode();
       }
+    }
+    if (!robot) {
+      robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now() };
+      state.robots.push(robot);
+      state.currentRobotId = robot.id;
+      // Attach to selected Space (createListFromTemplate already did this for templates)
+      if (targetSpaceId && typeof findSpace === 'function') {
+        const sp = findSpace(targetSpaceId);
+        if (sp) {
+          const newItem = { id: uid(), type: 'list', refId: robot.id };
+          sp.items.push(newItem);
+          state.currentSpaceId = targetSpaceId;
+          state.currentItemId  = newItem.id;
+          if (typeof pendingItemAttach !== 'undefined') pendingItemAttach = null;
+        }
+      }
+    } else {
+      // createListFromTemplate already set currentRobotId + attached to space;
+      // find the new item to update currentItemId
+      const sp = findSpace(targetSpaceId || state.currentSpaceId);
+      const it = sp && (sp.items || []).find(i => i.type === 'list' && i.refId === robot.id);
+      if (it) state.currentItemId = it.id;
+      if (typeof pendingItemAttach !== 'undefined') pendingItemAttach = null;
     }
   }
   save();
@@ -1749,6 +1854,7 @@ window.openTaskModal = function() {
   initRadioGroup('task-status-group');
   const dd = document.getElementById('task-due-date'); if (dd) dd.value = '';
   const ti = document.getElementById('task-tags-input'); if (ti) ti.value = '';
+  const rc = document.getElementById('task-recurrence'); if (rc) rc.value = 'none';
   renderTagPicker([]);
   openModal('modal-task');
   setTimeout(() => document.getElementById('task-title').focus(), 50);
@@ -1766,13 +1872,23 @@ document.getElementById('save-task').addEventListener('click', () => {
   const dueDate  = (document.getElementById('task-due-date')?.value || '').trim();
   const tagsRaw  = (document.getElementById('task-tags-input')?.value || '').trim();
   const tags     = tagsRaw ? Array.from(new Set(tagsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean))) : [];
+  const recVal   = (document.getElementById('task-recurrence')?.value || 'none');
+  const recurrence = recVal && recVal !== 'none' ? { type: recVal } : null;
   const robot = getCurrentContainer();
   if (!robot) return;
   if (editingTaskId) {
     const task = robot.tasks.find(t => t.id === editingTaskId);
-    if (task) { task.title = title; task.priority = priority; task.status = status; task.dueDate = dueDate || null; task.tags = tags; }
+    if (task) {
+      task.title = title; task.priority = priority; task.status = status;
+      task.dueDate = dueDate || null; task.tags = tags;
+      task.recurrence = recurrence;
+    }
   } else {
-    robot.tasks.push({ id: uid(), title, priority, status, dueDate: dueDate || null, tags, notebook: [], expanded: false, createdAt: Date.now() });
+    robot.tasks.push({
+      id: uid(), title, priority, status,
+      dueDate: dueDate || null, tags, recurrence,
+      notebook: [], expanded: false, createdAt: Date.now(),
+    });
   }
   save();
   renderCurrentDetail();
@@ -3888,6 +4004,93 @@ function ensureLinksState() {
   if (!Array.isArray(state.links)) state.links = [];
 }
 
+// ── TEMPLATES ───────────────────────────────────────────
+// Saved structure of a list: name + tasks (only the fields that make
+// sense to template — title, priority, tags, subtask titles). No dates,
+// no status (everything spawns as 'active', no dueDate).
+function ensureTemplatesState() {
+  if (!Array.isArray(state.templates)) state.templates = [];
+}
+
+function buildTemplateFromRobot(robot, name) {
+  const tasks = (robot.tasks || []).map(t => ({
+    title: t.title || '',
+    priority: t.priority || 'normal',
+    tags: Array.isArray(t.tags) ? [...t.tags] : [],
+    subtasks: (t.subtasks || []).map(s => ({ title: s.title || '' })),
+  }));
+  return {
+    id: 'tpl_' + uid(),
+    name: name || robot.name || 'Untitled template',
+    description: robot.description || '',
+    tasks,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+function saveListAsTemplate(robotId) {
+  ensureTemplatesState();
+  const robot = (state.robots || []).find(r => r.id === robotId);
+  if (!robot) return;
+  const name = prompt('Template name:', robot.name + ' (template)');
+  if (!name || !name.trim()) return;
+  const tpl = buildTemplateFromRobot(robot, name.trim());
+  state.templates.push(tpl);
+  save();
+  alert(`Saved "${tpl.name}" as a template. Use it when creating a new list.`);
+}
+
+function createListFromTemplate(templateId, spaceId, customName) {
+  ensureTemplatesState();
+  const tpl = state.templates.find(t => t.id === templateId);
+  if (!tpl) return null;
+  const robot = {
+    id: uid(),
+    name: customName || tpl.name.replace(/\s*\(template\)\s*$/i, ''),
+    description: tpl.description || '',
+    category: '',
+    mode: 'job',
+    tasks: (tpl.tasks || []).map(t => ({
+      id: uid(),
+      title: t.title,
+      priority: t.priority || 'normal',
+      status: 'active',
+      dueDate: null,
+      tags: Array.isArray(t.tags) ? [...t.tags] : [],
+      subtasks: (t.subtasks || []).map(s => ({
+        id: uid(),
+        title: s.title,
+        done: false,
+        createdAt: Date.now(),
+      })),
+      notebook: [],
+      expanded: false,
+      createdAt: Date.now(),
+    })),
+    issues: [],
+    createdAt: Date.now(),
+  };
+  state.robots = state.robots || [];
+  state.robots.push(robot);
+  // Attach to the requested Space (default: current space)
+  const targetSpaceId = spaceId || state.currentSpaceId || (state.spaces[0] && state.spaces[0].id);
+  const sp = state.spaces.find(s => s.id === targetSpaceId);
+  if (sp) {
+    sp.items = sp.items || [];
+    sp.items.push({ id: uid(), type: 'list', refId: robot.id });
+  }
+  state.currentRobotId = robot.id;
+  save();
+  return robot;
+}
+
+function deleteTemplate(templateId) {
+  ensureTemplatesState();
+  state.templates = state.templates.filter(t => t.id !== templateId);
+  save();
+}
+
 function linkDomain(url) {
   try {
     const u = new URL(url);
@@ -5285,13 +5488,33 @@ const BUDGIE_GIFS = [
   '64_b01.gif', '64_b02.gif', '64_b03.gif', '64_b04.gif',
   '64_b05.gif', '64_b06.gif', '64_b07.gif',
 ];
-function pickTopbarBudgie() {
+function pickTopbarBudgie(forceDifferent) {
   const img = document.getElementById('topbar-budgie');
   if (!img || !BUDGIE_GIFS.length) return;
-  const file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
+  let file;
+  if (forceDifferent && BUDGIE_GIFS.length > 1) {
+    const current = (img.src || '').split('/').pop();
+    do {
+      file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
+    } while (file === current);
+  } else {
+    file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
+  }
   img.src = 'assets/budgies/' + file;
 }
 pickTopbarBudgie();
+
+// Click the budgie → jump animation + swap to a different gif
+document.getElementById('topbar-budgie')?.addEventListener('click', () => {
+  const img = document.getElementById('topbar-budgie');
+  if (!img) return;
+  // Retrigger the keyframe by removing + reflow + re-adding
+  img.classList.remove('jumping');
+  void img.offsetWidth;
+  img.classList.add('jumping');
+  pickTopbarBudgie(true);
+  setTimeout(() => img.classList.remove('jumping'), 700);
+});
 
 // ── Add Item picker — spaces only carry lists now, so skip the picker
 // and open the new-list flow directly. Meetings / visits / journal /

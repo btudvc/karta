@@ -1198,10 +1198,24 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   width: 56px; height: 56px;
   display: block;
   z-index: 70;
-  pointer-events: none;
+  cursor: pointer;
   image-rendering: pixelated;
   -ms-interpolation-mode: nearest-neighbor;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25));
+  transition: transform .12s var(--ease);
+}
+.topbar-budgie:hover { transform: scale(1.06); }
+.topbar-budgie:active { transform: scale(.94); }
+.topbar-budgie.jumping {
+  animation: budgieJump .65s cubic-bezier(.4, 0, .2, 1);
+}
+@keyframes budgieJump {
+  0%   { transform: translateY(0)    rotate(0); }
+  25%  { transform: translateY(-22px) rotate(-8deg); }
+  45%  { transform: translateY(-28px) rotate(0); }
+  65%  { transform: translateY(-10px) rotate(8deg); }
+  85%  { transform: translateY(0)    rotate(0) scale(1.06, .94); }
+  100% { transform: translateY(0)    rotate(0) scale(1, 1); }
 }
 .topbar-budgie:not([src]) { display: none; }
 
@@ -5125,3 +5139,15 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   padding-top: 6px;
   border-top: 1px solid var(--border);
 }
+
+/* Recurring task indicator — tiny refresh-arrows next to the title */
+.task-recurring-ico {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  vertical-align: -1px;
+  color: var(--accent);
+  opacity: .85;
+}
+.task-recurring-ico svg { display: block; }
+.task-item.done .task-recurring-ico { opacity: .35; }
