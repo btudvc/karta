@@ -2497,6 +2497,175 @@ const DriveAPI = (() => {
     return true;
   }
 
+  // ──────────────────────────────────────────────────────────
+  // SHARED SPACES (Phase 1 foundation — API only, no UI yet)
+  //
+  // Each shared Space is one JSON file in B-Less/spaces/. File metadata
+  // carries appProperties.b-less-space='true' so the app can find these
+  // among many other files. Drive's permission system handles viewer /
+  // editor enforcement: a reader gets a 403 on PATCH, which we surface
+  // as "read-only" in the UI. Optimistic concurrency uses headRevisionId
+  // from Drive: callers pass the last-known revisionId on push; if Drive
+  // has a newer one, we throw a tagged error so the UI can prompt the
+  // user to reload.
+  // ──────────────────────────────────────────────────────────
+
+  // Stable file-name format. Easy to spot in Drive UI; the file id is
+  // what we actually persist & match on.
+  function spaceFileName(spaceName) {
+    const safe = String(spaceName || 'space').replace(/[\\/:*?"<>|]/g, '').trim() || 'space';
+    return `${safe}.bless-space.json`;
+  }
+
+  async function ensureSpacesFolder() {
+    const root = await ensureFolder();
+    return ensureFolder('spaces', root);
+  }
+
+  // Owner-side: create the shared file and return { fileId, revisionId, ownerEmail }
+  async function createSharedSpaceFile(space) {
+    const parent = await ensureSpacesFolder();
+    const me     = userInfo && userInfo.email;
+    const payload = {
+      schema: 'b-less.space.v1',
+      ownerEmail: me,
+      space: { id: space.id, name: space.name, items: space.items || [] },
+      updatedAt: Date.now(),
+      updatedBy: me,
+    };
+    const boundary = '-------b-less-' + Math.random().toString(36).slice(2);
+    const meta = {
+      name: spaceFileName(space.name),
+      parents: [parent],
+      mimeType: 'application/json',
+      appProperties: {
+        'b-less-space': 'true',
+        'b-less-space-id': space.id,
+        'b-less-schema': 'v1',
+      },
+    };
+    const head = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n`;
+    const tail = `\r\n--${boundary}--\r\n`;
+    const body = new Blob([head, JSON.stringify(payload), tail], { type: `multipart/related; boundary=${boundary}` });
+    const r = await api('POST',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,headRevisionId,modifiedTime,owners(emailAddress)',
+      { headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body }
+    );
+    const f = await r.json();
+    return {
+      fileId: f.id,
+      revisionId: f.headRevisionId,
+      modifiedTime: f.modifiedTime,
+      ownerEmail: (f.owners && f.owners[0] && f.owners[0].emailAddress) || me,
+    };
+  }
+
+  // Fetch latest snapshot + the metadata fields we need to decide whether
+  // we can write (owner/writer vs reader) and to detect conflicts.
+  async function pullSpaceFile(fileId) {
+    const fields = 'id,name,headRevisionId,modifiedTime,ownedByMe,owners(emailAddress),capabilities(canEdit),appProperties';
+    const metaR = await api('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?fields=${encodeURIComponent(fields)}`);
+    const meta  = await metaR.json();
+    const text  = await downloadText(fileId);
+    let payload;
+    try { payload = JSON.parse(text); } catch { payload = null; }
+    const myRole = meta.ownedByMe
+      ? 'owner'
+      : (meta.capabilities && meta.capabilities.canEdit ? 'writer' : 'reader');
+    return {
+      fileId: meta.id,
+      revisionId: meta.headRevisionId,
+      modifiedTime: meta.modifiedTime,
+      ownerEmail: (meta.owners && meta.owners[0] && meta.owners[0].emailAddress) || null,
+      myRole,
+      payload,
+    };
+  }
+
+  // expectedRevisionId is the headRevisionId the caller last saw. If the
+  // file has been written since, we throw `{ conflict: true, current }`.
+  async function pushSpaceFile(fileId, spaceData, expectedRevisionId) {
+    if (expectedRevisionId) {
+      const headR = await api('GET',
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=headRevisionId,modifiedTime`);
+      const head = await headR.json();
+      if (head.headRevisionId && head.headRevisionId !== expectedRevisionId) {
+        const err = new Error('Remote file is newer than local snapshot.');
+        err.conflict = true;
+        err.current  = { revisionId: head.headRevisionId, modifiedTime: head.modifiedTime };
+        throw err;
+      }
+    }
+    const me = userInfo && userInfo.email;
+    const payload = {
+      schema: 'b-less.space.v1',
+      space: { id: spaceData.id, name: spaceData.name, items: spaceData.items || [] },
+      updatedAt: Date.now(),
+      updatedBy: me,
+    };
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const r = await api('PATCH',
+      `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&fields=id,headRevisionId,modifiedTime`,
+      { headers: { 'Content-Type': 'application/json' }, body: blob }
+    );
+    const f = await r.json();
+    return { fileId: f.id, revisionId: f.headRevisionId, modifiedTime: f.modifiedTime };
+  }
+
+  // List all space files the current user has access to that are tagged
+  // with our appProperties marker. Owners see the files they created;
+  // collaborators reached via Drive Picker will see those plus any they've
+  // opened via Picker (drive.file scope limitation).
+  async function listAccessibleSharedSpaces() {
+    const q = "appProperties has { key='b-less-space' and value='true' } and trashed=false";
+    const fields = 'files(id,name,modifiedTime,ownedByMe,owners(emailAddress),capabilities(canEdit),appProperties)';
+    const r = await api('GET',
+      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&pageSize=50`);
+    const data = await r.json();
+    return (data.files || []).map(f => ({
+      fileId: f.id,
+      name:   f.name,
+      modifiedTime: f.modifiedTime,
+      ownerEmail:   (f.owners && f.owners[0] && f.owners[0].emailAddress) || null,
+      myRole: f.ownedByMe ? 'owner' : (f.capabilities && f.capabilities.canEdit ? 'writer' : 'reader'),
+      spaceId: (f.appProperties && f.appProperties['b-less-space-id']) || null,
+    }));
+  }
+
+  // ── Permissions (collaborators) ──
+  async function addCollaborator(fileId, email, role) {
+    // role: 'reader' | 'writer'. We never grant 'owner' via this app.
+    const r = await api('POST',
+      `https://www.googleapis.com/drive/v3/files/${fileId}/permissions?sendNotificationEmail=true&fields=id,emailAddress,role`,
+      { headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'user', role, emailAddress: email }) });
+    const p = await r.json();
+    return { permissionId: p.id, email: p.emailAddress, role: p.role };
+  }
+
+  async function listCollaborators(fileId) {
+    const r = await api('GET',
+      `https://www.googleapis.com/drive/v3/files/${fileId}/permissions?fields=permissions(id,emailAddress,role,type)`);
+    const data = await r.json();
+    return (data.permissions || [])
+      .filter(p => p.type === 'user')
+      .map(p => ({ permissionId: p.id, email: p.emailAddress, role: p.role }));
+  }
+
+  async function removeCollaborator(fileId, permissionId) {
+    await api('DELETE', `https://www.googleapis.com/drive/v3/files/${fileId}/permissions/${permissionId}`);
+    return true;
+  }
+
+  async function updateCollaboratorRole(fileId, permissionId, newRole) {
+    const r = await api('PATCH',
+      `https://www.googleapis.com/drive/v3/files/${fileId}/permissions/${permissionId}?fields=id,emailAddress,role`,
+      { headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }) });
+    const p = await r.json();
+    return { permissionId: p.id, email: p.emailAddress, role: p.role };
+  }
+
   // Restore last user info on init (for header chip without re-auth)
   try {
     const cached = localStorage.getItem('b-less-drive-user');
@@ -2510,6 +2679,10 @@ const DriveAPI = (() => {
     getUserInfo: () => userInfo,
     saveBackup, readBackup,
     saveAttachment, openAttachment, deleteAttachment,
+    // Shared spaces (Phase 1: API only)
+    createSharedSpaceFile, pullSpaceFile, pushSpaceFile,
+    listAccessibleSharedSpaces,
+    addCollaborator, listCollaborators, removeCollaborator, updateCollaboratorRole,
   };
 })();
 
@@ -4559,6 +4732,21 @@ function migrateToSpaces() {
   if (!state.reviews.month) state.reviews.month = {};
   // Ensure links collection
   if (!Array.isArray(state.links)) state.links = [];
+
+  // ── Shared-space fields (Phase 1: schema only, no UI yet) ──
+  // Existing Spaces stay local-only (`shared: false` is the default).
+  // When a Space is shared, the following fields get populated:
+  //   shared:              true
+  //   driveFileId:         '<google-drive-file-id>'
+  //   ownerEmail:          'owner@example.com'
+  //   myRole:              'owner' | 'writer' | 'reader'
+  //   collaborators:       [{ email, role, permissionId }]
+  //   lastSyncedRevision:  '<headRevisionId returned by Drive>'
+  //   lastSyncedAt:        Date.now() of last successful pull or push
+  state.spaces.forEach(sp => {
+    if (sp.shared === undefined)        sp.shared = false;
+    if (!Array.isArray(sp.collaborators)) sp.collaborators = [];
+  });
 
   // Build a set of all currently-referenced refIds, by type
   const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set() };
