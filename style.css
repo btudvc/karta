@@ -354,7 +354,10 @@ header { display: none; }
   transform: translate(-50%, -50%) scale(1);
 }
 
-@media all { /* mobile-first universal */
+/* Below 720px collapse to a near-full-width sheet anchored to the
+   left/right edges. Above that, the desktop 440px column from the
+   base rule applies. */
+@media (max-width: 720px) {
   .backup-popover {
     width: auto;
     left: 12px; right: 12px;
