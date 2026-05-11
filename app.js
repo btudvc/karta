@@ -787,6 +787,7 @@ function renderRobotDetail() {
         <p>${emptyMsg}</p>
       </div>`;
     document.body.classList.remove('is-readonly');
+    if (typeof stopSpacePoll === 'function') stopSpacePoll();
     return;
   }
   if (robotsSection) robotsSection.setAttribute('data-detail-open', 'true');
@@ -797,6 +798,17 @@ function renderRobotDetail() {
   // honest UX.
   const readOnly = isRobotReadOnly(robot.id);
   document.body.classList.toggle('is-readonly', readOnly);
+
+  // Auto-sync: when a shared list opens, pull latest if stale and start
+  // a periodic refresh so remote changes flow in without page reload.
+  // Non-shared lists clear any previous poll.
+  const __spaceOfRobot = findSpaceOfRobot(robot.id);
+  if (__spaceOfRobot && __spaceOfRobot.shared && __spaceOfRobot.driveFileId) {
+    if (typeof maybeAutoPull   === 'function') maybeAutoPull(__spaceOfRobot.id);
+    if (typeof startSpacePoll  === 'function') startSpacePoll(__spaceOfRobot.id);
+  } else {
+    if (typeof stopSpacePoll === 'function') stopSpacePoll();
+  }
 
   const activeTasks  = robot.tasks.filter(t => t.status === 'active');
   const pendingTasks = robot.tasks.filter(t => t.status === 'pending');
@@ -5822,6 +5834,141 @@ window.onDriveUserChange = function(userInfo) {
     if (typeof renderHome === 'function') renderHome();
   }
 };
+
+// ──────────────────────────────────────────────────────────
+// SHARED SPACES — Phase 5: Auto-sync
+//
+//   - Auto-pull on open: when a shared list/space comes into focus,
+//     and lastSyncedAt is stale, fetch the latest from Drive.
+//   - Polling: while a shared list is open, refresh every 30s.
+//   - Auto-push (editor+): a save() hook schedules a debounced push
+//     per shared writable Space. Conflicts trigger one pull-merge-retry.
+//   - "Synced Nm ago" indicator: small text in the sidebar Space row.
+// ──────────────────────────────────────────────────────────
+
+const PUSH_DEBOUNCE_MS = 1500;
+const PULL_FRESHNESS_MS = 8000;
+const POLL_INTERVAL_MS  = 30000;
+const _pendingPushes = new Map(); // spaceId -> setTimeout handle
+const _autoPullInFlight = new Set(); // spaceId currently pulling
+let _spacePollTimer = null;
+let _polledSpaceId  = null;
+
+function _canPush(sp) {
+  return sp && sp.shared && sp.driveFileId && (sp.myRole === 'owner' || sp.myRole === 'writer');
+}
+
+function _canPull(sp) {
+  return sp && sp.shared && sp.driveFileId;
+}
+
+function schedulePush(spaceId) {
+  if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+  const existing = _pendingPushes.get(spaceId);
+  if (existing) clearTimeout(existing);
+  const t = setTimeout(() => { doAutoPush(spaceId, 0); }, PUSH_DEBOUNCE_MS);
+  _pendingPushes.set(spaceId, t);
+}
+
+async function doAutoPush(spaceId, retry) {
+  _pendingPushes.delete(spaceId);
+  const sp = findSpace(spaceId);
+  if (!_canPush(sp)) return;
+  try {
+    const r = await DriveAPI.pushSpaceFile(sp.driveFileId, sp, sp.lastSyncedRevision);
+    sp.lastSyncedRevision = r.revisionId;
+    sp.lastSyncedAt       = Date.now();
+    // Persist new revisionId/lastSyncedAt without re-firing the save() wrapper
+    // chain — going through save() would schedule another push and loop.
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    if (typeof renderHome === 'function') renderHome();
+  } catch (e) {
+    if (e && e.conflict && (retry || 0) < 2) {
+      // Pull → merge → retry push. Last-write-wins on shared fields.
+      try {
+        const pr = await DriveAPI.pullSpaceFile(sp.driveFileId);
+        if (pr && pr.payload && pr.payload.space) {
+          const savedCollabs = sp.collaborators || [];
+          mergeImportedSpacePayload(pr);
+          const updated = findSpace(sp.id);
+          if (updated) updated.collaborators = savedCollabs;
+          // Persist new revisionId/lastSyncedAt without re-firing the save() wrapper
+    // chain — going through save() would schedule another push and loop.
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+        }
+        setTimeout(() => doAutoPush(spaceId, (retry || 0) + 1), 250);
+      } catch {}
+    }
+  }
+}
+
+async function maybeAutoPull(spaceId, force) {
+  const sp = findSpace(spaceId);
+  if (!_canPull(sp)) return;
+  if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+  // Don't clobber pending local edits the debounced push will handle.
+  if (_pendingPushes.has(spaceId)) return;
+  if (_autoPullInFlight.has(spaceId)) return;
+  if (!force && sp.lastSyncedAt && (Date.now() - sp.lastSyncedAt) < PULL_FRESHNESS_MS) return;
+  _autoPullInFlight.add(spaceId);
+  try {
+    const r = await DriveAPI.pullSpaceFile(sp.driveFileId);
+    if (r && r.payload && r.payload.space) {
+      const savedCollabs = sp.collaborators || [];
+      mergeImportedSpacePayload(r);
+      const updated = findSpace(sp.id);
+      if (updated) updated.collaborators = savedCollabs;
+      // Persist new revisionId/lastSyncedAt without re-firing the save() wrapper
+    // chain — going through save() would schedule another push and loop.
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+      if (typeof renderHome === 'function') renderHome();
+      if (typeof renderRobotList === 'function') renderRobotList();
+      if (typeof renderRobotDetail === 'function') renderRobotDetail();
+    }
+  } catch {
+    // Silent — manual Pull button is still there if user wants visibility.
+  } finally {
+    _autoPullInFlight.delete(spaceId);
+  }
+}
+
+function startSpacePoll(spaceId) {
+  if (_polledSpaceId === spaceId && _spacePollTimer) return;
+  stopSpacePoll();
+  _polledSpaceId = spaceId;
+  _spacePollTimer = setInterval(() => {
+    maybeAutoPull(spaceId, /*force*/ true);
+  }, POLL_INTERVAL_MS);
+}
+function stopSpacePoll() {
+  if (_spacePollTimer) { clearInterval(_spacePollTimer); _spacePollTimer = null; }
+  _polledSpaceId = null;
+}
+
+// Hook save() — schedule a debounced push for every shared writable Space
+// after each local mutation. Wraps whatever save() currently is so prior
+// hooks (BackupManager, pendingItemAttach) keep working.
+(function hookSaveForSharedPush() {
+  const prior = save;
+  save = function() {
+    prior.apply(this, arguments);
+    if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+    (state.spaces || []).forEach(sp => {
+      if (_canPush(sp)) schedulePush(sp.id);
+    });
+  };
+})();
+
+// "Synced Nm ago" formatter, used in renderHome
+function formatSyncedAgo(ts) {
+  if (!ts) return 'never synced';
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 5)    return 'synced just now';
+  if (diff < 60)   return `synced ${diff}s ago`;
+  if (diff < 3600) return `synced ${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `synced ${Math.floor(diff/3600)}h ago`;
+  return `synced ${Math.floor(diff/86400)}d ago`;
+}
 // If we're already signed in at load time, kick off a discovery pass.
 setTimeout(() => {
   if (typeof DriveAPI !== 'undefined' && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
@@ -6112,7 +6259,7 @@ function renderHome() {
               </span>
               <span class="home-space-body">
                 <span class="home-space-name">${escapeHtml(sp.name)}${sharedBadge}</span>
-                <span class="home-space-meta">${lists.length} list${lists.length === 1 ? '' : 's'}</span>
+                <span class="home-space-meta">${lists.length} list${lists.length === 1 ? '' : 's'}${sp.shared && sp.lastSyncedAt ? ` · ${escapeHtml(formatSyncedAgo(sp.lastSyncedAt))}` : ''}</span>
               </span>
               <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
             </button>
