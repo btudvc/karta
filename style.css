@@ -5202,3 +5202,36 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
 }
 .modal-input input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
 .modal-input .modal-actions { margin-top: 14px; }
+
+/* ── App toast (non-blocking notifications) ─────────────── */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  transform: translate(-50%, 20px);
+  max-width: 92vw;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  z-index: 200;
+  pointer-events: none;
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+.app-toast.open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.app-toast[data-kind="sync"] {
+  border-color: var(--accent-soft2);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+@media (min-width: 1000px) {
+  .app-toast { bottom: 24px; }
+}

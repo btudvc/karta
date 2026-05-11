@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.12.1';
+var APP_VERSION = '6.13.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -587,6 +587,50 @@ function save() {
 }
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+// Smart-merge timestamps — stamped on every mutating user action so the
+// shared-space merge can pick the newer side per task / per list.
+function stampTask(task) {
+  if (task) task.updatedAt = Date.now();
+}
+function stampRobot(robot) {
+  if (robot) robot.updatedAt = Date.now();
+}
+function stampMeeting(m) {
+  if (m) m.updatedAt = Date.now();
+}
+function stampVisit(v) {
+  if (v) v.updatedAt = Date.now();
+}
+
+// Tiny toast that fades in/out — used to surface non-blocking events
+// like a shared-space merge happening in the background.
+let _toastTimer = null;
+function showAppToast(message, kind) {
+  let host = document.getElementById('app-toast');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'app-toast';
+    host.className = 'app-toast';
+    host.setAttribute('role', 'status');
+    host.setAttribute('aria-live', 'polite');
+    document.body.appendChild(host);
+  }
+  host.textContent = message;
+  host.dataset.kind = kind || 'info';
+  host.classList.add('open');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => host.classList.remove('open'), 4200);
+}
+
+function showSyncToast(stats, spaceName) {
+  const bits = [];
+  if (stats.remoteAdded)     bits.push(`+${stats.remoteAdded} added by others`);
+  if (stats.localSuperseded) bits.push(`${stats.localSuperseded} of your edits superseded`);
+  if (stats.localKept)       bits.push(`${stats.localKept} of your changes preserved`);
+  if (!bits.length) return;
+  showAppToast(`Synced "${spaceName || 'Space'}" — ${bits.join(', ')}.`, 'sync');
 }
 
 // ── TABS ───────────────────────────────────────────────
@@ -1128,6 +1172,7 @@ window.snoozeTask = function(taskId, days) {
   const next = new Date(base.getTime() + days * 86400000);
   task.dueDate = next.toISOString().slice(0, 10);
   if (task.status === 'pending') task.status = 'active';
+  stampTask(task);
   save();
   renderCurrentDetail();
 };
@@ -1142,6 +1187,7 @@ window.assignToday = function(taskId) {
     task.dueDate = new Date().toISOString().slice(0, 10);
     if (task.status === 'pending') task.status = 'active';
   }
+  stampTask(task);
   save();
   renderCurrentDetail();
 };
@@ -1261,6 +1307,7 @@ window.addSubtask = function(taskId) {
   if (!title) { input?.focus(); return; }
   if (!task.subtasks) task.subtasks = [];
   task.subtasks.push({ id: uid(), title, done: false, createdAt: Date.now() });
+  stampTask(task);
   save();
   renderCurrentDetail();
 };
@@ -1271,6 +1318,7 @@ window.toggleSubtask = function(taskId, subId) {
   const sub = task && (task.subtasks || []).find(s => s.id === subId);
   if (!sub) return;
   sub.done = !sub.done;
+  stampTask(task);
   save();
   renderCurrentDetail();
 };
@@ -1280,6 +1328,7 @@ window.deleteSubtask = function(taskId, subId) {
   const task = robot && robot.tasks.find(t => t.id === taskId);
   if (!task) return;
   task.subtasks = (task.subtasks || []).filter(s => s.id !== subId);
+  stampTask(task);
   save();
   renderCurrentDetail();
 };
@@ -1303,6 +1352,7 @@ window.addNoteEntry = function(taskId) {
   if (!text) { input.focus(); return; }
   if (!task.notebook) task.notebook = [];
   task.notebook.push({ id: uid(), text, createdAt: Date.now() });
+  stampTask(task);
   save();
   // Re-render only the notebook part for speed
   const nb = document.getElementById('notebook-' + taskId);
@@ -1395,6 +1445,7 @@ window.setStatus = function(id, status) {
   // count what was finished in the last N days. Cleared on reopen.
   if (status === 'done') task.completedAt = Date.now();
   else delete task.completedAt;
+  stampTask(task);
   // Recurring tasks: when a task is marked done for the first time and
   // has a recurrence rule, spawn the next instance with a fresh due date.
   // The completed instance stays in place as history.
@@ -1874,7 +1925,7 @@ document.getElementById('save-robot').addEventListener('click', () => {
   const targetSpaceId = spaceSelEl ? spaceSelEl.value : null;
   if (editingRobotId) {
     const robot = state.robots.find(r => r.id === editingRobotId);
-    if (robot) { robot.name = name; robot.description = desc; robot.category = category; }
+    if (robot) { robot.name = name; robot.description = desc; robot.category = category; stampRobot(robot); }
     // v4: move list item to selected Space if changed
     if (targetSpaceId && typeof moveRobotToSpace === 'function') {
       moveRobotToSpace(editingRobotId, targetSpaceId);
@@ -1895,7 +1946,7 @@ document.getElementById('save-robot').addEventListener('click', () => {
       }
     }
     if (!robot) {
-      robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now() };
+      robot = { id: uid(), name, description: desc, category, mode: getMode(), tasks: [], issues: [], createdAt: Date.now(), updatedAt: Date.now() };
       state.robots.push(robot);
       state.currentRobotId = robot.id;
       // Attach to selected Space (createListFromTemplate already did this for templates)
@@ -2034,14 +2085,18 @@ document.getElementById('save-task').addEventListener('click', () => {
       task.dueDate = dueDate || null; task.tags = tags;
       task.recurrence = recurrence;
       task.assignee = assignee;
+      stampTask(task);
     }
   } else {
-    robot.tasks.push({
+    const newTask = {
       id: uid(), title, priority, status,
       dueDate: dueDate || null, tags, recurrence, assignee,
       notebook: [], expanded: false, createdAt: Date.now(),
-    });
+      updatedAt: Date.now(),
+    };
+    robot.tasks.push(newTask);
   }
+  stampRobot(robot);
   save();
   renderCurrentDetail();
   if (activeSection === 'topics') renderTopicList(); else renderRobotList();
@@ -6282,32 +6337,116 @@ async function importSharedSpace(fileId) {
 
 // Apply a freshly-pulled shared-space payload into local state. Idempotent:
 // re-running with newer data replaces existing entities in-place.
+// Per-id smart merge — keeps both sides' new additions, picks the newer
+// of overlapping items by updatedAt. Avoids the data-loss the previous
+// "replace whole space" behaviour caused when two users edited at once.
 function mergeImportedSpacePayload(pull) {
   const p = pull.payload;
   const space = p.space || {};
-  // Ensure the underlying entity collections exist
   state.robots      = state.robots      || [];
   state.meetings    = state.meetings    || [];
   state.fieldVisits = state.fieldVisits || [];
 
-  // Merge robots / meetings / visits (replace by id if present)
-  const mergeBy = (collection, items) => {
-    (items || []).forEach(x => {
-      const idx = collection.findIndex(c => c.id === x.id);
-      if (idx >= 0) collection[idx] = x; else collection.push(x);
-    });
-  };
-  mergeBy(state.robots,      p.robots);
-  mergeBy(state.meetings,    p.meetings);
-  mergeBy(state.fieldVisits, p.visits);
+  const stats = { localKept: 0, remoteAdded: 0, overlap: 0, localSuperseded: 0, remoteSuperseded: 0 };
 
-  // Insert or update the Space
+  // Tasks inside a robot — merge per-id, newer updatedAt wins.
+  function mergeTasks(localRobot, remoteRobot) {
+    const localById  = new Map((localRobot.tasks  || []).map(t => [t.id, t]));
+    const remoteById = new Map((remoteRobot.tasks || []).map(t => [t.id, t]));
+    const out = [];
+    const seen = new Set();
+    // First pass: walk remote in order. For each remote task, pick newer.
+    (remoteRobot.tasks || []).forEach(rt => {
+      const lt = localById.get(rt.id);
+      if (!lt) {
+        out.push(rt);
+        stats.remoteAdded++;
+      } else {
+        const lUpd = lt.updatedAt || 0;
+        const rUpd = rt.updatedAt || 0;
+        if (rUpd > lUpd) { out.push(rt); if (lUpd > 0) stats.localSuperseded++; }
+        else if (lUpd > rUpd) { out.push(lt); stats.remoteSuperseded++; }
+        else { out.push(lt); }
+        stats.overlap++;
+      }
+      seen.add(rt.id);
+    });
+    // Second pass: local-only tasks (newer adds not yet on remote) preserved.
+    (localRobot.tasks || []).forEach(lt => {
+      if (!seen.has(lt.id)) {
+        out.push(lt);
+        stats.localKept++;
+      }
+    });
+    return out;
+  }
+
+  // Robots — by-id merge with task-level merge inside overlaps.
+  (p.robots || []).forEach(rr => {
+    const idx = state.robots.findIndex(x => x.id === rr.id);
+    if (idx < 0) {
+      state.robots.push(rr);
+      return;
+    }
+    const lr = state.robots[idx];
+    const lUpd = lr.updatedAt || 0;
+    const rUpd = rr.updatedAt || 0;
+    const tasks = mergeTasks(lr, rr);
+    // For top-level fields (name/description/category) keep the newer one,
+    // but always run the task merge so per-task changes survive even if
+    // the parent timestamps clash.
+    const head = rUpd >= lUpd
+      ? { name: rr.name, description: rr.description, category: rr.category, mode: rr.mode || lr.mode, updatedAt: rUpd || Date.now() }
+      : { name: lr.name, description: lr.description, category: lr.category, mode: lr.mode, updatedAt: lUpd };
+    // Preserve issues list with the newer parent — we don't merge issues
+    // per-id yet because the UI rarely uses them now.
+    const issues = rUpd >= lUpd ? (rr.issues || []) : (lr.issues || []);
+    state.robots[idx] = Object.assign({}, lr, head, { tasks, issues });
+  });
+
+  // Meetings — by-id, newer wins on overlap.
+  (p.meetings || []).forEach(rm => {
+    const idx = state.meetings.findIndex(x => x.id === rm.id);
+    if (idx < 0) { state.meetings.push(rm); return; }
+    const lm = state.meetings[idx];
+    if ((rm.updatedAt || 0) >= (lm.updatedAt || 0)) state.meetings[idx] = rm;
+  });
+
+  // Visits — same.
+  (p.visits || []).forEach(rv => {
+    const idx = state.fieldVisits.findIndex(x => x.id === rv.id);
+    if (idx < 0) { state.fieldVisits.push(rv); return; }
+    const lv = state.fieldVisits[idx];
+    if ((rv.updatedAt || 0) >= (lv.updatedAt || 0)) state.fieldVisits[idx] = rv;
+  });
+
+  // Space header + items list — items are merged as a union by item id
+  // so both sides' additions stay; the Space's renameable fields take
+  // the remote value because Drive is the source of truth for those.
   const sIdx = (state.spaces || []).findIndex(s => s.id === space.id);
   const prev = sIdx >= 0 ? state.spaces[sIdx] : {};
+  const itemsById = new Map();
+  (prev.items || []).forEach(it => itemsById.set(it.id, it));
+  (space.items || []).forEach(it => {
+    if (!itemsById.has(it.id)) itemsById.set(it.id, it);
+  });
+  const mergedItems = Array.from(itemsById.values());
+  // Drop dead references — items pointing at robots/meetings/visits we
+  // don't have. (Defensive — shouldn't happen with self-contained payloads.)
+  const liveLists    = new Set(state.robots.map(r => r.id));
+  const liveMeetings = new Set(state.meetings.map(m => m.id));
+  const liveVisits   = new Set(state.fieldVisits.map(v => v.id));
+  const filteredItems = mergedItems.filter(it => {
+    if (it.type === 'list')    return liveLists.has(it.refId);
+    if (it.type === 'meeting') return liveMeetings.has(it.refId);
+    if (it.type === 'visit')   return liveVisits.has(it.refId);
+    return true; // journal / finance / etc. singletons keep
+  });
+
   const merged = {
     id:   space.id,
     name: space.name,
-    items: space.items || [],
+    items: filteredItems,
     shared: true,
     driveFileId:        pull.fileId,
     ownerEmail:         pull.ownerEmail   || p.ownerEmail   || prev.ownerEmail   || null,
@@ -6320,6 +6459,12 @@ function mergeImportedSpacePayload(pull) {
   };
   if (sIdx >= 0) state.spaces[sIdx] = merged;
   else state.spaces.push(merged);
+
+  // Surface a toast if the merge involved any cross-edit so the user
+  // knows their session was synced with someone else's changes.
+  if (stats.localKept > 0 || stats.remoteAdded > 0 || stats.localSuperseded > 0) {
+    showSyncToast(stats, merged.name);
+  }
 }
 
 // Wire discovery to Drive sign-in: when fetchUserInfo lands a fresh user,
