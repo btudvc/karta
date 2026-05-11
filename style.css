@@ -4944,3 +4944,29 @@ body { font-size: 13px; }
   border-radius: 7px;
   flex-shrink: 0;
 }
+
+/* ── Share modal: Pull/Push sync row ───────────────────── */
+.share-sync {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.share-sync-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+}
+.share-sync-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-sync-buttons .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

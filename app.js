@@ -5447,6 +5447,22 @@ function renderShareSpaceBody(extra) {
       <tbody>${collabRows || `<tr><td colspan="3" class="share-collab-empty">No collaborators yet${isOwner ? ' — invite someone above.' : '.'}</td></tr>`}</tbody>
     </table>
 
+    <div class="share-sync">
+      <div class="share-sync-label">Sync</div>
+      <div class="share-sync-buttons">
+        <button class="btn-ghost" id="share-pull-btn" type="button">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          <span>Pull from Drive</span>
+        </button>
+        ${(sp.myRole === 'owner' || sp.myRole === 'writer') ? `
+          <button class="btn-ghost" id="share-push-btn" type="button">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            <span>Push current data</span>
+          </button>
+        ` : ''}
+      </div>
+    </div>
+
     ${status}${error}
 
     <div class="modal-actions">
@@ -5458,6 +5474,8 @@ function renderShareSpaceBody(extra) {
   // Wire up
   document.getElementById('share-add-btn')?.addEventListener('click', addCollaboratorToCurrentSpace);
   document.getElementById('share-stop-btn')?.addEventListener('click', stopSharingCurrentSpace);
+  document.getElementById('share-pull-btn')?.addEventListener('click', pullCurrentSharedSpace);
+  document.getElementById('share-push-btn')?.addEventListener('click', pushCurrentSharedSpace);
   body.querySelectorAll('.share-collab-remove').forEach(b => {
     b.addEventListener('click', () => removeCollaboratorFromCurrentSpace(b.dataset.permId));
   });
@@ -5543,6 +5561,53 @@ async function updateCollaboratorRoleForCurrentSpace(permissionId, newRole) {
     renderShareSpaceBody({ status: `Role updated to ${roleLabel(newRole)}.` });
   } catch (e) {
     renderShareSpaceBody({ error: 'Could not update role: ' + (e.message || 'unknown error') });
+  }
+}
+
+async function pullCurrentSharedSpace() {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp || !sp.driveFileId) return;
+  const btn = document.getElementById('share-pull-btn');
+  if (btn) { btn.disabled = true; const lbl = btn.querySelector('span'); if (lbl) lbl.textContent = 'Pulling…'; }
+  try {
+    const r = await DriveAPI.pullSpaceFile(sp.driveFileId);
+    if (!r.payload || !r.payload.space) {
+      renderShareSpaceBody({ error: 'Remote file is missing or in an unknown format.' });
+      return;
+    }
+    // Preserve local collaborators array (owner-only data, not in payload)
+    const savedCollabs = sp.collaborators || [];
+    mergeImportedSpacePayload(r);
+    const updated = findSpace(sp.id);
+    if (updated) updated.collaborators = savedCollabs;
+    save();
+    if (typeof renderHome === 'function') renderHome();
+    if (typeof renderSidebar === 'function') renderSidebar();
+    if (typeof renderRobotList === 'function') renderRobotList();
+    if (typeof renderRobotDetail === 'function') renderRobotDetail();
+    renderShareSpaceBody({ status: 'Pulled latest from Drive.' });
+  } catch (e) {
+    renderShareSpaceBody({ error: 'Pull failed: ' + (e && e.message || 'unknown error') });
+  }
+}
+
+async function pushCurrentSharedSpace() {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp || !sp.driveFileId) return;
+  const btn = document.getElementById('share-push-btn');
+  if (btn) { btn.disabled = true; const lbl = btn.querySelector('span'); if (lbl) lbl.textContent = 'Pushing…'; }
+  try {
+    const r = await DriveAPI.pushSpaceFile(sp.driveFileId, sp, sp.lastSyncedRevision);
+    sp.lastSyncedRevision = r.revisionId;
+    sp.lastSyncedAt       = Date.now();
+    save();
+    renderShareSpaceBody({ status: 'Pushed current data to Drive.' });
+  } catch (e) {
+    if (e && e.conflict) {
+      renderShareSpaceBody({ error: 'Someone else has updated this Space on Drive. Pull first, then push again.' });
+    } else {
+      renderShareSpaceBody({ error: 'Push failed: ' + (e && e.message || 'unknown error') });
+    }
   }
 }
 
