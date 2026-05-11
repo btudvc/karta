@@ -5715,18 +5715,26 @@ function renderHome() {
         </button>
       `;}).join('');
 
+      const sharedBadge = sp.shared
+        ? `<span class="home-space-shared-badge" title="Shared (${escapeAttr(roleLabel(sp.myRole || 'reader'))})" aria-label="Shared"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-1a4 4 0 0 1 4-4h3"/><path d="M14 16h3a4 4 0 0 1 4 4v1"/></svg></span>`
+        : '';
       return `
         <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">
-          <button class="home-space-head" type="button" data-toggle="${escapeAttr(sp.id)}">
-            <span class="home-space-icon" style="--c: ${color};">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
-            </span>
-            <span class="home-space-body">
-              <span class="home-space-name">${escapeHtml(sp.name)}</span>
-              <span class="home-space-meta">${lists.length} list${lists.length === 1 ? '' : 's'}</span>
-            </span>
-            <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-          </button>
+          <div class="home-space-head-row">
+            <button class="home-space-head" type="button" data-toggle="${escapeAttr(sp.id)}">
+              <span class="home-space-icon" style="--c: ${color};">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/></svg>
+              </span>
+              <span class="home-space-body">
+                <span class="home-space-name">${escapeHtml(sp.name)}${sharedBadge}</span>
+                <span class="home-space-meta">${lists.length} list${lists.length === 1 ? '' : 's'}</span>
+              </span>
+              <svg class="home-space-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+            <button class="home-space-share-btn" type="button" data-space-share="${escapeAttr(sp.id)}" title="Share / options" aria-label="Share / options">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </button>
+          </div>
           <div class="home-space-items">
             ${itemsHtml || '<div class="home-list-empty" style="padding: 6px 4px;">No lists in this space.</div>'}
             <button class="home-space-item-add" data-add-space="${escapeAttr(sp.id)}" type="button">
@@ -5778,6 +5786,14 @@ function renderHome() {
       btn.addEventListener('click', () => {
         const sid = btn.dataset.addSpace;
         if (typeof openAddItemPicker === 'function') openAddItemPicker(sid);
+      });
+    });
+    // Share / options button — opens the same menu as the legacy ⋯ control
+    spacesEl.querySelectorAll('[data-space-share]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const sid = btn.dataset.spaceShare;
+        if (typeof openSpaceMenu === 'function') openSpaceMenu(sid);
       });
     });
   }

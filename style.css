@@ -4824,3 +4824,47 @@ body { font-size: 13px; }
   .share-add { grid-template-columns: 1fr; }
   .share-add input, .share-add select, .share-add button { width: 100%; }
 }
+
+/* ── home-space row: head + share button ────────────────── */
+.home-space-head-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.home-space-head-row .home-space-head { flex: 1; min-width: 0; }
+.home-space-share-btn {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: background .12s var(--ease), color .12s var(--ease), opacity .12s var(--ease);
+}
+.home-space-head-row:hover .home-space-share-btn,
+.home-space-share-btn:focus,
+.home-space-share-btn:focus-visible {
+  opacity: 1;
+}
+.home-space-share-btn:hover { background: var(--surface-2); color: var(--text); }
+/* On touch devices (no hover) always show the share button so users can reach it */
+@media (hover: none) {
+  .home-space-share-btn { opacity: 1; }
+}
+
+/* Shared badge inline in the space name */
+.home-space-shared-badge {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  vertical-align: middle;
+}
+.home-space-shared-badge svg { display: block; }
