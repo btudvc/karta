@@ -5274,7 +5274,9 @@ function homeOpenRobot(rid) {
 }
 
 function homeNavigate(target) {
-  if (target === 'today')          showCrossView('today');
+  if (target === 'home')           { if (typeof openHome  === 'function') openHome();  else activateSection('home'); }
+  else if (target === 'inbox')     { if (typeof openInbox === 'function') openInbox(); else activateSection('inbox'); }
+  else if (target === 'today')     showCrossView('today');
   else if (target === 'calendar')  showCrossView('calendar');
   else if (target === 'all-tasks') showCrossView('all-tasks');
   else if (target === 'visits')    showCrossView('visits');
