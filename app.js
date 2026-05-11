@@ -527,6 +527,12 @@ let currentReviewKey = null; // e.g. '2026-W19' or '2026-05'
 let editingLinkId = null;
 let linksFilter = '';        // free-text search
 
+// Build version — bump alongside SW VERSION in sw.js so the popover
+// footer and #more-version stay in step. `var` (not const) so functions
+// that fire during boot via applyI18n can reference it before script
+// execution reaches the assignment.
+var APP_VERSION = '6.9.6';
+
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
 const LEGACY_STORAGE_KEY = 'karta';
@@ -6626,9 +6632,8 @@ document.querySelectorAll('.theme-toggle-btn').forEach(b => {
 
 // Version is rendered straight into index.html so it shows even if app.js
 // errors out. JS-side override kept here as a safety net for future bumps.
-// Bump alongside SW VERSION in sw.js so the popover footer + settings
-// page reflect the current build.
-const APP_VERSION = '6.9.5';
+// (APP_VERSION is var-declared near the top of this file so functions that
+// run during boot — like the popover renderer — can safely reference it.)
 const _verEl = document.getElementById('more-version');
 if (_verEl) _verEl.textContent = 'B-Less Planner v' + APP_VERSION;
 
