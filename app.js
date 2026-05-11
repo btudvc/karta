@@ -2252,9 +2252,14 @@ window.deleteAttachment = async function(type, id, filename) {
 // Same folder structure as Electron path: Drive/B-Less/{b-less-backup.json, attachments/<id>/<file>}
 const DriveAPI = (() => {
   const CLIENT_ID = '733970458049-nh53ksvtjaavj0p5up5bs89jd78t9rf9.apps.googleusercontent.com';
-  // drive.file = only files this app creates/opens. User's other Drive content is hidden from us.
+  // drive (full Drive read/write) is required so collaborators can discover
+  // shared Space files in their own Drive ("Shared with me") — drive.file
+  // alone only exposes files this app created or the user picked via the
+  // Drive Picker dialog. The trade-off is that the OAuth consent screen
+  // says "see, edit, create, and delete all your Google Drive files".
+  // We still only read/write a private B-Less folder + shared space files.
   // email + profile = needed to display the connected account
-  const SCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
+  const SCOPE = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
 
   let tokenClient = null;
   let accessToken = null;
@@ -2522,17 +2527,34 @@ const DriveAPI = (() => {
     return ensureFolder('spaces', root);
   }
 
+  // Build a self-contained payload that includes every entity the Space
+  // refers to (robots/meetings/visits). The payload is what's written to
+  // the Drive file. Singletons (journal/finance/links/reviews) and items
+  // that point to non-existent refIds are excluded — they don't make
+  // sense as shared content.
+  function buildSpacePayload(space, ownerEmail) {
+    const refs = { list: new Set(), meeting: new Set(), visit: new Set() };
+    (space.items || []).forEach(it => {
+      if (refs[it.type]) refs[it.type].add(it.refId);
+    });
+    const shareableItems = (space.items || []).filter(it => refs[it.type]);
+    return {
+      schema: 'b-less.space.v1',
+      ownerEmail,
+      space:    { id: space.id, name: space.name, items: shareableItems },
+      robots:   (state.robots      || []).filter(r => refs.list.has(r.id)),
+      meetings: (state.meetings    || []).filter(m => refs.meeting.has(m.id)),
+      visits:   (state.fieldVisits || []).filter(v => refs.visit.has(v.id)),
+      updatedAt: Date.now(),
+      updatedBy: ownerEmail,
+    };
+  }
+
   // Owner-side: create the shared file and return { fileId, revisionId, ownerEmail }
   async function createSharedSpaceFile(space) {
     const parent = await ensureSpacesFolder();
     const me     = userInfo && userInfo.email;
-    const payload = {
-      schema: 'b-less.space.v1',
-      ownerEmail: me,
-      space: { id: space.id, name: space.name, items: space.items || [] },
-      updatedAt: Date.now(),
-      updatedBy: me,
-    };
+    const payload = buildSpacePayload(space, me);
     const boundary = '-------b-less-' + Math.random().toString(36).slice(2);
     const meta = {
       name: spaceFileName(space.name),
@@ -2597,12 +2619,9 @@ const DriveAPI = (() => {
       }
     }
     const me = userInfo && userInfo.email;
-    const payload = {
-      schema: 'b-less.space.v1',
-      space: { id: spaceData.id, name: spaceData.name, items: spaceData.items || [] },
-      updatedAt: Date.now(),
-      updatedBy: me,
-    };
+    // Re-pack the full payload (Space + referenced entities) so collaborators
+    // always pull a self-contained snapshot.
+    const payload = buildSpacePayload(spaceData, me);
     const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
     const r = await api('PATCH',
       `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&fields=id,headRevisionId,modifiedTime`,
@@ -5545,6 +5564,114 @@ function stopSharingCurrentSpace() {
   renderShareSpaceBody({ status: 'Stopped syncing on this device.' });
 }
 
+// ──────────────────────────────────────────────────────────
+// SHARED SPACES — Discovery & Import
+//
+// On Drive sign-in (and on demand) we list every file tagged with our
+// appProperties marker. Files we created that already live in state are
+// skipped. Whatever's left is presented in a "Shared with you" sidebar
+// section with an Import button. Importing pulls the file and merges
+// its embedded entities (robots / meetings / visits) into local state.
+// ──────────────────────────────────────────────────────────
+
+let _pendingShares = []; // [{ fileId, name, ownerEmail, myRole, modifiedTime }]
+
+async function refreshPendingShares() {
+  if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) {
+    _pendingShares = [];
+    return _pendingShares;
+  }
+  try {
+    const list = await DriveAPI.listAccessibleSharedSpaces();
+    const knownIds = new Set((state.spaces || []).map(s => s.driveFileId).filter(Boolean));
+    _pendingShares = list.filter(f => !knownIds.has(f.fileId));
+  } catch {
+    _pendingShares = [];
+  }
+  if (typeof renderHome === 'function') renderHome();
+  return _pendingShares;
+}
+
+async function importSharedSpace(fileId) {
+  if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) {
+    alert('Sign in to Google Drive first (avatar at top-right).');
+    return;
+  }
+  try {
+    const r = await DriveAPI.pullSpaceFile(fileId);
+    if (!r.payload || !r.payload.space) {
+      alert('This file does not look like a B-Less shared space.');
+      return;
+    }
+    mergeImportedSpacePayload(r);
+    save();
+    _pendingShares = _pendingShares.filter(p => p.fileId !== fileId);
+    if (typeof renderHome === 'function') renderHome();
+    if (typeof renderSidebar === 'function') renderSidebar();
+  } catch (e) {
+    alert('Could not import: ' + (e && e.message || 'unknown error'));
+  }
+}
+
+// Apply a freshly-pulled shared-space payload into local state. Idempotent:
+// re-running with newer data replaces existing entities in-place.
+function mergeImportedSpacePayload(pull) {
+  const p = pull.payload;
+  const space = p.space || {};
+  // Ensure the underlying entity collections exist
+  state.robots      = state.robots      || [];
+  state.meetings    = state.meetings    || [];
+  state.fieldVisits = state.fieldVisits || [];
+
+  // Merge robots / meetings / visits (replace by id if present)
+  const mergeBy = (collection, items) => {
+    (items || []).forEach(x => {
+      const idx = collection.findIndex(c => c.id === x.id);
+      if (idx >= 0) collection[idx] = x; else collection.push(x);
+    });
+  };
+  mergeBy(state.robots,      p.robots);
+  mergeBy(state.meetings,    p.meetings);
+  mergeBy(state.fieldVisits, p.visits);
+
+  // Insert or update the Space
+  const sIdx = (state.spaces || []).findIndex(s => s.id === space.id);
+  const merged = {
+    id:   space.id,
+    name: space.name,
+    items: space.items || [],
+    shared: true,
+    driveFileId:        pull.fileId,
+    ownerEmail:         pull.ownerEmail || p.ownerEmail || null,
+    myRole:             pull.myRole || 'reader',
+    collaborators:      sIdx >= 0 ? (state.spaces[sIdx].collaborators || []) : [],
+    lastSyncedRevision: pull.revisionId,
+    lastSyncedAt:       Date.now(),
+  };
+  if (sIdx >= 0) state.spaces[sIdx] = merged;
+  else state.spaces.push(merged);
+}
+
+// Wire discovery to Drive sign-in: when fetchUserInfo lands a fresh user,
+// refresh the pending-shares list so the sidebar can offer imports.
+const _prevOnDriveUserChange = window.onDriveUserChange;
+window.onDriveUserChange = function(userInfo) {
+  try { if (typeof _prevOnDriveUserChange === 'function') _prevOnDriveUserChange(userInfo); } catch {}
+  if (userInfo) {
+    // Fire-and-forget — the sidebar will re-render once shares land.
+    refreshPendingShares();
+  } else {
+    _pendingShares = [];
+    if (typeof renderHome === 'function') renderHome();
+  }
+};
+// If we're already signed in at load time, kick off a discovery pass.
+setTimeout(() => {
+  if (typeof DriveAPI !== 'undefined' && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
+    refreshPendingShares();
+  }
+}, 1500);
+
 // ── Cross-space top nav (Today / Calendar / All Tasks) ──
 function showCrossView(name) {
   state.currentItemId = null;
@@ -5775,7 +5902,29 @@ function renderHome() {
     };
     const TYPE_ORDER = ['list', 'meeting', 'visit', 'journal', 'links', 'reviews'];
 
-    spacesEl.innerHTML = spaces.map((sp, i) => {
+    // "Shared with you" — Drive files tagged as B-Less spaces that we
+    // haven't imported yet. Only rendered when there are pending shares.
+    const sharedWithYouHtml = (_pendingShares && _pendingShares.length)
+      ? `
+        <div class="home-shared-section">
+          <div class="home-shared-head">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-1a4 4 0 0 1 4-4h3"/><path d="M14 16h3a4 4 0 0 1 4 4v1"/></svg>
+            <span>Shared with you</span>
+          </div>
+          ${_pendingShares.map(s => `
+            <div class="home-shared-row">
+              <div class="home-shared-info">
+                <span class="home-shared-name">${escapeHtml(s.name.replace(/\.bless-space\.json$/i, ''))}</span>
+                <span class="home-shared-sub">${escapeHtml(s.ownerEmail || '')} · ${escapeHtml(roleLabel(s.myRole))}</span>
+              </div>
+              <button class="btn-primary home-shared-import" data-import-share="${escapeAttr(s.fileId)}" type="button">Import</button>
+            </div>
+          `).join('')}
+        </div>
+      `
+      : '';
+
+    spacesEl.innerHTML = sharedWithYouHtml + spaces.map((sp, i) => {
       const color = SPACE_COLORS[i % SPACE_COLORS.length];
       const isOpen = open.has(sp.id);
       // Spaces only carry lists now. Meetings / visits / journals /
@@ -5873,6 +6022,15 @@ function renderHome() {
         e.stopPropagation();
         const sid = btn.dataset.spaceShare;
         if (typeof openSpaceMenu === 'function') openSpaceMenu(sid, btn);
+      });
+    });
+    // Import shared-space button (in the "Shared with you" section)
+    spacesEl.querySelectorAll('[data-import-share]').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        btn.disabled = true;
+        btn.textContent = 'Importing…';
+        await importSharedSpace(btn.dataset.importShare);
       });
     });
   }

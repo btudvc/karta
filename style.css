@@ -4911,3 +4911,36 @@ body { font-size: 13px; }
 .space-menu-danger        { color: var(--red, #dc2626); }
 .space-menu-danger svg    { color: var(--red, #dc2626); }
 .space-menu-danger:hover  { background: rgba(220,38,38,.10); }
+
+/* ── "Shared with you" sidebar section ─────────────────── */
+.home-shared-section {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border-2);
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+.home-shared-head {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.home-shared-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+}
+.home-shared-row:first-of-type { border-top: none; }
+.home-shared-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.home-shared-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-shared-sub  { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-shared-import {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
