@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.14.2';
+var APP_VERSION = '6.14.3';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7177,6 +7177,98 @@ function renderHome() {
         if (typeof renderSidebar === 'function') renderSidebar();
       });
     });
+    // Touch drag shim — HTML5 drag-drop doesn't fire from touch on mobile.
+    // Wire raw touch events on the container ONCE (spacesEl persists across
+    // re-renders, only its innerHTML is replaced). Long-press (350ms) on a
+    // .home-space-item enters drag mode; finger movement before the long-press
+    // fires is treated as a scroll and aborts the drag. While dragging, the
+    // .home-space under the finger is highlighted; release performs the move.
+    if (!spacesEl._touchDragWired) {
+      spacesEl._touchDragWired = true;
+      let td = null; // active touch-drag state
+      const clearTarget = () => {
+        document.querySelectorAll('.home-space.drag-target').forEach(n => n.classList.remove('drag-target'));
+      };
+      spacesEl.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        const item = t.target.closest && t.target.closest('.home-space-item');
+        if (!item) return;
+        td = {
+          itemId: item.dataset.itemId,
+          sourceSpaceId: item.dataset.spaceId,
+          el: item,
+          startX: t.clientX,
+          startY: t.clientY,
+          dragging: false,
+        };
+        td.timer = setTimeout(() => {
+          if (!td || td.dragging) return;
+          td.dragging = true;
+          item.classList.add('dragging');
+        }, 350);
+      }, { passive: true });
+      spacesEl.addEventListener('touchmove', e => {
+        if (!td) return;
+        const t = e.touches[0];
+        if (!t) return;
+        if (!td.dragging) {
+          const dx = t.clientX - td.startX;
+          const dy = t.clientY - td.startY;
+          if (Math.hypot(dx, dy) > 10) {
+            clearTimeout(td.timer);
+            td = null;
+          }
+          return;
+        }
+        e.preventDefault(); // stop page scroll while dragging
+        clearTarget();
+        const under = document.elementFromPoint(t.clientX, t.clientY);
+        const target = under && under.closest && under.closest('.home-space');
+        if (target && target.dataset.spaceId !== td.sourceSpaceId) {
+          target.classList.add('drag-target');
+        }
+      }, { passive: false });
+      const endDrag = e => {
+        if (!td) return;
+        clearTimeout(td.timer);
+        const wasDragging = td.dragging;
+        if (wasDragging) {
+          clearTarget();
+          td.el.classList.remove('dragging');
+          const t = e.changedTouches && e.changedTouches[0];
+          const under = t && document.elementFromPoint(t.clientX, t.clientY);
+          const target = under && under.closest && under.closest('.home-space');
+          if (target && target.dataset.spaceId !== td.sourceSpaceId) {
+            const src = findSpace(td.sourceSpaceId);
+            const dst = findSpace(target.dataset.spaceId);
+            const moving = src && src.items.find(i => i.id === td.itemId);
+            if (src && dst && moving) {
+              src.items = src.items.filter(i => i.id !== td.itemId);
+              dst.items.push(moving);
+              save();
+              renderHome();
+              if (typeof renderSidebar === 'function') renderSidebar();
+            }
+          }
+          // Eat the synthetic click that fires after touchend so the item
+          // doesn't navigate when the user only meant to drop it.
+          const suppress = ev => { ev.preventDefault(); ev.stopPropagation(); };
+          document.addEventListener('click', suppress, { capture: true, once: true });
+        }
+        td = null;
+      };
+      spacesEl.addEventListener('touchend', endDrag);
+      spacesEl.addEventListener('touchcancel', () => {
+        if (!td) return;
+        clearTimeout(td.timer);
+        if (td.dragging) {
+          clearTarget();
+          td.el.classList.remove('dragging');
+        }
+        td = null;
+      });
+    }
     // Share / options button — opens the floating space menu
     spacesEl.querySelectorAll('[data-space-share]').forEach(btn => {
       btn.addEventListener('click', e => {
