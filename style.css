@@ -5182,3 +5182,23 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   background: var(--accent-soft);
 }
 .task-assignee-chip.is-me .assignee-initial { color: var(--accent); }
+
+/* ── In-app prompt modal (replaces window.prompt) ──────── */
+.modal.modal-input { width: 420px; max-width: 92vw; }
+.modal-input label { margin-top: 4px; display: block; font-size: 12px; color: var(--muted); }
+.modal-input input[type="text"],
+.modal-input input[type="email"],
+.modal-input input[type="number"],
+.modal-input input[type="url"] {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  margin-top: 6px;
+}
+.modal-input input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.modal-input .modal-actions { margin-top: 14px; }

@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.12.0';
+var APP_VERSION = '6.12.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -1684,6 +1684,70 @@ function attachBrainstorm(entityId) {
 }
 
 // ── MODAL HELPERS ──────────────────────────────────────
+
+// Themed in-app replacement for window.prompt(). Async — returns the
+// trimmed string the user typed, or null if they cancelled.
+//
+//   await promptInput({
+//     title:       'Rename Space',
+//     label:       'New name:',
+//     value:       'Work',
+//     placeholder: 'Engineering',
+//     okText:      'Rename',
+//   });
+function promptInput(opts) {
+  opts = opts || {};
+  return new Promise(resolve => {
+    const modal   = document.getElementById('modal-input');
+    const titleEl = document.getElementById('modal-input-title');
+    const labelEl = document.getElementById('modal-input-label');
+    const inputEl = document.getElementById('modal-input-field');
+    const okBtn   = document.getElementById('modal-input-ok');
+    if (!modal || !inputEl || !okBtn) {
+      // Fallback to the legacy native prompt if the modal markup is missing
+      const r = window.prompt(opts.label || opts.title || '', opts.value || '');
+      resolve(r == null ? null : String(r));
+      return;
+    }
+    titleEl.textContent = opts.title || 'Input';
+    labelEl.textContent = opts.label || '';
+    labelEl.style.display = opts.label ? '' : 'none';
+    inputEl.value = opts.value || '';
+    inputEl.placeholder = opts.placeholder || '';
+    inputEl.type = opts.type || 'text';
+    okBtn.textContent = opts.okText || 'OK';
+
+    const cancelEls = modal.querySelectorAll('[data-modal-input-cancel]');
+
+    function cleanup(result) {
+      modal.classList.remove('open');
+      okBtn.removeEventListener('click', onOk);
+      inputEl.removeEventListener('keydown', onKey);
+      cancelEls.forEach(el => el.removeEventListener('click', onCancel));
+      modal.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onEsc, true);
+      resolve(result);
+    }
+    function onOk()     { cleanup(inputEl.value); }
+    function onCancel() { cleanup(null); }
+    function onKey(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); onOk(); }
+      if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
+    }
+    function onBackdrop(e) { if (e.target === modal) onCancel(); }
+    function onEsc(e)      { if (e.key === 'Escape') { e.stopPropagation(); onCancel(); } }
+
+    okBtn.addEventListener('click', onOk);
+    inputEl.addEventListener('keydown', onKey);
+    cancelEls.forEach(el => el.addEventListener('click', onCancel));
+    modal.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onEsc, true);
+
+    modal.classList.add('open');
+    setTimeout(() => { inputEl.focus(); inputEl.select(); }, 50);
+  });
+}
+
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
@@ -3143,7 +3207,14 @@ const BackupManager = (() => {
         } else if (act === 'export-ics') {
           if (typeof downloadIcs === 'function') downloadIcs();
         } else if (act === 'rename') {
-          const next = prompt(t('bp.rename_prompt'), filename);
+          const next = await (typeof promptInput === 'function'
+            ? promptInput({
+                title: t('bp.rename'),
+                label: t('bp.rename_prompt'),
+                value: filename,
+                okText: t('btn.save') || 'Save',
+              })
+            : Promise.resolve(prompt(t('bp.rename_prompt'), filename)));
           if (!next || !next.trim() || next.trim() === filename) return;
           let cleaned = next.trim().replace(/[\\/:*?"<>|]/g, '');
           if (!/\.json$/i.test(cleaned)) cleaned += '.json';
@@ -4117,17 +4188,23 @@ function buildTemplateFromRobot(robot, name) {
   };
 }
 
-function saveListAsTemplate(robotId) {
+async function saveListAsTemplate(robotId) {
   ensureTemplatesState();
   const robot = (state.robots || []).find(r => r.id === robotId);
   if (!robot) return;
-  const name = prompt('Template name:', robot.name + ' (template)');
+  const name = await promptInput({
+    title: 'Save as template',
+    label: 'Template name',
+    value: robot.name + ' (template)',
+    okText: 'Save',
+  });
   if (!name || !name.trim()) return;
   const tpl = buildTemplateFromRobot(robot, name.trim());
   state.templates.push(tpl);
   save();
   alert(`Saved "${tpl.name}" as a template. Use it when creating a new list.`);
 }
+window.saveListAsTemplate = saveListAsTemplate;
 
 function createListFromTemplate(templateId, spaceId, customName) {
   ensureTemplatesState();
@@ -4556,8 +4633,14 @@ function populateQuickListSelect() {
   }
 }
 
-function quickCreateList() {
-  const name = (prompt('New list name:') || '').trim();
+async function quickCreateList() {
+  const raw = await promptInput({
+    title: 'New list',
+    label: 'List name',
+    placeholder: 'e.g. Groceries, Project tasks',
+    okText: 'Create',
+  });
+  const name = (raw || '').trim();
   if (!name) return;
   // Pick a target space: use current, or fall back to first
   const targetSpace = (state.spaces || []).find(s => s.id === state.currentSpaceId) || (state.spaces || [])[0];
@@ -5643,8 +5726,13 @@ save = function() {
 };
 
 // ── Add Space ──
-function addSpace() {
-  const name = prompt(t('space.name_prompt') || 'Space name:');
+async function addSpace() {
+  const name = await promptInput({
+    title: 'New Space',
+    label: t('space.name_prompt') || 'Space name',
+    placeholder: 'e.g. Work, Side project',
+    okText: 'Create',
+  });
   if (!name || !name.trim()) return;
   const sp = { id: uid(), name: name.trim(), items: [] };
   state.spaces.push(sp);
@@ -5716,12 +5804,17 @@ function openSpaceMenu(spaceId, anchorEl) {
 
   // Wire actions
   menu.querySelectorAll('[data-act]').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', async e => {
       e.stopPropagation();
       const act = btn.dataset.act;
       closeSpaceMenu();
       if (act === 'rename') {
-        const next = prompt('New name for this Space:', sp.name);
+        const next = await promptInput({
+          title: 'Rename Space',
+          label: 'New name',
+          value: sp.name,
+          okText: 'Rename',
+        });
         const trimmed = next && next.trim();
         if (trimmed && trimmed !== sp.name) {
           sp.name = trimmed;

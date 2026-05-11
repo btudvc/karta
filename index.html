@@ -278,7 +278,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v6.12.0</div>
+        <div class="more-version" id="more-version">B-Less Planner v6.12.1</div>
       </div>
     </section>
 
@@ -448,6 +448,24 @@
         <button class="btn-ghost" id="link-delete-btn" style="display:none" data-i18n="btn.delete">Sil</button>
         <button class="btn-ghost" data-close="modal-link" data-i18n="btn.cancel">İptal</button>
         <button class="btn-primary" id="save-link" data-i18n="btn.save">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Generic single-input prompt (used in place of window.prompt) -->
+  <div class="modal-overlay" id="modal-input">
+    <div class="modal modal-input">
+      <div class="modal-header">
+        <h3 id="modal-input-title">Input</h3>
+        <button class="modal-close" data-modal-input-cancel aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <label id="modal-input-label"></label>
+      <input type="text" id="modal-input-field" autocomplete="off" />
+      <div class="modal-actions">
+        <button class="btn-ghost" data-modal-input-cancel>Cancel</button>
+        <button class="btn-primary" id="modal-input-ok">OK</button>
       </div>
     </div>
   </div>
