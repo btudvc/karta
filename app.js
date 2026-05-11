@@ -2597,22 +2597,25 @@ const DriveAPI = (() => {
     const tail = `\r\n--${boundary}--\r\n`;
     const body = new Blob([head, JSON.stringify(payload), tail], { type: `multipart/related; boundary=${boundary}` });
     const r = await api('POST',
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,headRevisionId,modifiedTime,owners(emailAddress)',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,headRevisionId,modifiedTime,owners(emailAddress,displayName,photoLink)',
       { headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body }
     );
     const f = await r.json();
+    const o0 = (f.owners && f.owners[0]) || {};
     return {
       fileId: f.id,
       revisionId: f.headRevisionId,
       modifiedTime: f.modifiedTime,
-      ownerEmail: (f.owners && f.owners[0] && f.owners[0].emailAddress) || me,
+      ownerEmail:   o0.emailAddress || me,
+      ownerName:    o0.displayName  || (userInfo && userInfo.name)    || null,
+      ownerPicture: o0.photoLink    || (userInfo && userInfo.picture) || null,
     };
   }
 
   // Fetch latest snapshot + the metadata fields we need to decide whether
   // we can write (owner/writer vs reader) and to detect conflicts.
   async function pullSpaceFile(fileId) {
-    const fields = 'id,name,headRevisionId,modifiedTime,ownedByMe,owners(emailAddress),capabilities(canEdit),appProperties';
+    const fields = 'id,name,headRevisionId,modifiedTime,ownedByMe,owners(emailAddress,displayName,photoLink),capabilities(canEdit),appProperties';
     const metaR = await api('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?fields=${encodeURIComponent(fields)}`);
     const meta  = await metaR.json();
     const text  = await downloadText(fileId);
@@ -2621,11 +2624,14 @@ const DriveAPI = (() => {
     const myRole = meta.ownedByMe
       ? 'owner'
       : (meta.capabilities && meta.capabilities.canEdit ? 'writer' : 'reader');
+    const mo0 = (meta.owners && meta.owners[0]) || {};
     return {
       fileId: meta.id,
       revisionId: meta.headRevisionId,
       modifiedTime: meta.modifiedTime,
-      ownerEmail: (meta.owners && meta.owners[0] && meta.owners[0].emailAddress) || null,
+      ownerEmail:   mo0.emailAddress || null,
+      ownerName:    mo0.displayName  || null,
+      ownerPicture: mo0.photoLink    || null,
       myRole,
       payload,
     };
@@ -2664,18 +2670,32 @@ const DriveAPI = (() => {
   // opened via Picker (drive.file scope limitation).
   async function listAccessibleSharedSpaces() {
     const q = "appProperties has { key='b-less-space' and value='true' } and trashed=false";
-    const fields = 'files(id,name,modifiedTime,ownedByMe,owners(emailAddress),capabilities(canEdit),appProperties)';
+    const fields = 'files(id,name,modifiedTime,ownedByMe,owners(emailAddress,displayName,photoLink),capabilities(canEdit),appProperties)';
     const r = await api('GET',
       `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&pageSize=50`);
     const data = await r.json();
-    return (data.files || []).map(f => ({
-      fileId: f.id,
-      name:   f.name,
-      modifiedTime: f.modifiedTime,
-      ownerEmail:   (f.owners && f.owners[0] && f.owners[0].emailAddress) || null,
-      myRole: f.ownedByMe ? 'owner' : (f.capabilities && f.capabilities.canEdit ? 'writer' : 'reader'),
-      spaceId: (f.appProperties && f.appProperties['b-less-space-id']) || null,
-    }));
+    return (data.files || []).map(f => {
+      const o0 = (f.owners && f.owners[0]) || {};
+      return {
+        fileId: f.id,
+        name:   f.name,
+        modifiedTime: f.modifiedTime,
+        ownerEmail:   o0.emailAddress || null,
+        ownerName:    o0.displayName  || null,
+        ownerPicture: o0.photoLink    || null,
+        myRole: f.ownedByMe ? 'owner' : (f.capabilities && f.capabilities.canEdit ? 'writer' : 'reader'),
+        spaceId: (f.appProperties && f.appProperties['b-less-space-id']) || null,
+      };
+    });
+  }
+
+  // Rename the Drive file (owner only — server returns 403 otherwise)
+  async function renameSpaceFile(fileId, newSpaceName) {
+    const r = await api('PATCH',
+      `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name`,
+      { headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: spaceFileName(newSpaceName) }) });
+    return r.json();
   }
 
   // ── Permissions (collaborators) ──
@@ -2726,7 +2746,7 @@ const DriveAPI = (() => {
     saveBackup, readBackup,
     saveAttachment, openAttachment, deleteAttachment,
     // Shared spaces (Phase 1: API only)
-    createSharedSpaceFile, pullSpaceFile, pushSpaceFile,
+    createSharedSpaceFile, pullSpaceFile, pushSpaceFile, renameSpaceFile,
     listAccessibleSharedSpaces,
     addCollaborator, listCollaborators, removeCollaborator, updateCollaboratorRole,
   };
@@ -4878,7 +4898,8 @@ function isRobotReadOnly(robotId) {
 }
 function getRobotSpaceOwner(robotId) {
   const sp = findSpaceOfRobot(robotId);
-  return sp && sp.ownerEmail || null;
+  if (!sp) return null;
+  return sp.ownerName || sp.ownerEmail || null;
 }
 // Populate the Space dropdown in modal-robot
 function refreshSpaceSelect(selectedSpaceId) {
@@ -5361,7 +5382,21 @@ function openSpaceMenu(spaceId, anchorEl) {
       closeSpaceMenu();
       if (act === 'rename') {
         const next = prompt('New name for this Space:', sp.name);
-        if (next && next.trim()) { sp.name = next.trim(); save(); renderSidebar(); if (typeof renderHome === 'function') renderHome(); }
+        const trimmed = next && next.trim();
+        if (trimmed && trimmed !== sp.name) {
+          sp.name = trimmed;
+          save();
+          renderSidebar();
+          if (typeof renderHome === 'function') renderHome();
+          // If this is a shared Space we own, also rename the Drive file
+          // so the file in Drive UI matches. save() already debounce-pushes
+          // the new name as part of payload.space.name, so collaborators
+          // get the rename through normal sync.
+          if (sp.shared && sp.driveFileId && sp.myRole === 'owner' &&
+              DriveAPI && DriveAPI.renameSpaceFile) {
+            DriveAPI.renameSpaceFile(sp.driveFileId, sp.name).catch(() => {});
+          }
+        }
       } else if (act === 'share') {
         openShareSpaceModal(spaceId);
       } else if (act === 'delete') {
@@ -5521,7 +5556,18 @@ function renderShareSpaceBody(extra) {
 
   body.innerHTML = `
     <div class="share-meta">
-      <div class="share-meta-row"><span class="share-meta-label">Owner</span><span>${escapeHtml(sp.ownerEmail || '—')}</span></div>
+      <div class="share-meta-row">
+        <span class="share-meta-label">Owner</span>
+        <span class="share-owner">
+          ${sp.ownerPicture
+            ? `<img class="share-owner-avatar" src="${escapeAttr(sp.ownerPicture)}" alt="" referrerpolicy="no-referrer" />`
+            : `<span class="share-owner-avatar share-owner-avatar-fallback">${escapeHtml(((sp.ownerName || sp.ownerEmail || '?')[0] || '?').toUpperCase())}</span>`}
+          <span class="share-owner-text">
+            <span class="share-owner-name">${escapeHtml(sp.ownerName || sp.ownerEmail || '—')}</span>
+            ${sp.ownerName && sp.ownerEmail ? `<span class="share-owner-email">${escapeHtml(sp.ownerEmail)}</span>` : ''}
+          </span>
+        </span>
+      </div>
       <div class="share-meta-row"><span class="share-meta-label">Your role</span><span class="share-role-badge share-role-${sp.myRole || 'reader'}">${escapeHtml(roleLabel(sp.myRole || 'reader'))}</span></div>
       ${sp.lastSyncedAt ? `<div class="share-meta-row"><span class="share-meta-label">Last sync</span><span>${escapeHtml(new Date(sp.lastSyncedAt).toLocaleString())}</span></div>` : ''}
     </div>
@@ -5601,6 +5647,8 @@ async function enableSharingForCurrentSpace() {
     sp.shared             = true;
     sp.driveFileId        = r.fileId;
     sp.ownerEmail         = r.ownerEmail;
+    sp.ownerName          = r.ownerName    || null;
+    sp.ownerPicture       = r.ownerPicture || null;
     sp.myRole             = 'owner';
     sp.collaborators      = [];
     sp.lastSyncedRevision = r.revisionId;
@@ -5805,15 +5853,18 @@ function mergeImportedSpacePayload(pull) {
 
   // Insert or update the Space
   const sIdx = (state.spaces || []).findIndex(s => s.id === space.id);
+  const prev = sIdx >= 0 ? state.spaces[sIdx] : {};
   const merged = {
     id:   space.id,
     name: space.name,
     items: space.items || [],
     shared: true,
     driveFileId:        pull.fileId,
-    ownerEmail:         pull.ownerEmail || p.ownerEmail || null,
+    ownerEmail:         pull.ownerEmail   || p.ownerEmail   || prev.ownerEmail   || null,
+    ownerName:          pull.ownerName    || prev.ownerName || null,
+    ownerPicture:       pull.ownerPicture || prev.ownerPicture || null,
     myRole:             pull.myRole || 'reader',
-    collaborators:      sIdx >= 0 ? (state.spaces[sIdx].collaborators || []) : [],
+    collaborators:      prev.collaborators || [],
     lastSyncedRevision: pull.revisionId,
     lastSyncedAt:       Date.now(),
   };
@@ -6247,8 +6298,13 @@ function renderHome() {
         </button>
       `;}).join('');
 
+      const sharedTooltip = sp.shared
+        ? `Shared (${roleLabel(sp.myRole || 'reader')})${sp.ownerName || sp.ownerEmail ? ' · ' + (sp.ownerName || sp.ownerEmail) : ''}`
+        : '';
       const sharedBadge = sp.shared
-        ? `<span class="home-space-shared-badge" title="Shared (${escapeAttr(roleLabel(sp.myRole || 'reader'))})" aria-label="Shared"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-1a4 4 0 0 1 4-4h3"/><path d="M14 16h3a4 4 0 0 1 4 4v1"/></svg></span>`
+        ? (sp.ownerPicture
+            ? `<img class="home-space-owner-avatar" src="${escapeAttr(sp.ownerPicture)}" alt="" title="${escapeAttr(sharedTooltip)}" referrerpolicy="no-referrer" />`
+            : `<span class="home-space-shared-badge" title="${escapeAttr(sharedTooltip)}" aria-label="Shared"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-1a4 4 0 0 1 4-4h3"/><path d="M14 16h3a4 4 0 0 1 4 4v1"/></svg></span>`)
         : '';
       return `
         <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">

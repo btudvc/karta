@@ -5015,3 +5015,46 @@ body.is-readonly #robot-content [draggable="true"] {
   cursor: default !important;
 }
 body.is-readonly #robot-content [draggable="true"] { -webkit-user-drag: none; }
+
+/* ── Owner avatar / name in share modal + sidebar ──────── */
+.share-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.share-owner-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.share-owner-avatar-fallback {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.share-owner-text {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.2;
+}
+.share-owner-name  { font-size: 13px; font-weight: 600; color: var(--text); }
+.share-owner-email { font-size: 11.5px; color: var(--muted); }
+
+/* Tiny owner avatar next to the space name in the sidebar (replaces the
+   generic shared SVG badge when an avatar is available). */
+.home-space-owner-avatar {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: 6px;
+  vertical-align: middle;
+  border: 1px solid var(--border);
+}
