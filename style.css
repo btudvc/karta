@@ -4970,3 +4970,58 @@ body { font-size: 13px; }
   align-items: center;
   gap: 6px;
 }
+
+/* ── Read-only mode (Viewer role on a shared Space) ────── */
+.readonly-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(201,138,42,.08);
+  border: 1px solid rgba(201,138,42,.30);
+  color: #c98a2a;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.readonly-banner svg { flex-shrink: 0; }
+
+/* Inside the robot detail, hide the controls a Viewer can't use. Their
+   Drive permission is reader-only, so the edits would 403 on push. */
+body.is-readonly #robot-content .btn-group,
+body.is-readonly #robot-content .robot-detail-header .btn-sm,
+body.is-readonly #robot-content .btn-add,
+body.is-readonly #robot-content .task-quick-add,
+body.is-readonly #robot-content .task-add,
+body.is-readonly #robot-content .add-task-row,
+body.is-readonly #robot-content .add-issue-row,
+body.is-readonly #robot-content .task-actions,
+body.is-readonly #robot-content .issue-actions,
+body.is-readonly #robot-content .notebook-add,
+body.is-readonly #robot-content .nb-add,
+body.is-readonly #robot-content .subtask-add,
+body.is-readonly #robot-content .tag-add,
+body.is-readonly #robot-content [data-add-task],
+body.is-readonly #robot-content [data-add-issue] {
+  display: none !important;
+}
+/* Disable inline interactions that mutate state */
+body.is-readonly #robot-content .task-checkbox,
+body.is-readonly #robot-content .task-status-btn,
+body.is-readonly #robot-content .task-priority-btn,
+body.is-readonly #robot-content [contenteditable="true"],
+body.is-readonly #robot-content input,
+body.is-readonly #robot-content textarea,
+body.is-readonly #robot-content select {
+  pointer-events: none;
+  opacity: .7;
+}
+/* Hide the global quick-add FAB while a read-only space is open. */
+body.is-readonly #quick-fab { display: none !important; }
+/* Drag handles & inline reorder are also off */
+body.is-readonly #robot-content .task-item,
+body.is-readonly #robot-content [draggable="true"] {
+  cursor: default !important;
+}
+body.is-readonly #robot-content [draggable="true"] { -webkit-user-drag: none; }

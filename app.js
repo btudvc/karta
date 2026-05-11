@@ -786,9 +786,17 @@ function renderRobotDetail() {
         <div class="empty-icon">${ICO.botLg}</div>
         <p>${emptyMsg}</p>
       </div>`;
+    document.body.classList.remove('is-readonly');
     return;
   }
   if (robotsSection) robotsSection.setAttribute('data-detail-open', 'true');
+
+  // Read-only enforcement: if this robot lives inside a shared Space where
+  // the current user is a Viewer (reader), block edit affordances. Edits
+  // would silently fail to sync (Drive 403s the PATCH); hiding them is
+  // honest UX.
+  const readOnly = isRobotReadOnly(robot.id);
+  document.body.classList.toggle('is-readonly', readOnly);
 
   const activeTasks  = robot.tasks.filter(t => t.status === 'active');
   const pendingTasks = robot.tasks.filter(t => t.status === 'pending');
@@ -819,6 +827,13 @@ function renderRobotDetail() {
         <button class="btn-sm danger" onclick="deleteRobot('${robot.id}')">${t('btn.delete_list')}</button>
       </div>
     </div>
+
+    ${readOnly ? `
+      <div class="readonly-banner" role="status">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>View only — shared by ${escapeHtml(getRobotSpaceOwner(robot.id) || 'someone')}. Edits aren't saved.</span>
+      </div>
+    ` : ''}
 
     <div class="inner-tabs">
       <button class="inner-tab ${robotTab==='tasks'?'active':''}" onclick="switchRobotTab('tasks')">
@@ -4843,6 +4858,15 @@ function findSpaceOfRobot(robotId) {
     if (sp.items.some(i => i.type === 'list' && i.refId === robotId)) return sp;
   }
   return null;
+}
+// Read-only enforcement helpers — used by renderRobotDetail and others.
+function isRobotReadOnly(robotId) {
+  const sp = findSpaceOfRobot(robotId);
+  return !!(sp && sp.shared && sp.myRole === 'reader');
+}
+function getRobotSpaceOwner(robotId) {
+  const sp = findSpaceOfRobot(robotId);
+  return sp && sp.ownerEmail || null;
 }
 // Populate the Space dropdown in modal-robot
 function refreshSpaceSelect(selectedSpaceId) {
