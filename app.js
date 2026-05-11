@@ -5737,7 +5737,11 @@ async function refreshPendingShares() {
   try {
     const list = await DriveAPI.listAccessibleSharedSpaces();
     const knownIds = new Set((state.spaces || []).map(s => s.driveFileId).filter(Boolean));
-    _pendingShares = list.filter(f => !knownIds.has(f.fileId));
+    // Skip:
+    //   - files we've already imported (by driveFileId)
+    //   - files we own (those are *our* shares; "Shared with you" should
+    //     only surface things other accounts have shared with us)
+    _pendingShares = list.filter(f => !knownIds.has(f.fileId) && f.myRole !== 'owner');
   } catch {
     _pendingShares = [];
   }
