@@ -5098,7 +5098,7 @@ function renderSidebar() {
   list.querySelectorAll('.space-more-btn').forEach(el => {
     el.addEventListener('click', e => {
       e.stopPropagation();
-      openSpaceMenu(el.dataset.spaceMenu);
+      openSpaceMenu(el.dataset.spaceMenu, el);
     });
   });
 }
@@ -5236,23 +5236,102 @@ function addSpace() {
   renderSidebar();
 }
 
-function openSpaceMenu(spaceId) {
+// Lightweight floating menu shown next to the Space ⋯ button. Replaces
+// the previous native prompt() chooser.
+let _spaceMenuEl = null;
+function closeSpaceMenu() {
+  if (_spaceMenuEl && _spaceMenuEl.parentNode) _spaceMenuEl.parentNode.removeChild(_spaceMenuEl);
+  _spaceMenuEl = null;
+  document.removeEventListener('click', _spaceMenuOutsideHandler, true);
+  document.removeEventListener('keydown', _spaceMenuKeyHandler, true);
+}
+function _spaceMenuOutsideHandler(e) {
+  if (!_spaceMenuEl) return;
+  if (_spaceMenuEl.contains(e.target)) return;
+  closeSpaceMenu();
+}
+function _spaceMenuKeyHandler(e) {
+  if (e.key === 'Escape') { closeSpaceMenu(); e.stopPropagation(); }
+}
+
+function openSpaceMenu(spaceId, anchorEl) {
   const sp = findSpace(spaceId);
   if (!sp) return;
-  const sharedLine = sp.shared ? ' (currently shared)' : '';
-  const choice = prompt('Space "' + sp.name + '"' + sharedLine + '\n\n1: Rename\n2: Share…\n3: Delete\n\nType 1, 2 or 3:');
-  if (choice === '1') {
-    const next = prompt('New name:', sp.name);
-    if (next && next.trim()) { sp.name = next.trim(); save(); renderSidebar(); }
-  } else if (choice === '2') {
-    openShareSpaceModal(spaceId);
-  } else if (choice === '3') {
-    if (state.spaces.length <= 1) { alert('Cannot delete the only space.'); return; }
-    if (!confirm('Delete space "' + sp.name + '"? Items inside are unlinked but their underlying data is kept.')) return;
-    state.spaces = state.spaces.filter(s => s.id !== spaceId);
-    if (state.currentSpaceId === spaceId) state.currentSpaceId = state.spaces[0].id;
-    save(); renderSidebar();
+  closeSpaceMenu();
+  // Resolve anchor: prefer the clicked button, otherwise look up by spaceId
+  const anchor = anchorEl
+    || document.querySelector(`[data-space-share="${cssEscape(spaceId)}"]`)
+    || document.querySelector(`[data-space-menu="${cssEscape(spaceId)}"]`);
+
+  const menu = document.createElement('div');
+  menu.className = 'space-menu';
+  menu.innerHTML = `
+    <button class="space-menu-item" data-act="rename" type="button">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+      <span>Rename</span>
+    </button>
+    <button class="space-menu-item" data-act="share" type="button">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span>${sp.shared ? 'Manage sharing…' : 'Share…'}</span>
+    </button>
+    <div class="space-menu-sep"></div>
+    <button class="space-menu-item space-menu-danger" data-act="delete" type="button">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+      <span>Delete</span>
+    </button>
+  `;
+  // Position the menu (fixed, anchored under-right of the anchor if available,
+  // otherwise floating mid-viewport).
+  Object.assign(menu.style, { position: 'fixed', zIndex: 600 });
+  if (anchor) {
+    const rect = anchor.getBoundingClientRect();
+    const top  = Math.min(rect.bottom + 4, window.innerHeight - 200);
+    // Open the menu so its right edge aligns with the anchor's right edge.
+    menu.style.top  = top + 'px';
+    menu.style.left = 'auto';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+  } else {
+    menu.style.top  = '20%';
+    menu.style.left = '50%';
+    menu.style.transform = 'translateX(-50%)';
   }
+  document.body.appendChild(menu);
+  _spaceMenuEl = menu;
+
+  // Wire actions
+  menu.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const act = btn.dataset.act;
+      closeSpaceMenu();
+      if (act === 'rename') {
+        const next = prompt('New name for this Space:', sp.name);
+        if (next && next.trim()) { sp.name = next.trim(); save(); renderSidebar(); if (typeof renderHome === 'function') renderHome(); }
+      } else if (act === 'share') {
+        openShareSpaceModal(spaceId);
+      } else if (act === 'delete') {
+        if (state.spaces.length <= 1) { alert('Cannot delete the only space.'); return; }
+        if (!confirm(`Delete space "${sp.name}"?\n\nItems inside are unlinked but their underlying data is kept.`)) return;
+        state.spaces = state.spaces.filter(s => s.id !== spaceId);
+        if (state.currentSpaceId === spaceId) state.currentSpaceId = state.spaces[0].id;
+        save(); renderSidebar();
+        if (typeof renderHome === 'function') renderHome();
+      }
+    });
+  });
+
+  // Close on outside click or ESC. Use capture so we beat any nested handlers.
+  setTimeout(() => {
+    document.addEventListener('click', _spaceMenuOutsideHandler, true);
+    document.addEventListener('keydown', _spaceMenuKeyHandler, true);
+  }, 0);
+}
+
+// CSS.escape polyfill — fine to use as cssEscape since older browsers may
+// lack it in some embeds; modern ones all have it.
+function cssEscape(s) {
+  if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(s);
+  return String(s).replace(/[^a-zA-Z0-9_-]/g, c => '\\' + c);
 }
 
 // ──────────────────────────────────────────────────────────
@@ -5788,12 +5867,12 @@ function renderHome() {
         if (typeof openAddItemPicker === 'function') openAddItemPicker(sid);
       });
     });
-    // Share / options button — opens the same menu as the legacy ⋯ control
+    // Share / options button — opens the floating space menu
     spacesEl.querySelectorAll('[data-space-share]').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
         const sid = btn.dataset.spaceShare;
-        if (typeof openSpaceMenu === 'function') openSpaceMenu(sid);
+        if (typeof openSpaceMenu === 'function') openSpaceMenu(sid, btn);
       });
     });
   }

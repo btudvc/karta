@@ -4868,3 +4868,46 @@ body { font-size: 13px; }
   vertical-align: middle;
 }
 .home-space-shared-badge svg { display: block; }
+
+/* ── Floating Space menu (Rename / Share / Delete) ─────── */
+.space-menu {
+  min-width: 180px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: spaceMenuIn .12s var(--ease);
+}
+@keyframes spaceMenuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.space-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s var(--ease);
+}
+.space-menu-item:hover { background: var(--surface-2); }
+.space-menu-item svg   { color: var(--muted); flex-shrink: 0; }
+.space-menu-item:hover svg { color: var(--text); }
+.space-menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 6px;
+}
+.space-menu-danger        { color: var(--red, #dc2626); }
+.space-menu-danger svg    { color: var(--red, #dc2626); }
+.space-menu-danger:hover  { background: rgba(220,38,38,.10); }
