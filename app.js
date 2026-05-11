@@ -2522,6 +2522,11 @@ const BackupManager = (() => {
             <span>${t('bp.restore')}</span>
           </button>
         </div>
+
+        <button class="bp-settings-link" data-act="open-settings">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>${escapeHtml(t('more.section.settings') || 'Settings')}</span>
+        </button>
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-warn');
@@ -2545,6 +2550,11 @@ const BackupManager = (() => {
           <span>${t('bp.sign_in')}</span>
         </button>
         <div class="bp-hint">${t('bp.web_hint')}</div>
+
+        <button class="bp-settings-link" data-act="open-settings">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>${escapeHtml(t('more.section.settings') || 'Settings')}</span>
+        </button>
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-ok', 'backup-warn');
@@ -2579,6 +2589,15 @@ const BackupManager = (() => {
         } else if (act === 'restore') {
           const ok = await tryRestore();
           if (!ok) alert(t('bp.no_backup_found'));
+        } else if (act === 'open-settings') {
+          // Close the popover, then jump to the Settings section. Done
+          // synchronously so the click's user-gesture context is preserved
+          // in case anything inside Settings later needs it.
+          const pop = document.getElementById('backup-popover');
+          const bd  = document.getElementById('backup-backdrop');
+          pop?.classList.remove('open');
+          bd?.classList.remove('open');
+          if (typeof activateSection === 'function') activateSection('settings');
         } else if (act === 'rename') {
           const next = prompt(t('bp.rename_prompt'), filename);
           if (!next || !next.trim() || next.trim() === filename) return;
@@ -2729,8 +2748,10 @@ const BackupManager = (() => {
     const moreBtn  = document.getElementById('more-drive-trigger');
     const popover  = document.getElementById('backup-popover');
     const backdrop = document.getElementById('backup-backdrop');
-    if (!popover || (!btn && !moreBtn)) return;
-
+    if (!popover) return;
+    // The topbar avatar is the primary entry now; btn / moreBtn are
+    // legacy ids that may not exist, but outside-click + ESC closing
+    // should still wire up regardless.
     const entryControls = [btn, moreBtn].filter(Boolean);
     function closePopover() { popover.classList.remove('open'); if (backdrop) backdrop.classList.remove('open'); }
 
@@ -5442,11 +5463,6 @@ document.getElementById('topbar-avatar-btn')?.addEventListener('click', e => {
 // Boot: paint avatar from cached userInfo immediately (no Drive call needed).
 updateTopbarAvatar();
 document.getElementById('spaces-drawer-backdrop')?.addEventListener('click', closeSpacesDrawer);
-document.getElementById('drawer-settings-btn')?.addEventListener('click', () => {
-  closeSpacesDrawer();
-  activateSection('settings');
-  setBnavActiveFor(null);
-});
 document.getElementById('drawer-add-space-btn')?.addEventListener('click', () => {
   if (typeof addSpace === 'function') { addSpace(); renderHome(); }
 });
