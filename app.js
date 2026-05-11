@@ -454,7 +454,6 @@ let reviewPeriod = 'week';   // 'week' | 'month'
 let currentReviewKey = null; // e.g. '2026-W19' or '2026-05'
 let editingLinkId = null;
 let linksFilter = '';        // free-text search
-let financeSelectedMonth = ymd(new Date()).slice(0, 7);
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -3678,8 +3677,6 @@ const ITEM_ICONS = {
   meeting: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   visit:   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   journal: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
-  review:    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>',
-  links:     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
 };
 
 function escapeHtml(s) {
@@ -4443,7 +4440,7 @@ function migrateToSpaces() {
   if (!Array.isArray(state.links)) state.links = [];
 
   // Build a set of all currently-referenced refIds, by type
-  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set(), review: new Set(), links: new Set() };
+  const referenced = { list: new Set(), meeting: new Set(), visit: new Set(), journal: new Set() };
   state.spaces.forEach(sp => {
     sp.items.forEach(it => { if (referenced[it.type]) referenced[it.type].add(it.refId); });
   });
@@ -4484,8 +4481,6 @@ function migrateToSpaces() {
     meeting: new Set((state.meetings    || []).map(m => m.id)),
     visit:   new Set((state.fieldVisits || []).map(v => v.id)),
     journal: new Set(['default']),
-    review: new Set(['default']),
-    links: new Set(['default']),
   };
   let removed = false;
   state.spaces.forEach(sp => {
@@ -4545,8 +4540,6 @@ function resolveItemData(item) {
   if (item.type === 'meeting') return (state.meetings    || []).find(m => m.id === item.refId);
   if (item.type === 'visit')   return (state.fieldVisits || []).find(v => v.id === item.refId);
   if (item.type === 'journal') return { name: 'Journal' };
-  if (item.type === 'review')    return { name: t('reviews.title') || 'Reviews' };
-  if (item.type === 'links')     return { name: t('links.title') || 'Links' };
   return null;
 }
 function itemDisplayName(item) {
@@ -4638,8 +4631,6 @@ function renderSidebar() {
     const meetings = sp.items.filter(i => i.type === 'meeting');
     const visits   = sp.items.filter(i => i.type === 'visit');
     const journals = sp.items.filter(i => i.type === 'journal');
-    const reviews   = sp.items.filter(i => i.type === 'review');
-    const links     = sp.items.filter(i => i.type === 'links');
 
     // Lists are flat (each is its own page). Meetings/Journal group up.
     // Visits are now global — accessible from the header cross-nav (not nested in spaces).
@@ -4647,9 +4638,7 @@ function renderSidebar() {
     const meetingsHtml = subgroup(t('sidebar.meetings') || 'Meetings', 'meeting', meetings, sp.id);
     const journalsHtml = journalSubgroup(journals, sp.id);
 
-    const reviewsHtml   = reviews.map(it => itemRow(it, sp.id)).join('');
-    const linksHtml     = links.map(it => itemRow(it, sp.id)).join('');
-    const body = listsHtml + reviewsHtml + linksHtml + meetingsHtml + journalsHtml;
+    const body = listsHtml + meetingsHtml + journalsHtml;
 
     return `
       <div class="space-group ${collapsed ? 'collapsed' : ''}" data-space-id="${sp.id}">
@@ -4826,12 +4815,6 @@ function selectSpaceItem(spaceId, itemId) {
     if (typeof renderVisits === 'function') renderVisits();
   } else if (item.type === 'journal') {
     activateSection('journal');
-  } else if (item.type === 'review') {
-    activateSection('reviews');
-    if (typeof renderReviews === 'function') renderReviews();
-  } else if (item.type === 'links') {
-    activateSection('links');
-    if (typeof renderLinks === 'function') renderLinks();
   }
 
   save();
@@ -5015,8 +4998,6 @@ function spaceItemTitle(item) {
     return v && v.location ? v.location : 'Visit';
   }
   if (item.type === 'journal') return 'Journal';
-  if (item.type === 'links')   return 'Links';
-  if (item.type === 'reviews') return 'Reviews';
   return item.type;
 }
 
