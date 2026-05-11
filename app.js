@@ -5900,10 +5900,14 @@ window.onDriveUserChange = function(userInfo) {
 const PUSH_DEBOUNCE_MS = 1500;
 const PULL_FRESHNESS_MS = 8000;
 const POLL_INTERVAL_MS  = 30000;
-const _pendingPushes = new Map(); // spaceId -> setTimeout handle
-const _autoPullInFlight = new Set(); // spaceId currently pulling
-let _spacePollTimer = null;
-let _polledSpaceId  = null;
+// These globals are touched by renderRobotDetail, which can run very
+// early (applyI18n → renderAll at boot). `let` puts them in the
+// temporal-dead-zone until script execution reaches this line and
+// crashes the boot — use `var` so they're hoisted as `undefined`.
+var _pendingPushes = new Map(); // spaceId -> setTimeout handle
+var _autoPullInFlight = new Set(); // spaceId currently pulling
+var _spacePollTimer = null;
+var _polledSpaceId  = null;
 
 function _canPush(sp) {
   return sp && sp.shared && sp.driveFileId && (sp.myRole === 'owner' || sp.myRole === 'writer');
