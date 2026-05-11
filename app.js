@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.11.0';
+var APP_VERSION = '6.12.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -1153,6 +1153,20 @@ function dueClass(iso, status) {
   if (d.getTime() === today.getTime()) return 'today';
   return '';
 }
+// Small avatar / initial chip used on assigned tasks.
+function renderAssigneeChip(a) {
+  if (!a || !a.email) return '';
+  const me = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const isMe = me && me.email && a.email.toLowerCase() === me.email.toLowerCase();
+  const label = a.name || a.email;
+  const initial = (label[0] || '?').toUpperCase();
+  const tooltip = `${label}${isMe ? ' (you)' : ''}`;
+  const inner = a.picture
+    ? `<img src="${escapeAttr(a.picture)}" alt="" referrerpolicy="no-referrer">`
+    : `<span class="assignee-initial">${escapeHtml(initial)}</span>`;
+  return `<span class="task-assignee-chip ${isMe ? 'is-me' : ''}" title="${escapeAttr(tooltip)}">${inner}</span>`;
+}
+
 function formatDueShort(iso) {
   if (!iso) return '';
   const d = new Date(iso + 'T00:00:00');
@@ -1179,6 +1193,7 @@ function renderTask(task) {
           ${escapeHtml(task.title)}
         </div>
         <div class="task-tags">
+          ${task.assignee && task.assignee.email ? renderAssigneeChip(task.assignee) : ''}
           ${(task.tags || []).map(tg => `<span class="task-label-chip" data-tag="${escapeAttr(tg)}">${escapeHtml(tg)}</span>`).join('')}
           ${task.dueDate ? `<span class="task-due ${dueClass(task.dueDate, task.status)}">${formatDueShort(task.dueDate)}</span>` : ''}
           ${task.priority !== 'normal' ? `<span class="priority-tag ${task.priority}">${task.priority}</span>` : ''}
@@ -1612,6 +1627,7 @@ window.editTask = function(id) {
   if (ti) ti.value = (task.tags || []).join(', ');
   const rc = document.getElementById('task-recurrence');
   if (rc) rc.value = (task.recurrence && task.recurrence.type) || 'none';
+  refreshAssigneeSelect((task.assignee && task.assignee.email) || '');
   renderTagPicker(task.tags || []);
   document.querySelector('#modal-task h3').textContent = t('modal.edit_task');
   document.getElementById('save-task').textContent = t('btn.save_changes');
@@ -1855,10 +1871,70 @@ window.openTaskModal = function() {
   const dd = document.getElementById('task-due-date'); if (dd) dd.value = '';
   const ti = document.getElementById('task-tags-input'); if (ti) ti.value = '';
   const rc = document.getElementById('task-recurrence'); if (rc) rc.value = 'none';
+  refreshAssigneeSelect('');
   renderTagPicker([]);
   openModal('modal-task');
   setTimeout(() => document.getElementById('task-title').focus(), 50);
 };
+
+// Populate the Assignee dropdown for a task. Members = owner + collaborators
+// of the Space the current robot lives in. If the Space isn't shared (or
+// has no members), the dropdown stays hidden so the modal stays compact
+// for the personal-only use case.
+function refreshAssigneeSelect(selectedEmail) {
+  const sel = document.getElementById('task-assignee');
+  const lbl = document.getElementById('task-assignee-label');
+  if (!sel) return;
+  const robot = getCurrentContainer();
+  const sp = robot && typeof findSpaceOfRobot === 'function' ? findSpaceOfRobot(robot.id) : null;
+  if (!sp || !sp.shared) {
+    sel.style.display = 'none';
+    if (lbl) lbl.style.display = 'none';
+    sel.value = '';
+    return;
+  }
+  const members = collectSharedSpaceMembers(sp);
+  if (!members.length) {
+    sel.style.display = 'none';
+    if (lbl) lbl.style.display = 'none';
+    sel.value = '';
+    return;
+  }
+  sel.style.display = '';
+  if (lbl) lbl.style.display = '';
+  const me = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  sel.innerHTML = `<option value="">Unassigned</option>` +
+    members.map(m => {
+      const label = m.name || m.email;
+      const youTag = me && m.email && me.email && m.email.toLowerCase() === me.email.toLowerCase() ? ' (you)' : '';
+      return `<option value="${escapeAttr(m.email)}">${escapeHtml(label + youTag)}</option>`;
+    }).join('');
+  sel.value = (selectedEmail && members.some(m => m.email === selectedEmail)) ? selectedEmail : '';
+}
+
+// Owner + collaborators with stable shape { email, name, picture, role }.
+function collectSharedSpaceMembers(sp) {
+  if (!sp) return [];
+  const seen = new Set();
+  const out = [];
+  if (sp.ownerEmail) {
+    seen.add(sp.ownerEmail.toLowerCase());
+    out.push({
+      email: sp.ownerEmail,
+      name: sp.ownerName || sp.ownerEmail,
+      picture: sp.ownerPicture || null,
+      role: 'owner',
+    });
+  }
+  (sp.collaborators || []).forEach(c => {
+    if (!c || !c.email) return;
+    const key = c.email.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ email: c.email, name: c.email, picture: null, role: c.role || 'reader' });
+  });
+  return out;
+}
 
 document.getElementById('task-title').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('save-task').click();
@@ -1874,19 +1950,31 @@ document.getElementById('save-task').addEventListener('click', () => {
   const tags     = tagsRaw ? Array.from(new Set(tagsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean))) : [];
   const recVal   = (document.getElementById('task-recurrence')?.value || 'none');
   const recurrence = recVal && recVal !== 'none' ? { type: recVal } : null;
+  const assigneeEmail = (document.getElementById('task-assignee')?.value || '').trim();
   const robot = getCurrentContainer();
   if (!robot) return;
+  // Resolve assignee object from current Space members so we can store
+  // name + picture (a future rename won't lose context).
+  const sp = typeof findSpaceOfRobot === 'function' ? findSpaceOfRobot(robot.id) : null;
+  let assignee = null;
+  if (assigneeEmail && sp) {
+    const members = collectSharedSpaceMembers(sp);
+    const m = members.find(x => x.email && x.email.toLowerCase() === assigneeEmail.toLowerCase());
+    if (m) assignee = { email: m.email, name: m.name || null, picture: m.picture || null };
+    else assignee = { email: assigneeEmail, name: null, picture: null };
+  }
   if (editingTaskId) {
     const task = robot.tasks.find(t => t.id === editingTaskId);
     if (task) {
       task.title = title; task.priority = priority; task.status = status;
       task.dueDate = dueDate || null; task.tags = tags;
       task.recurrence = recurrence;
+      task.assignee = assignee;
     }
   } else {
     robot.tasks.push({
       id: uid(), title, priority, status,
-      dueDate: dueDate || null, tags, recurrence,
+      dueDate: dueDate || null, tags, recurrence, assignee,
       notebook: [], expanded: false, createdAt: Date.now(),
     });
   }

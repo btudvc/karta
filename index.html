@@ -278,7 +278,7 @@
           </button>
         </div>
 
-        <div class="more-version" id="more-version">B-Less Planner v6.11.0</div>
+        <div class="more-version" id="more-version">B-Less Planner v6.12.0</div>
       </div>
     </section>
 
@@ -574,6 +574,10 @@
       </div>
       <label data-i18n="label.due_date">Bitiş Tarihi</label>
       <input type="date" id="task-due-date" />
+      <label id="task-assignee-label" style="display:none">Assigned to</label>
+      <select id="task-assignee" style="display:none">
+        <option value="">Unassigned</option>
+      </select>
       <label>Recurring</label>
       <select id="task-recurrence">
         <option value="none">None — one-off task</option>
