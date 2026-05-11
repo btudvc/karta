@@ -4954,6 +4954,7 @@ function renderSidebar() {
         <div class="space-header">
           <span class="space-chev">${ICO.chevron}</span>
           <span class="space-name">${escapeHtml(sp.name)}</span>
+          ${sp.shared ? `<span class="space-shared-badge" title="Shared (${roleLabel(sp.myRole || 'reader')})" aria-label="Shared"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-1a4 4 0 0 1 4-4h3"/><path d="M14 16h3a4 4 0 0 1 4 4v1"/></svg></span>` : ''}
           <button class="space-add-btn" data-add-to-space="${sp.id}" title="Add item" aria-label="Add item">+</button>
           <button class="space-more-btn" data-space-menu="${sp.id}" title="Space options" aria-label="Space options">⋯</button>
         </div>
@@ -5238,17 +5239,231 @@ function addSpace() {
 function openSpaceMenu(spaceId) {
   const sp = findSpace(spaceId);
   if (!sp) return;
-  const choice = prompt('Space "' + sp.name + '"\n\n1: Rename\n2: Delete\n\nType 1 or 2:');
+  const sharedLine = sp.shared ? ' (currently shared)' : '';
+  const choice = prompt('Space "' + sp.name + '"' + sharedLine + '\n\n1: Rename\n2: Share…\n3: Delete\n\nType 1, 2 or 3:');
   if (choice === '1') {
     const next = prompt('New name:', sp.name);
     if (next && next.trim()) { sp.name = next.trim(); save(); renderSidebar(); }
   } else if (choice === '2') {
+    openShareSpaceModal(spaceId);
+  } else if (choice === '3') {
     if (state.spaces.length <= 1) { alert('Cannot delete the only space.'); return; }
     if (!confirm('Delete space "' + sp.name + '"? Items inside are unlinked but their underlying data is kept.')) return;
     state.spaces = state.spaces.filter(s => s.id !== spaceId);
     if (state.currentSpaceId === spaceId) state.currentSpaceId = state.spaces[0].id;
     save(); renderSidebar();
   }
+}
+
+// ──────────────────────────────────────────────────────────
+// SHARED SPACES — Phase 2: Share modal UI
+// ──────────────────────────────────────────────────────────
+let _shareTargetSpaceId = null;
+
+function openShareSpaceModal(spaceId) {
+  const sp = findSpace(spaceId);
+  if (!sp) return;
+  _shareTargetSpaceId = spaceId;
+  const titleEl = document.getElementById('share-modal-title');
+  if (titleEl) titleEl.textContent = `Share — ${sp.name}`;
+  renderShareSpaceBody();
+  if (typeof openModal === 'function') openModal('modal-share-space');
+}
+
+function renderShareSpaceBody(extra) {
+  const body = document.getElementById('share-body');
+  if (!body) return;
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp) return;
+
+  const signedIn = (typeof DriveAPI !== 'undefined') && DriveAPI.isSignedIn && DriveAPI.isSignedIn();
+  const me = (DriveAPI && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const status = extra && extra.status ? `<div class="share-status">${escapeHtml(extra.status)}</div>` : '';
+  const error  = extra && extra.error  ? `<div class="share-error">${escapeHtml(extra.error)}</div>` : '';
+
+  // Not signed in → ask them to authenticate via the avatar popover.
+  if (!signedIn) {
+    body.innerHTML = `
+      <p class="share-blurb">To share a Space you need to be signed in to Google Drive. Click the avatar in the top-right to sign in, then come back here.</p>
+      ${error}
+    `;
+    return;
+  }
+
+  // Not shared yet → offer to share.
+  if (!sp.shared || !sp.driveFileId) {
+    body.innerHTML = `
+      <p class="share-blurb">Shares a copy of this Space to your Google Drive (private "B-Less/spaces" folder). Invite people by email — they need a Google account.</p>
+      <ul class="share-bullets">
+        <li>Editors can add / edit / delete items.</li>
+        <li>Viewers see the latest content but can't change it.</li>
+        <li>Last-write-wins — conflicts prompt a reload.</li>
+      </ul>
+      ${status}${error}
+      <div class="modal-actions">
+        <button class="btn-ghost" data-close="modal-share-space">Cancel</button>
+        <button class="btn-primary" id="share-enable-btn" type="button">Share this Space</button>
+      </div>
+    `;
+    document.getElementById('share-enable-btn')?.addEventListener('click', enableSharingForCurrentSpace);
+    return;
+  }
+
+  // Already shared — show collaborators, owner, add form, stop-sharing.
+  const isOwner = sp.myRole === 'owner' || sp.ownerEmail === (me && me.email);
+  const collabRows = (sp.collaborators || []).map(c => `
+    <tr data-perm-id="${escapeAttr(c.permissionId)}">
+      <td class="share-collab-email">${escapeHtml(c.email)}</td>
+      <td>
+        <select class="share-role-select" ${isOwner ? '' : 'disabled'} data-perm-id="${escapeAttr(c.permissionId)}">
+          <option value="writer" ${c.role === 'writer' ? 'selected' : ''}>Editor</option>
+          <option value="reader" ${c.role === 'reader' ? 'selected' : ''}>Viewer</option>
+        </select>
+      </td>
+      <td class="share-collab-actions">
+        ${isOwner ? `<button class="btn-ghost share-collab-remove" data-perm-id="${escapeAttr(c.permissionId)}" type="button">Remove</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+
+  body.innerHTML = `
+    <div class="share-meta">
+      <div class="share-meta-row"><span class="share-meta-label">Owner</span><span>${escapeHtml(sp.ownerEmail || '—')}</span></div>
+      <div class="share-meta-row"><span class="share-meta-label">Your role</span><span class="share-role-badge share-role-${sp.myRole || 'reader'}">${escapeHtml(roleLabel(sp.myRole || 'reader'))}</span></div>
+      ${sp.lastSyncedAt ? `<div class="share-meta-row"><span class="share-meta-label">Last sync</span><span>${escapeHtml(new Date(sp.lastSyncedAt).toLocaleString())}</span></div>` : ''}
+    </div>
+
+    ${isOwner ? `
+    <div class="share-add">
+      <input type="email" id="share-add-email" placeholder="someone@gmail.com" autocomplete="off" />
+      <select id="share-add-role">
+        <option value="writer">Editor</option>
+        <option value="reader">Viewer</option>
+      </select>
+      <button class="btn-primary" id="share-add-btn" type="button">Invite</button>
+    </div>
+    ` : ''}
+
+    <table class="share-collab-table">
+      <thead><tr><th>Email</th><th>Role</th><th></th></tr></thead>
+      <tbody>${collabRows || `<tr><td colspan="3" class="share-collab-empty">No collaborators yet${isOwner ? ' — invite someone above.' : '.'}</td></tr>`}</tbody>
+    </table>
+
+    ${status}${error}
+
+    <div class="modal-actions">
+      ${isOwner ? `<button class="btn-ghost share-stop-btn" id="share-stop-btn" type="button">Stop sharing on this device</button>` : ''}
+      <button class="btn-primary" data-close="modal-share-space">Done</button>
+    </div>
+  `;
+
+  // Wire up
+  document.getElementById('share-add-btn')?.addEventListener('click', addCollaboratorToCurrentSpace);
+  document.getElementById('share-stop-btn')?.addEventListener('click', stopSharingCurrentSpace);
+  body.querySelectorAll('.share-collab-remove').forEach(b => {
+    b.addEventListener('click', () => removeCollaboratorFromCurrentSpace(b.dataset.permId));
+  });
+  body.querySelectorAll('.share-role-select').forEach(s => {
+    s.addEventListener('change', () => updateCollaboratorRoleForCurrentSpace(s.dataset.permId, s.value));
+  });
+}
+
+function roleLabel(role) {
+  if (role === 'owner')  return 'Owner';
+  if (role === 'writer') return 'Editor';
+  if (role === 'reader') return 'Viewer';
+  return role || '—';
+}
+
+async function enableSharingForCurrentSpace() {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp) return;
+  const btn = document.getElementById('share-enable-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sharing…'; }
+  try {
+    const r = await DriveAPI.createSharedSpaceFile(sp);
+    sp.shared             = true;
+    sp.driveFileId        = r.fileId;
+    sp.ownerEmail         = r.ownerEmail;
+    sp.myRole             = 'owner';
+    sp.collaborators      = [];
+    sp.lastSyncedRevision = r.revisionId;
+    sp.lastSyncedAt       = Date.now();
+    save();
+    renderSidebar();
+    renderShareSpaceBody({ status: 'Shared. You can invite people now.' });
+  } catch (e) {
+    renderShareSpaceBody({ error: 'Could not share: ' + (e.message || 'unknown error') });
+  }
+}
+
+async function addCollaboratorToCurrentSpace() {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp || !sp.driveFileId) return;
+  const emailEl = document.getElementById('share-add-email');
+  const roleEl  = document.getElementById('share-add-role');
+  const email = (emailEl && emailEl.value || '').trim();
+  const role  = (roleEl && roleEl.value) || 'writer';
+  if (!email) { emailEl?.focus(); return; }
+  const btn = document.getElementById('share-add-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Inviting…'; }
+  try {
+    const c = await DriveAPI.addCollaborator(sp.driveFileId, email, role);
+    sp.collaborators = sp.collaborators || [];
+    sp.collaborators.push({ permissionId: c.permissionId, email: c.email, role: c.role });
+    save();
+    renderShareSpaceBody({ status: `Invited ${email} as ${roleLabel(role)}.` });
+  } catch (e) {
+    renderShareSpaceBody({ error: 'Invite failed: ' + (e.message || 'unknown error') });
+  }
+}
+
+async function removeCollaboratorFromCurrentSpace(permissionId) {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp || !sp.driveFileId) return;
+  const c = (sp.collaborators || []).find(x => x.permissionId === permissionId);
+  if (!c) return;
+  if (!confirm(`Remove ${c.email} from this Space?`)) return;
+  try {
+    await DriveAPI.removeCollaborator(sp.driveFileId, permissionId);
+    sp.collaborators = (sp.collaborators || []).filter(x => x.permissionId !== permissionId);
+    save();
+    renderShareSpaceBody({ status: `Removed ${c.email}.` });
+  } catch (e) {
+    renderShareSpaceBody({ error: 'Could not remove: ' + (e.message || 'unknown error') });
+  }
+}
+
+async function updateCollaboratorRoleForCurrentSpace(permissionId, newRole) {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp || !sp.driveFileId) return;
+  try {
+    const c = await DriveAPI.updateCollaboratorRole(sp.driveFileId, permissionId, newRole);
+    const target = (sp.collaborators || []).find(x => x.permissionId === permissionId);
+    if (target) target.role = c.role;
+    save();
+    renderShareSpaceBody({ status: `Role updated to ${roleLabel(newRole)}.` });
+  } catch (e) {
+    renderShareSpaceBody({ error: 'Could not update role: ' + (e.message || 'unknown error') });
+  }
+}
+
+function stopSharingCurrentSpace() {
+  const sp = findSpace(_shareTargetSpaceId);
+  if (!sp) return;
+  if (!confirm(
+    'Stop syncing this Space on this device?\n\nThe Drive file and collaborator invitations stay; you can re-link it later. Other people who already have access keep their access.'
+  )) return;
+  sp.shared             = false;
+  sp.driveFileId        = undefined;
+  sp.ownerEmail         = undefined;
+  sp.myRole             = undefined;
+  sp.collaborators      = [];
+  sp.lastSyncedRevision = undefined;
+  sp.lastSyncedAt       = undefined;
+  save();
+  renderSidebar();
+  renderShareSpaceBody({ status: 'Stopped syncing on this device.' });
 }
 
 // ── Cross-space top nav (Today / Calendar / All Tasks) ──

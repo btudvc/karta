@@ -4680,3 +4680,147 @@ body { font-size: 13px; }
 .bp-settings-link:hover { background: var(--surface-2); border-color: var(--border-2); }
 .bp-settings-link svg   { color: var(--muted); flex-shrink: 0; }
 .bp-settings-link:hover svg { color: var(--text); }
+
+/* ── Shared-space UI (Phase 2) ──────────────────────────── */
+
+/* Tiny "people" badge in the Spaces sidebar header */
+.space-shared-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+.space-shared-badge svg { display: block; }
+
+/* Share modal body */
+.modal.modal-share { width: 560px; max-width: 96vw; }
+.share-body { display: flex; flex-direction: column; gap: 14px; padding: 0 4px; }
+.share-blurb {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.share-bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.share-bullets li { margin: 2px 0; }
+
+.share-meta {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.share-meta-row {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 13px;
+}
+.share-meta-label { color: var(--muted); }
+
+.share-role-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.share-role-owner  { color: var(--accent); border-color: var(--accent-soft2); background: var(--accent-soft); }
+.share-role-writer { color: #2a9d4f; border-color: rgba(63,185,80,.4); background: rgba(63,185,80,.10); }
+.share-role-reader { color: #c98a2a; border-color: rgba(201,138,42,.4); background: rgba(201,138,42,.10); }
+
+.share-add {
+  display: grid;
+  grid-template-columns: 1fr 110px auto;
+  gap: 8px;
+  align-items: center;
+}
+.share-add input, .share-add select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.share-collab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.share-collab-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.share-collab-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.share-collab-table tr:last-child td { border-bottom: none; }
+.share-collab-email { word-break: break-all; }
+.share-role-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.share-role-select:disabled { opacity: .6; cursor: not-allowed; }
+.share-collab-actions { text-align: right; }
+.share-collab-remove { color: var(--red, #dc2626); font-size: 12px; }
+.share-collab-empty {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  padding: 16px 8px;
+}
+
+.share-status {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(63,185,80,.10);
+  color: #2a9d4f;
+  border: 1px solid rgba(63,185,80,.30);
+  font-size: 12.5px;
+}
+.share-error {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(220,38,38,.10);
+  color: var(--red, #dc2626);
+  border: 1px solid rgba(220,38,38,.30);
+  font-size: 12.5px;
+}
+
+.share-stop-btn { color: var(--red, #dc2626); }
+
+@media (max-width: 600px) {
+  .share-add { grid-template-columns: 1fr; }
+  .share-add input, .share-add select, .share-add button { width: 100%; }
+}
