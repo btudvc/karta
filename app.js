@@ -5897,9 +5897,11 @@ window.onDriveUserChange = function(userInfo) {
 //   - "Synced Nm ago" indicator: small text in the sidebar Space row.
 // ──────────────────────────────────────────────────────────
 
-const PUSH_DEBOUNCE_MS = 1500;
-const PULL_FRESHNESS_MS = 8000;
-const POLL_INTERVAL_MS  = 30000;
+// Constants referenced from functions called during boot — same TDZ
+// trap as the `let` globals above. Use `var` so they're hoisted.
+var PUSH_DEBOUNCE_MS = 1500;
+var PULL_FRESHNESS_MS = 8000;
+var POLL_INTERVAL_MS  = 30000;
 // These globals are touched by renderRobotDetail, which can run very
 // early (applyI18n → renderAll at boot). `let` puts them in the
 // temporal-dead-zone until script execution reaches this line and
@@ -5918,6 +5920,9 @@ function _canPull(sp) {
 }
 
 function schedulePush(spaceId) {
+  // Bail if module-level constants haven't been initialised yet (boot
+  // calls can reach this before script execution passes the var inits).
+  if (typeof PUSH_DEBOUNCE_MS !== 'number') return;
   if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
   const existing = _pendingPushes.get(spaceId);
   if (existing) clearTimeout(existing);
@@ -5958,6 +5963,7 @@ async function doAutoPush(spaceId, retry) {
 }
 
 async function maybeAutoPull(spaceId, force) {
+  if (typeof PULL_FRESHNESS_MS !== 'number') return;
   const sp = findSpace(spaceId);
   if (!_canPull(sp)) return;
   if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
@@ -5988,6 +5994,9 @@ async function maybeAutoPull(spaceId, force) {
 }
 
 function startSpacePoll(spaceId) {
+  // Bail if module-level constants haven't initialised yet (boot can
+  // reach this before script execution passes the var inits).
+  if (typeof POLL_INTERVAL_MS !== 'number') return;
   if (_polledSpaceId === spaceId && _spacePollTimer) return;
   stopSpacePoll();
   _polledSpaceId = spaceId;
