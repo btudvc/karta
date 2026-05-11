@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.13.0';
+var APP_VERSION = '6.14.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -559,7 +559,7 @@ function load() {
       }
     } catch(_) {}
     window.__bLessLoadFailed = true;
-    alert('Saved planner data could not be loaded. The broken local copy was preserved as "b-less.corrupt"; restore from Google Drive or export it before making changes.');
+    alertDialog({ title: 'Could not load data', message: 'Saved planner data could not be loaded. The broken local copy was preserved as "b-less.corrupt"; restore from Google Drive or export it before making changes.' });
   }
   migrateLegacyTopics();
 }
@@ -1050,8 +1050,8 @@ window.setIssueStatus = function(id, status) {
   renderCurrentDetail();
 };
 
-window.deleteIssue = function(id) {
-  if (!confirm(t('conf.delete_issue'))) return;
+window.deleteIssue = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_issue'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   const robot = getCurrentContainer();
   robot.issues = (robot.issues||[]).filter(i => i.id !== id);
   save();
@@ -1338,8 +1338,11 @@ window.toggleTask = function(id) {
   const robot = getCurrentContainer();
   const task = robot.tasks.find(t => t.id === id);
   task.expanded = !task.expanded;
-  save();
-  // Toggle DOM directly for snappiness
+  // task.expanded is UI state — don't fire the full save() chain (which
+  // would schedule a Drive push, sync the expand to every collaborator,
+  // and trigger a Drive backup). Write straight to localStorage so the
+  // expand persists across reloads on this device only.
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
   const el = document.getElementById('task-' + id);
   el.classList.toggle('expanded', task.expanded);
 };
@@ -1505,8 +1508,8 @@ function spawnNextRecurrenceFromTask(robot, doneTask) {
   });
 }
 
-window.deleteTask = function(id) {
-  if (!confirm(t('conf.delete_task'))) return;
+window.deleteTask = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_task'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   const robot = getCurrentContainer();
   robot.tasks = robot.tasks.filter(t => t.id !== id);
   save();
@@ -1514,8 +1517,8 @@ window.deleteTask = function(id) {
   if (activeSection === 'topics') renderTopicList(); else renderRobotList();
 };
 
-window.deleteRobot = function(id) {
-  if (!confirm(t('conf.delete_list'))) return;
+window.deleteRobot = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_list'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   state.robots = state.robots.filter(r => r.id !== id);
   if (state.currentRobotId === id) state.currentRobotId = null;
   save();
@@ -1533,8 +1536,8 @@ window.clearRobotSelection = function() {
   if (typeof renderHome === 'function') renderHome();
 };
 
-window.deleteTopic = function(id) {
-  if (!confirm(t('conf.delete_list'))) return;
+window.deleteTopic = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_list'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   state.topics = (state.topics||[]).filter(t => t.id !== id);
   if (state.currentTopicId === id) state.currentTopicId = null;
   save();
@@ -1797,6 +1800,66 @@ function promptInput(opts) {
     modal.classList.add('open');
     setTimeout(() => { inputEl.focus(); inputEl.select(); }, 50);
   });
+}
+
+// Themed in-app replacement for window.confirm / window.alert. Async.
+//   await confirmDialog({ title, message, okText, cancelText, danger });
+//   await alertDialog({ title, message, okText });
+function confirmDialog(opts) {
+  opts = opts || {};
+  return new Promise(resolve => {
+    const modal     = document.getElementById('modal-confirm');
+    const titleEl   = document.getElementById('modal-confirm-title');
+    const msgEl     = document.getElementById('modal-confirm-message');
+    const okBtn     = document.getElementById('modal-confirm-ok-btn');
+    const cancelBtn = document.getElementById('modal-confirm-cancel-btn');
+    if (!modal || !okBtn) {
+      const r = opts.alertOnly ? (window.alert(opts.message || opts.title || ''), true)
+                               :  window.confirm(opts.message || opts.title || '');
+      resolve(!!r);
+      return;
+    }
+    titleEl.textContent = opts.title || (opts.alertOnly ? 'Notice' : 'Confirm');
+    msgEl.textContent   = opts.message || '';
+    okBtn.textContent   = opts.okText || 'OK';
+    okBtn.classList.toggle('danger', !!opts.danger);
+    if (cancelBtn) {
+      cancelBtn.textContent  = opts.cancelText || 'Cancel';
+      cancelBtn.style.display = opts.alertOnly ? 'none' : '';
+    }
+    // Close (X) is hidden in alert mode so the only way out is OK
+    modal.querySelectorAll('.modal-close[data-modal-confirm-cancel]')
+      .forEach(el => el.style.display = opts.alertOnly ? 'none' : '');
+
+    const cancelEls = modal.querySelectorAll('[data-modal-confirm-cancel]');
+
+    function cleanup(result) {
+      modal.classList.remove('open');
+      okBtn.classList.remove('danger');
+      okBtn.removeEventListener('click', onOk);
+      cancelEls.forEach(el => el.removeEventListener('click', onCancel));
+      modal.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onKey, true);
+      resolve(result);
+    }
+    function onOk()        { cleanup(true); }
+    function onCancel()    { cleanup(false); }
+    function onBackdrop(e) { if (e.target === modal && !opts.alertOnly) onCancel(); }
+    function onKey(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); cleanup(true); }
+      if (e.key === 'Escape') { e.preventDefault(); cleanup(opts.alertOnly ? true : false); }
+    }
+    okBtn.addEventListener('click', onOk);
+    cancelEls.forEach(el => el.addEventListener('click', onCancel));
+    modal.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onKey, true);
+
+    modal.classList.add('open');
+    setTimeout(() => okBtn.focus(), 50);
+  });
+}
+function alertDialog(opts) {
+  return confirmDialog(Object.assign({ alertOnly: true }, opts || {})).then(() => undefined);
 }
 
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
@@ -2216,8 +2279,8 @@ function renderVisits() {
   }).join('');
 }
 
-window.deleteVisit = function(id) {
-  if (!confirm(t('conf.delete_visit'))) return;
+window.deleteVisit = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_visit'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   state.fieldVisits = state.fieldVisits.filter(v => v.id !== id);
   save();
   renderVisits();
@@ -2411,8 +2474,8 @@ window.deleteMeetingAction = function(meetingId, actionId) {
   renderMeetingDetail();
 };
 
-window.deleteMeeting = function(id) {
-  if (!confirm(t('conf.delete_meeting'))) return;
+window.deleteMeeting = async function(id) {
+  if (!(await confirmDialog({ message: t('conf.delete_meeting'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   state.meetings = (state.meetings || []).filter(m => m.id !== id);
   if (state.currentMeetingId === id) state.currentMeetingId = null;
   save();
@@ -2520,7 +2583,7 @@ function renderAttachments(type, id, attachments) {
 // Trigger file picker for an entity (PWA — Drive must be connected)
 window.attachFiles = function(type, id) {
   if (!DriveAPI || !DriveAPI.isSignedIn()) {
-    alert(t('att.signin_required'));
+    alertDialog({ message: t('att.signin_required') });
     return;
   }
   let input = document.getElementById('att-file-input');
@@ -2548,7 +2611,7 @@ async function handleAttachUpload(e) {
 
   for (const file of files) {
     if (file.size > MAX_ATTACHMENT_BYTES) {
-      alert(t('att.too_big', { name: file.name }));
+      alertDialog({ message: t('att.too_big', { name: file.name }) });
       continue;
     }
     try {
@@ -2564,7 +2627,7 @@ async function handleAttachUpload(e) {
         });
       }
     } catch (err) {
-      alert(t('att.failed', { msg: err.message || err }));
+      alertDialog({ message: t('att.failed', { msg: err.message || err }) });
     }
   }
   save();
@@ -2589,7 +2652,7 @@ window.openAttachment = async function(type, id, filename) {
 };
 
 window.deleteAttachment = async function(type, id, filename) {
-  if (!confirm(t('att.confirm_delete'))) return;
+  if (!(await confirmDialog({ message: t('att.confirm_delete'), danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   if (DriveAPI.isSignedIn()) {
     try { await DriveAPI.deleteAttachment(id, filename); } catch {}
   }
@@ -2894,11 +2957,22 @@ const DriveAPI = (() => {
       if (refs[it.type]) refs[it.type].add(it.refId);
     });
     const shareableItems = (space.items || []).filter(it => refs[it.type]);
+    // Strip per-device UI state from each robot's tasks. Without this,
+    // expanding a task locally would push the expanded flag to Drive
+    // and sync onto every collaborator's screen.
+    const stripTaskUI = r => {
+      const tasks = (r.tasks || []).map(tsk => {
+        // Pull off `expanded` (UI only). Keep everything else.
+        const { expanded, ...rest } = tsk;
+        return rest;
+      });
+      return Object.assign({}, r, { tasks });
+    };
     return {
       schema: 'b-less.space.v1',
       ownerEmail,
       space:    { id: space.id, name: space.name, items: shareableItems },
-      robots:   (state.robots      || []).filter(r => refs.list.has(r.id)),
+      robots:   (state.robots      || []).filter(r => refs.list.has(r.id)).map(stripTaskUI),
       meetings: (state.meetings    || []).filter(m => refs.meeting.has(m.id)),
       visits:   (state.fieldVisits || []).filter(v => refs.visit.has(v.id)),
       updatedAt: Date.now(),
@@ -3245,7 +3319,7 @@ const BackupManager = (() => {
             render();
             openPopover(); // tryRestore may have closed/reset things; ensure the connected panel is visible
           } catch (e) {
-            alert(t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }));
+            alertDialog({ title: 'Sign-in failed', message: t('bp.sign_in_failed', { msg: (e && (e.error || e.message)) || 'unknown' }) });
           }
         } else if (act === 'signout') {
           DriveAPI.signOut();
@@ -3258,7 +3332,7 @@ const BackupManager = (() => {
           render();
         } else if (act === 'restore') {
           const ok = await tryRestore();
-          if (!ok) alert(t('bp.no_backup_found'));
+          if (!ok) alertDialog({ message: t('bp.no_backup_found') });
         } else if (act === 'export-ics') {
           if (typeof downloadIcs === 'function') downloadIcs();
         } else if (act === 'rename') {
@@ -3330,7 +3404,10 @@ const BackupManager = (() => {
     const msg = hasData
       ? t('bp.restore_overwrite', { date: backupDate, n: projectCount })
       : t('bp.restore_load',      { date: backupDate, n: projectCount });
-    if (!hasData || confirm(msg)) {
+    const proceed = hasData
+      ? await confirmDialog({ title: 'Restore from Drive', message: msg, okText: 'Restore', danger: true })
+      : true;
+    if (proceed) {
       Object.assign(state, backup.data);
       const driveTime = new Date(backup.exportedAt).getTime();
       if (Number.isFinite(driveTime)) setLastBackup(driveTime);
@@ -3861,10 +3938,10 @@ function renderCalDayPanel() {
     });
   });
   panel.querySelectorAll('[data-del-event]').forEach(el => {
-    el.addEventListener('click', e => {
+    el.addEventListener('click', async e => {
       e.stopPropagation();
       const id = el.dataset.delEvent;
-      if (!confirm('Delete this event?')) return;
+      if (!(await confirmDialog({ message: 'Delete this event?', danger: true, okText: t('btn.delete') || 'Delete' }))) return;
       state.calendarEvents = (state.calendarEvents || []).filter(ev => ev.id !== id);
       save();
       renderCalendar();
@@ -4190,9 +4267,9 @@ function closeReviewsDetail() {
   document.getElementById('reviews')?.removeAttribute('data-detail-open');
 }
 
-function deleteCurrentReview() {
+async function deleteCurrentReview() {
   if (!currentReviewKey) return;
-  if (!confirm(t('reviews.confirm_delete') || 'Bu özet silinsin mi?')) return;
+  if (!(await confirmDialog({ message: t('reviews.confirm_delete') || 'Bu özet silinsin mi?', danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   delete state.reviews[reviewPeriod][currentReviewKey];
   save();
   currentReviewKey = null;
@@ -4257,7 +4334,7 @@ async function saveListAsTemplate(robotId) {
   const tpl = buildTemplateFromRobot(robot, name.trim());
   state.templates.push(tpl);
   save();
-  alert(`Saved "${tpl.name}" as a template. Use it when creating a new list.`);
+  alertDialog({ title: 'Template saved', message: `"${tpl.name}" is now available when you create a new list.` });
 }
 window.saveListAsTemplate = saveListAsTemplate;
 
@@ -4408,9 +4485,9 @@ document.getElementById('save-link')?.addEventListener('click', () => {
   closeModal('modal-link');
 });
 
-document.getElementById('link-delete-btn')?.addEventListener('click', () => {
+document.getElementById('link-delete-btn')?.addEventListener('click', async () => {
   if (!editingLinkId) return;
-  if (!confirm(t('links.confirm_delete') || 'Bu link silinsin mi?')) return;
+  if (!(await confirmDialog({ message: t('links.confirm_delete') || 'Bu link silinsin mi?', danger: true, okText: t('btn.delete') || 'Delete' }))) return;
   state.links = state.links.filter(l => l.id !== editingLinkId);
   save();
   renderLinks();
@@ -5888,8 +5965,13 @@ function openSpaceMenu(spaceId, anchorEl) {
       } else if (act === 'share') {
         openShareSpaceModal(spaceId);
       } else if (act === 'delete') {
-        if (state.spaces.length <= 1) { alert('Cannot delete the only space.'); return; }
-        if (!confirm(`Delete space "${sp.name}"?\n\nItems inside are unlinked but their underlying data is kept.`)) return;
+        if (state.spaces.length <= 1) { alertDialog({ title: 'Cannot delete', message: 'You need at least one Space.' }); return; }
+        if (!(await confirmDialog({
+          title: `Delete "${sp.name}"`,
+          message: 'Items inside are unlinked but their underlying data is kept.',
+          okText: 'Delete',
+          danger: true,
+        }))) return;
         state.spaces = state.spaces.filter(s => s.id !== spaceId);
         if (state.currentSpaceId === spaceId) state.currentSpaceId = state.spaces[0].id;
         save(); renderSidebar();
@@ -6175,7 +6257,12 @@ async function removeCollaboratorFromCurrentSpace(permissionId) {
   if (!sp || !sp.driveFileId) return;
   const c = (sp.collaborators || []).find(x => x.permissionId === permissionId);
   if (!c) return;
-  if (!confirm(`Remove ${c.email} from this Space?`)) return;
+  if (!(await confirmDialog({
+    title: 'Remove collaborator',
+    message: `Remove ${c.email} from this Space?`,
+    okText: 'Remove',
+    danger: true,
+  }))) return;
   try {
     await DriveAPI.removeCollaborator(sp.driveFileId, permissionId);
     sp.collaborators = (sp.collaborators || []).filter(x => x.permissionId !== permissionId);
@@ -6247,12 +6334,15 @@ async function pushCurrentSharedSpace() {
   }
 }
 
-function stopSharingCurrentSpace() {
+async function stopSharingCurrentSpace() {
   const sp = findSpace(_shareTargetSpaceId);
   if (!sp) return;
-  if (!confirm(
-    'Stop syncing this Space on this device?\n\nThe Drive file and collaborator invitations stay; you can re-link it later. Other people who already have access keep their access.'
-  )) return;
+  if (!(await confirmDialog({
+    title: 'Stop syncing on this device',
+    message: 'The Drive file and collaborator invitations stay — you can re-link it later. Other people who already have access keep their access.',
+    okText: 'Stop syncing',
+    danger: true,
+  }))) return;
   sp.shared             = false;
   sp.driveFileId        = undefined;
   sp.ownerEmail         = undefined;
@@ -6316,13 +6406,13 @@ async function refreshPendingShares() {
 
 async function importSharedSpace(fileId) {
   if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) {
-    alert('Sign in to Google Drive first (avatar at top-right).');
+    alertDialog({ title: 'Sign in required', message: 'Sign in to Google Drive first (avatar at top-right).' });
     return;
   }
   try {
     const r = await DriveAPI.pullSpaceFile(fileId);
     if (!r.payload || !r.payload.space) {
-      alert('This file does not look like a B-Less shared space.');
+      alertDialog({ title: 'Invalid file', message: 'This file does not look like a B-Less shared space.' });
       return;
     }
     mergeImportedSpacePayload(r);
@@ -6331,7 +6421,7 @@ async function importSharedSpace(fileId) {
     if (typeof renderHome === 'function') renderHome();
     if (typeof renderSidebar === 'function') renderSidebar();
   } catch (e) {
-    alert('Could not import: ' + (e && e.message || 'unknown error'));
+    alertDialog({ title: 'Import failed', message: 'Could not import: ' + (e && e.message || 'unknown error') });
   }
 }
 
@@ -6364,7 +6454,13 @@ function mergeImportedSpacePayload(pull) {
       } else {
         const lUpd = lt.updatedAt || 0;
         const rUpd = rt.updatedAt || 0;
-        if (rUpd > lUpd) { out.push(rt); if (lUpd > 0) stats.localSuperseded++; }
+        if (rUpd > lUpd) {
+          // Remote wins on data, but UI-only fields (expanded) belong to
+          // this device — copy them from the local version so the merge
+          // doesn't collapse a task the user just opened.
+          out.push(Object.assign({}, rt, { expanded: !!lt.expanded }));
+          if (lUpd > 0) stats.localSuperseded++;
+        }
         else if (lUpd > rUpd) { out.push(lt); stats.remoteSuperseded++; }
         else { out.push(lt); }
         stats.overlap++;

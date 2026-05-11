@@ -5235,3 +5235,20 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
 @media (min-width: 1000px) {
   .app-toast { bottom: 24px; }
 }
+
+/* ── In-app confirm / alert dialog ─────────────────────── */
+.modal.modal-confirm { width: 420px; max-width: 92vw; }
+#modal-confirm-message {
+  margin: 4px 0 6px;
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.modal-confirm .modal-actions { margin-top: 14px; }
+.modal-confirm .btn-primary.danger {
+  background: var(--red, #dc2626);
+  border-color: var(--red, #dc2626);
+  color: #fff;
+}
+.modal-confirm .btn-primary.danger:hover { filter: brightness(.92); }
