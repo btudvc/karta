@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.14.1';
+var APP_VERSION = '6.14.2';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7129,6 +7129,52 @@ function renderHome() {
       btn.addEventListener('click', () => {
         const sid = btn.dataset.addSpace;
         if (typeof openAddItemPicker === 'function') openAddItemPicker(sid);
+      });
+    });
+    // Drag & drop on the Home tree — same wiring as the sidebar, so users can
+    // move a list between Spaces here too. The sidebar version (renderSidebar)
+    // covers `.space-item`; this covers `.home-space-item`. Drop target is
+    // `.home-space` so the whole row (header + items) accepts the drop.
+    spacesEl.querySelectorAll('.home-space-item').forEach(el => {
+      el.draggable = true;
+      el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/karta-item', JSON.stringify({
+          itemId: el.dataset.itemId,
+          sourceSpaceId: el.dataset.spaceId,
+        }));
+        e.dataTransfer.effectAllowed = 'move';
+        el.classList.add('dragging');
+      });
+      el.addEventListener('dragend', () => el.classList.remove('dragging'));
+    });
+    spacesEl.querySelectorAll('.home-space').forEach(el => {
+      el.addEventListener('dragover', e => {
+        if (!Array.from(e.dataTransfer.types).includes('text/karta-item')) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        el.classList.add('drag-target');
+      });
+      el.addEventListener('dragleave', e => {
+        if (e.target === el || !el.contains(e.relatedTarget)) el.classList.remove('drag-target');
+      });
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.classList.remove('drag-target');
+        let data;
+        try { data = JSON.parse(e.dataTransfer.getData('text/karta-item')); } catch { return; }
+        if (!data || !data.itemId) return;
+        const targetSpaceId = el.dataset.spaceId;
+        if (data.sourceSpaceId === targetSpaceId) return;
+        const src = findSpace(data.sourceSpaceId);
+        const dst = findSpace(targetSpaceId);
+        if (!src || !dst) return;
+        const moving = src.items.find(i => i.id === data.itemId);
+        if (!moving) return;
+        src.items = src.items.filter(i => i.id !== data.itemId);
+        dst.items.push(moving);
+        save();
+        renderHome();
+        if (typeof renderSidebar === 'function') renderSidebar();
       });
     });
     // Share / options button — opens the floating space menu
