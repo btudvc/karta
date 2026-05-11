@@ -1168,18 +1168,32 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .topbar-icon-btn:hover { background: var(--surface-2); }
 .topbar-icon-btn:active { transform: scale(.97); }
 
-/* Centered section title fills remaining space */
+/* Centered section title fills remaining space, with a tiny budgie gif
+   pinned to the left of the label. */
 .topbar-title {
   flex: 1;
   min-width: 0;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 15px;
   color: var(--text);
+}
+.topbar-title #topbar-title-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.topbar-budgie {
+  width: 24px; height: 24px;
+  display: inline-block;
+  flex-shrink: 0;
+  image-rendering: pixelated; /* keep the 64px sprite crisp on retina */
+  -ms-interpolation-mode: nearest-neighbor;
+}
+.topbar-budgie:not([src]) { display: none; }
 
 /* Avatar button — picture when signed in, fallback user icon when not.
    No `overflow: hidden` on the button so the presence dot can sit

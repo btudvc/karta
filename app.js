@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.9.7';
+var APP_VERSION = '6.10.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -5266,10 +5266,32 @@ const TOPBAR_TITLES = {
   settings: 'Settings',
 };
 function updateTopbarTitle(id) {
-  const el = document.getElementById('topbar-title');
-  if (!el) return;
-  el.textContent = TOPBAR_TITLES[id] || 'My Work';
+  // The title element now wraps an icon + a span — write into the span
+  // so the budgie GIF (set once on boot) stays put.
+  const el = document.getElementById('topbar-title-text');
+  if (el) {
+    el.textContent = TOPBAR_TITLES[id] || 'My Work';
+    return;
+  }
+  // Fallback for the older flat structure
+  const flat = document.getElementById('topbar-title');
+  if (flat) flat.textContent = TOPBAR_TITLES[id] || 'My Work';
 }
+
+// Random "Jump Budgie" gif in the topbar — new bird on every load.
+// Picks once per page lifetime; if you want a fresh one without a full
+// reload, just call this from devtools.
+const BUDGIE_GIFS = [
+  '64_b01.gif', '64_b02.gif', '64_b03.gif', '64_b04.gif',
+  '64_b05.gif', '64_b06.gif', '64_b07.gif',
+];
+function pickTopbarBudgie() {
+  const img = document.getElementById('topbar-budgie');
+  if (!img || !BUDGIE_GIFS.length) return;
+  const file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
+  img.src = 'assets/budgies/' + file;
+}
+pickTopbarBudgie();
 
 // ── Add Item picker — spaces only carry lists now, so skip the picker
 // and open the new-list flow directly. Meetings / visits / journal /
