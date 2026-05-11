@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.9.6';
+var APP_VERSION = '6.9.7';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -5796,6 +5796,23 @@ function stopSharingCurrentSpace() {
 
 let _pendingShares = []; // [{ fileId, name, ownerEmail, myRole, modifiedTime }]
 
+// Walk every imported shared Space and force a pull so name / items /
+// owner info stay in sync even when the user isn't actively viewing
+// a list. Throttled by maybeAutoPull's own guards (PULL_FRESHNESS_MS
+// + in-flight set + pending-push guard) so cheap to call frequently.
+async function refreshAllSharedSpaces() {
+  if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+  const shared = (state.spaces || []).filter(s => s.shared && s.driveFileId);
+  for (const sp of shared) {
+    // force=true so freshness gate doesn't skip when invoked
+    // explicitly (boot / visibilitychange / discovery refresh).
+    if (typeof maybeAutoPull === 'function') {
+      // Don't await — fire in parallel; UI updates as each lands.
+      maybeAutoPull(sp.id, true);
+    }
+  }
+}
+
 async function refreshPendingShares() {
   if (!DriveAPI || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) {
     _pendingShares = [];
@@ -5887,11 +5904,24 @@ window.onDriveUserChange = function(userInfo) {
   if (userInfo) {
     // Fire-and-forget — the sidebar will re-render once shares land.
     refreshPendingShares();
+    // Pull the latest snapshot for every already-imported shared
+    // Space so renames + edits from collaborators land on next paint
+    // (the per-list 30 s poll only runs while a list is in focus).
+    refreshAllSharedSpaces();
   } else {
     _pendingShares = [];
     if (typeof renderHome === 'function') renderHome();
   }
 };
+
+// When the user comes back to the tab after switching away, refresh
+// all imported shared Spaces. Catches owner renames + collaborator
+// edits that landed while we were in the background.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    refreshAllSharedSpaces();
+  }
+});
 
 // ──────────────────────────────────────────────────────────
 // SHARED SPACES — Phase 5: Auto-sync
@@ -6040,10 +6070,13 @@ function formatSyncedAgo(ts) {
   if (diff < 86400) return `synced ${Math.floor(diff/3600)}h ago`;
   return `synced ${Math.floor(diff/86400)}d ago`;
 }
-// If we're already signed in at load time, kick off a discovery pass.
+// If we're already signed in at load time, kick off a discovery pass
+// + refresh every imported shared Space so renames + edits made while
+// the tab wasn't running land on first paint.
 setTimeout(() => {
   if (typeof DriveAPI !== 'undefined' && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
     refreshPendingShares();
+    refreshAllSharedSpaces();
   }
 }, 1500);
 
