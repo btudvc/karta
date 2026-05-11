@@ -4853,6 +4853,14 @@ function activateSection(id) {
   document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.toggle('active', id === 'more'));
   if (id === 'robots' || id === 'topics') activeSection = id;
   updateTopbarTitle(id);
+  // Highlight the matching sidebar nav button.
+  // The drawer's `data-drawer-go` values mostly match section ids; a couple
+  // of legacy aliases are mapped here.
+  const aliasToDrawer = { 'field-visits': 'visits', 'meetings': 'meetings' };
+  const drawerKey = aliasToDrawer[id] || id;
+  document.querySelectorAll('[data-drawer-go]').forEach(b => {
+    b.classList.toggle('active', b.dataset.drawerGo === drawerKey);
+  });
 }
 
 // ── Topbar title (centered in app-topbar, reflects active section) ──
@@ -5306,11 +5314,16 @@ function renderInbox() {
       if (d < today) items.push({ task, project: r });
     });
   });
-  // Update pill badge
+  // Update pill badge + drawer-nav badge
   const badge = document.getElementById('inbox-badge');
   if (badge) {
     if (items.length) { badge.textContent = items.length > 99 ? '99+' : String(items.length); badge.classList.add('has'); }
     else { badge.textContent = ''; badge.classList.remove('has'); }
+  }
+  const drawerBadge = document.getElementById('drawer-inbox-badge');
+  if (drawerBadge) {
+    if (items.length) { drawerBadge.textContent = items.length > 99 ? '99+' : String(items.length); drawerBadge.hidden = false; }
+    else { drawerBadge.hidden = true; }
   }
   if (!items.length) {
     list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing past due.</div>';
@@ -5348,8 +5361,9 @@ function openHome() {
 }
 // Refresh the inbox badge count regardless of which section is showing
 function refreshInboxBadge() {
-  const badge = document.getElementById('inbox-badge');
-  if (!badge) return;
+  const badge        = document.getElementById('inbox-badge');
+  const drawerBadge  = document.getElementById('drawer-inbox-badge');
+  if (!badge && !drawerBadge) return;
   const today = new Date(); today.setHours(0,0,0,0);
   let count = 0;
   (state.robots || []).forEach(r => (r.tasks || []).forEach(task => {
@@ -5357,8 +5371,14 @@ function refreshInboxBadge() {
     const d = new Date(task.dueDate + 'T00:00:00');
     if (d < today) count++;
   }));
-  if (count) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.add('has'); }
-  else { badge.textContent = ''; badge.classList.remove('has'); }
+  if (badge) {
+    if (count) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.add('has'); }
+    else { badge.textContent = ''; badge.classList.remove('has'); }
+  }
+  if (drawerBadge) {
+    if (count) { drawerBadge.textContent = count > 99 ? '99+' : String(count); drawerBadge.hidden = false; }
+    else { drawerBadge.hidden = true; }
+  }
 }
 document.getElementById('bnav-home-btn')?.addEventListener('click', openHome);
 document.getElementById('bnav-inbox-btn')?.addEventListener('click', openInbox);
@@ -5430,6 +5450,20 @@ document.getElementById('drawer-add-space-btn')?.addEventListener('click', () =>
 });
 document.querySelectorAll('[data-home-go]').forEach(b => {
   b.addEventListener('click', () => homeNavigate(b.dataset.homeGo));
+});
+// Persistent drawer nav (sidebar shortcuts mirroring the bottom-nav pill).
+// Auto-close the drawer on mobile after navigating; on desktop the drawer
+// is always visible so closing is a no-op.
+document.querySelectorAll('[data-drawer-go]').forEach(b => {
+  b.addEventListener('click', () => {
+    const target = b.dataset.drawerGo;
+    if (typeof homeNavigate === 'function') homeNavigate(target);
+    if (window.matchMedia('(max-width: 999px)').matches) closeSpacesDrawer();
+    // Reflect the active state on the drawer-nav buttons
+    document.querySelectorAll('[data-drawer-go]').forEach(x => {
+      x.classList.toggle('active', x === b);
+    });
+  });
 });
 
 document.querySelectorAll('.theme-toggle-btn').forEach(b => {

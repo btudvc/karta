@@ -725,12 +725,9 @@ header { display: none; }
 /* ─── MAIN ──────────────────────────────────────────────── */
 main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 
-/* Mobile-first universal layout: cap the app width on desktop so it looks
-   like a phone column instead of stretching across the viewport. The
-   background still fills the rest of the screen. */
-@media (min-width: 801px) {
-  main { max-width: 720px; margin: 0 auto; width: 100%; }
-}
+/* Desktop layout is handled in the dedicated @media (min-width: 1000px)
+   block at the end of this file: persistent sidebar + full-width main
+   capped at 1280px. The old 720px phone-column cap is gone. */
 
 /* The Robots in-section sidebar is redundant — Spaces drawer drives nav. */
 #robots.section > .sidebar { display: none; }
@@ -4520,3 +4517,123 @@ body { font-size: 13px; }
 @media (max-width: 720px) {
   .links-container { padding: 18px 14px 96px; }
 }
+
+/* ──────────────────────────────────────────────────────────
+   DESKTOP LAYOUT (≥1000px)
+   ─────────────────────────────────────────────────────────
+   - Persistent left sidebar (280px), never collapses
+   - Topbar + main fill the rest, capped at 1280px content width
+   - Hamburger + bottom-nav pill hidden (sidebar covers nav)
+   - Drawer becomes static (no transform, no backdrop)
+   ─────────────────────────────────────────────────────────── */
+@media (min-width: 1000px) {
+  body {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "sidebar topbar"
+      "sidebar main";
+  }
+  /* Spaces drawer becomes a permanent sidebar */
+  .spaces-drawer {
+    position: static;
+    grid-area: sidebar;
+    transform: none !important;
+    width: auto;
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+    z-index: auto;
+    background: var(--surface);
+    height: 100dvh;
+  }
+  .spaces-drawer-backdrop { display: none !important; }
+  body.spaces-drawer-open .spaces-drawer-backdrop { display: none !important; }
+
+  /* Topbar in column 2 */
+  .app-topbar {
+    grid-area: topbar;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  /* Main fills the rest, max 1280px content width inside */
+  main {
+    grid-area: main;
+    overflow: hidden;
+    display: flex;
+  }
+  /* Hide hamburger — sidebar is already visible */
+  #topbar-burger-btn { display: none; }
+  /* Hide bottom-nav pill — sidebar carries nav now */
+  .bottom-nav { display: none !important; }
+
+  /* Section containers: lift the max-width caps so content uses the
+     available space (still capped at a comfortable reading width). */
+  .home-container,
+  .reviews-container,
+  .links-container,
+  .fv-container,
+  .cal-container,
+  .more-page {
+    max-width: 1280px;
+    margin-left: 0;     /* left-anchored, not centered */
+  }
+  #home.section.active { padding-left: 24px; padding-right: 24px; }
+
+  /* Drawer-nav buttons get a hint of indent on desktop for breathing room */
+  .drawer-nav { padding: 8px 8px 4px; }
+}
+
+/* Larger desktops: a bit more typography breathing room */
+@media (min-width: 1400px) {
+  body { grid-template-columns: 300px 1fr; }
+}
+
+/* ── Drawer system nav (visible on every viewport) ──────── */
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 12px 8px 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.drawer-nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s var(--ease), color .12s var(--ease);
+}
+.drawer-nav-btn svg { color: var(--muted); flex-shrink: 0; }
+.drawer-nav-btn:hover { background: var(--surface-2); }
+.drawer-nav-btn:hover svg { color: var(--text); }
+.drawer-nav-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.drawer-nav-btn.active svg { color: var(--accent); }
+.drawer-nav-btn span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-nav-badge {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  min-width: 18px; height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red, #dc2626);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.drawer-nav-badge[hidden] { display: none; }
