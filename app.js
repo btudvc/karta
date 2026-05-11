@@ -5053,6 +5053,14 @@ function saveHomeOpen(set) {
   try { localStorage.setItem(HOME_SPACE_OPEN_KEY, JSON.stringify(Array.from(set))); } catch {}
 }
 const SPACE_COLORS = ['#4f8cff', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+// Stable per-list colour: hash an item identifier into a SPACE_COLORS slot
+// so the same list always gets the same colour across reloads.
+function pickListColor(key) {
+  const s = String(key || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return SPACE_COLORS[Math.abs(h) % SPACE_COLORS.length];
+}
 const ITEM_TYPE_META = {
   list:    { color: '#a855f7', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' },
   meeting: { color: '#f97316', svg: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' },
@@ -5220,12 +5228,16 @@ function renderHome() {
       const lists = (sp.items || []).filter(it => it.type === 'list');
       const meta = ITEM_TYPE_META.list;
 
-      const itemsHtml = lists.map(it => `
+      const itemsHtml = lists.map(it => {
+        // Deterministic colour per list — hash on the underlying robot id so
+        // the colour survives renames and stays consistent across devices.
+        const c = pickListColor(it.refId || it.id);
+        return `
         <button class="home-space-item" data-space-id="${escapeAttr(sp.id)}" data-item-id="${escapeAttr(it.id)}" type="button">
-          <span class="home-space-item-icon" style="--c: ${meta.color};">${meta.svg}</span>
+          <span class="home-space-item-icon" style="--c: ${c};">${meta.svg}</span>
           <span class="home-space-item-name">${escapeHtml(spaceItemTitle(it))}</span>
         </button>
-      `).join('');
+      `;}).join('');
 
       return `
         <div class="home-space ${isOpen ? 'open' : ''}" data-space-id="${escapeAttr(sp.id)}">
