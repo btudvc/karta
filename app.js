@@ -2253,6 +2253,9 @@ const DriveAPI = (() => {
     if (accessToken) try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch {}
     accessToken = null; tokenExpiry = 0; folderId = null; userInfo = null;
     try { localStorage.removeItem('b-less-drive-user'); } catch {}
+    if (typeof window.onDriveUserChange === 'function') {
+      try { window.onDriveUserChange(null); } catch {}
+    }
   }
 
   async function fetchUserInfo() {
@@ -2265,6 +2268,9 @@ const DriveAPI = (() => {
     try { localStorage.setItem('b-less-drive-user', JSON.stringify(userInfo)); } catch {}
     if (typeof window.celebrateIfBeloved === 'function') {
       try { window.celebrateIfBeloved(userInfo.email); } catch {}
+    }
+    if (typeof window.onDriveUserChange === 'function') {
+      try { window.onDriveUserChange(userInfo); } catch {}
     }
   }
 
@@ -4846,6 +4852,28 @@ function activateSection(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
   document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.toggle('active', id === 'more'));
   if (id === 'robots' || id === 'topics') activeSection = id;
+  updateTopbarTitle(id);
+}
+
+// ── Topbar title (centered in app-topbar, reflects active section) ──
+const TOPBAR_TITLES = {
+  robots: 'My Work',
+  home: 'Home',
+  inbox: 'Inbox',
+  'all-tasks': 'Today',
+  calendar: 'Calendar',
+  meetings: 'Meetings',
+  'field-visits': 'Visits',
+  journal: 'Journal',
+  reviews: 'Reviews',
+  links: 'Links',
+  more: 'Settings',
+  settings: 'Settings',
+};
+function updateTopbarTitle(id) {
+  const el = document.getElementById('topbar-title');
+  if (!el) return;
+  el.textContent = TOPBAR_TITLES[id] || 'My Work';
 }
 
 // ── Add Item picker — spaces only carry lists now, so skip the picker
@@ -5337,52 +5365,60 @@ document.getElementById('bnav-inbox-btn')?.addEventListener('click', openInbox);
 document.getElementById('bnav-mytasks-btn')?.addEventListener('click', () => { showCrossView('all-tasks'); setBnavActiveFor('all-tasks'); });
 document.getElementById('home-search-pill')?.addEventListener('click', () => openSearchModal());
 // Inline topbar search — type into the input, results render in the
-// dropdown panel just below the bar, click → navigate, Esc / blank
-// input → hide.
-(function wireTopbarSearch() {
-  const input  = document.getElementById('topbar-search-input');
-  const panel  = document.getElementById('topbar-search-results');
-  if (!input || !panel) return;
-
-  function render(q) {
-    const items = searchAll(q);
-    if (!q) { panel.hidden = true; panel.innerHTML = ''; return; }
-    if (!items.length) {
-      panel.hidden = false;
-      panel.innerHTML = `<div class="search-empty">No matches for "${escapeHtml(q)}".</div>`;
-      return;
-    }
-    panel.hidden = false;
-    panel.innerHTML = items.map((it, i) => `
-      <button class="search-result" data-idx="${i}" type="button">
-        <span class="search-result-kind">${SEARCH_KIND_LABEL[it.kind]}</span>
-        <span class="search-result-body">
-          <span class="search-result-title">${escapeHtml(it.title || '')}</span>
-          <span class="search-result-sub">${escapeHtml(it.sub || '')}</span>
-        </span>
-      </button>
-    `).join('');
-    panel.querySelectorAll('.search-result').forEach((el, i) => {
-      el.addEventListener('click', () => {
-        navigateToSearchResult(items[i]);
-        input.value = '';
-        panel.hidden = true;
-        panel.innerHTML = '';
-      });
-    });
-  }
-  input.addEventListener('input', e => render(e.target.value));
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { input.value = ''; panel.hidden = true; panel.innerHTML = ''; input.blur(); }
-  });
-  // Hide panel when clicking outside
-  document.addEventListener('click', e => {
-    if (panel.hidden) return;
-    if (panel.contains(e.target) || input === e.target || e.target.closest('.topbar-search')) return;
-    panel.hidden = true;
-  });
-})();
+// Topbar wiring: search opens the search modal; avatar opens the Drive popover.
+document.getElementById('topbar-search-btn')?.addEventListener('click', () => {
+  if (typeof openSearchModal === 'function') openSearchModal();
+});
 document.getElementById('topbar-burger-btn')?.addEventListener('click', openSpacesDrawer);
+
+// Avatar reflects the Drive user (picture if signed in, fallback icon if not).
+// Clicking it opens the Cloud Backup popover — same handler as the More-page
+// Drive entry, so the OAuth popup user-gesture context is preserved.
+function updateTopbarAvatar(userInfo) {
+  const img      = document.getElementById('topbar-avatar-img');
+  const fallback = document.getElementById('topbar-avatar-fallback');
+  const dot      = document.getElementById('topbar-avatar-dot');
+  if (!img || !fallback) return;
+  let info = userInfo;
+  if (!info) {
+    try {
+      const raw = localStorage.getItem('b-less-drive-user');
+      if (raw) info = JSON.parse(raw);
+    } catch {}
+    if (!info && typeof BackupManager !== 'undefined' && BackupManager.getUserInfo) {
+      info = BackupManager.getUserInfo();
+    }
+  }
+  if (info && info.picture) {
+    img.src = info.picture;
+    img.alt = info.name || info.email || 'Account';
+    img.hidden = false;
+    fallback.hidden = true;
+    if (dot) dot.hidden = false;
+  } else {
+    img.removeAttribute('src');
+    img.hidden = true;
+    fallback.hidden = false;
+    if (dot) dot.hidden = true;
+  }
+}
+// Expose for BackupManager to call after fetchUserInfo / signOut
+window.onDriveUserChange = updateTopbarAvatar;
+document.getElementById('topbar-avatar-btn')?.addEventListener('click', e => {
+  // Re-use the same handler logic the existing entry points use. The popover
+  // toggles open/closed; if not signed in, the popover content shows the
+  // sign-in CTA. Done synchronously so any user-gesture-requiring OAuth flow
+  // launched from inside the popover still works.
+  e.stopPropagation();
+  const popover  = document.getElementById('backup-popover');
+  const backdrop = document.getElementById('backup-backdrop');
+  if (!popover) return;
+  const isOpen = popover.classList.contains('open');
+  popover.classList.toggle('open', !isOpen);
+  if (backdrop) backdrop.classList.toggle('open', !isOpen);
+});
+// Boot: paint avatar from cached userInfo immediately (no Drive call needed).
+updateTopbarAvatar();
 document.getElementById('spaces-drawer-backdrop')?.addEventListener('click', closeSpacesDrawer);
 document.getElementById('drawer-settings-btn')?.addEventListener('click', () => {
   closeSpacesDrawer();

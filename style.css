@@ -1152,74 +1152,74 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .app-topbar { background: var(--bg); border-bottom-color: var(--border); }
 }
-.app-topbar .home-search-pill { flex: 1; }
-.topbar-search {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+/* Hamburger + search are square icon buttons */
+.topbar-icon-btn {
+  width: 36px; height: 36px;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 10px;
-  cursor: text;
-  transition: border-color .15s var(--ease);
-}
-.topbar-search:focus-within { border-color: var(--accent); }
-.topbar-search-ico { color: var(--muted); flex-shrink: 0; }
-.topbar-search input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 14px;
   color: var(--text);
-  min-width: 0;
-}
-.topbar-search input::placeholder { color: var(--muted-2); }
-/* Strip native search-input UI quirks (X clear, magnifier) */
-.topbar-search input::-webkit-search-decoration,
-.topbar-search input::-webkit-search-cancel-button,
-.topbar-search input::-webkit-search-results-button,
-.topbar-search input::-webkit-search-results-decoration { -webkit-appearance: none; }
-
-/* Inline search results dropdown — sits right under the top bar */
-.topbar-search-results {
-  position: sticky;
-  top: 56px;
-  z-index: 55;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  max-height: min(60vh, 480px);
-  overflow-y: auto;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, .08);
-}
-.topbar-search-results[hidden] { display: none; }
-.topbar-search-results .search-result {
-  display: flex; align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
   cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  width: 100%;
+  flex-shrink: 0;
+  transition: background .12s var(--ease), border-color .12s var(--ease);
 }
-.topbar-search-results .search-result:hover { background: var(--surface-2); }
-.topbar-search-results .search-empty {
-  padding: 20px 12px;
+.topbar-icon-btn:hover { background: var(--surface-2); }
+.topbar-icon-btn:active { transform: scale(.97); }
+
+/* Centered section title fills remaining space */
+.topbar-title {
+  flex: 1;
+  min-width: 0;
   text-align: center;
-  color: var(--muted-2);
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Avatar button — picture when signed in, fallback user icon when not */
+.topbar-avatar-btn {
+  position: relative;
+  width: 36px; height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  transition: border-color .12s var(--ease), transform .12s var(--ease);
+}
+.topbar-avatar-btn:hover  { border-color: var(--border-2); }
+.topbar-avatar-btn:active { transform: scale(.97); }
+.topbar-avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+.topbar-avatar-fallback {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  color: var(--muted);
+}
+/* Tiny green presence dot (signed-in indicator) */
+.topbar-avatar-dot {
+  position: absolute;
+  right: -1px; bottom: -1px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green, #16a34a);
+  border: 2px solid var(--bg);
+}
+
+/* Inline search dropdown was removed — search opens via modal-search now. */
 
 /* ── Home dashboard ──────────────────────────────────────── */
 #home.section.active { display: block; overflow-y: auto; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
