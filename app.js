@@ -339,6 +339,19 @@ const I18N = {
 // Without these, t() falls through to the TR value (the safety net in t())
 // and Turkish leaks into the English UI.
 Object.assign(I18N.en, {
+  'bp.filename':       'File',
+  'bp.rename':         'Rename',
+  'bp.rename_prompt':  'New backup file name (the existing file will also be renamed):',
+  'bp.sign_in':        'Sign in with Google',
+  'bp.sign_out':       'Sign out',
+  'bp.signed_in_as':   'Connected account',
+  'bp.web_subtitle':   'Sign in to back up to your Google Drive.',
+  'bp.web_hint':       'Files are written to a private "B-Less" folder in your Drive and synced automatically.',
+  'bp.signing_in':     'Signing in…',
+  'bp.sign_in_failed': 'Sign-in failed: {msg}',
+  'bp.desktop_only':   'Only works in the desktop app.',
+  'bp.custom_folder':  'Custom folder',
+  'bp.set_up':         'Set up backup',
   'btn.save':        'Save',
   'btn.today_star':  '★ Today',
   'btn.add_to_today': '☆ Add to today',
