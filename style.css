@@ -1634,7 +1634,15 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   background: var(--border);
 }
 .home-space-item:hover { background: var(--surface-2); }
-.home-space-item[draggable="true"] { cursor: grab; }
+.home-space-item[draggable="true"] {
+  cursor: grab;
+  /* Block iOS's long-press magnifier / share sheet so our touch-drag shim
+     gets the gesture instead of the system. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
 .home-space-item.dragging { opacity: .4; cursor: grabbing; }
 .home-space.drag-target {
   outline: 2px dashed var(--accent);
