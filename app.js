@@ -5377,21 +5377,29 @@ function migrateToSpaces() {
     if (sp.items.length !== before) removed = true;
   });
 
-  // Dedup: the same (type, refId) appearing in multiple spaces is a stale-data bug
-  // (a move/copy from an older build didn't remove the source). Keep the first
-  // occurrence — matches findSpaceOfRobot's "first space wins" lookup, so the
-  // edit dialog and the rendered row stay in sync.
-  // Journal entries are intentionally fanned out across spaces, so leave them alone.
+  // Dedup: the same (type, refId) appearing in multiple spaces is a stale-data
+  // bug (an older silent-duplication path left a copy behind). Keep the OLDEST
+  // item.id — uid is timestamp-prefixed, so the oldest item is the one the
+  // user placed first; later additions are almost always from the duplication
+  // bug firing after the original placement. This preserves user intent
+  // instead of letting space-order dictate the winner.
+  // Journal entries are intentionally fanned out across spaces, so skip them.
   {
-    const seen = new Set();
+    const oldest = new Map(); // "type:refId" -> oldest item.id seen
+    state.spaces.forEach(sp => {
+      sp.items.forEach(it => {
+        if (it.type === 'journal') return;
+        const key = it.type + ':' + it.refId;
+        const prev = oldest.get(key);
+        if (!prev || it.id < prev) oldest.set(key, it.id);
+      });
+    });
     state.spaces.forEach(sp => {
       const before = sp.items.length;
       sp.items = sp.items.filter(it => {
         if (it.type === 'journal') return true;
         const key = it.type + ':' + it.refId;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
+        return oldest.get(key) === it.id;
       });
       if (sp.items.length !== before) removed = true;
     });
@@ -5866,15 +5874,22 @@ save = function() {
     const last = (state.fieldVisits || [])[state.fieldVisits.length - 1];
     newRefId = last && last.id;
   }
-  if (newRefId && !sp.items.some(i => i.type === type && i.refId === newRefId)) {
-    const newItem = { id: uid(), type, refId: newRefId };
-    sp.items.push(newItem);
-    state.currentItemId = newItem.id;
-    state.currentSpaceId = spaceId;
-    pendingItemAttach = null;
-    _origSave();
-    renderSidebar();
-  }
+  if (!newRefId) return;
+  // Only auto-attach when the refId isn't already in ANY space. The previous
+  // version only checked the target space, so a stale pendingItemAttach (e.g.
+  // from a cancelled "Add to X" flow) could silently duplicate an existing
+  // item into a second space on the next save() call.
+  const alreadyAttached = state.spaces.some(s =>
+    s.items.some(i => i.type === type && i.refId === newRefId)
+  );
+  if (alreadyAttached) { pendingItemAttach = null; return; }
+  const newItem = { id: uid(), type, refId: newRefId };
+  sp.items.push(newItem);
+  state.currentItemId = newItem.id;
+  state.currentSpaceId = spaceId;
+  pendingItemAttach = null;
+  _origSave();
+  renderSidebar();
 };
 
 // ── Add Space ──
