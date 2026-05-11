@@ -2510,8 +2510,6 @@ const BackupManager = (() => {
         ? `<img class="bp-avatar-img" src="${escapeAttr(u.picture)}" alt="" referrerpolicy="no-referrer">`
         : `<span class="bp-avatar-fallback">${initial}</span>`;
       pop.innerHTML = `
-        <div class="bp-title">${t('bp.title')}</div>
-
         <div class="bp-account">
           <div class="bp-avatar">${avatar}</div>
           <div class="bp-account-info">
