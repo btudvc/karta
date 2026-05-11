@@ -2471,6 +2471,31 @@ const BackupManager = (() => {
     return diff < 1 ? t('bp.just_now') : t('bp.min_ago', { n: diff });
   }
 
+  // Inline settings block rendered inside the popover (theme toggle +
+  // export ICS). Stamped under both signed-in and signed-out states so
+  // the user reaches them without an extra click.
+  function settingsBlockHtml() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const themeBtn = (id, label, svg) => `
+      <button class="theme-toggle-btn ${current === id ? 'active' : ''}" data-theme-set="${id}" type="button">
+        ${svg}<span>${label}</span>
+      </button>`;
+    return `
+      <div class="bp-settings-block">
+        <div class="bp-section-label">${escapeHtml(t('more.section.settings') || 'Settings')}</div>
+        <div class="theme-toggle bp-theme-toggle" role="radiogroup" aria-label="Theme">
+          ${themeBtn('light', 'Light', '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>')}
+          ${themeBtn('dim',   'Dim',   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" stroke-dasharray="2 2"/></svg>')}
+          ${themeBtn('dark',  'Dark',  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>')}
+        </div>
+        <button class="bp-settings-link" data-act="export-ics" type="button">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>
+          <span>Export calendar (.ics)</span>
+        </button>
+      </div>
+    `;
+  }
+
   function render() {
     const pop         = document.getElementById('bp-content');
     const headerBtn   = document.getElementById('backup-btn');
@@ -2523,10 +2548,7 @@ const BackupManager = (() => {
           </button>
         </div>
 
-        <button class="bp-settings-link" data-act="open-settings">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>${escapeHtml(t('more.section.settings') || 'Settings')}</span>
-        </button>
+        ${settingsBlockHtml()}
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-warn');
@@ -2551,16 +2573,24 @@ const BackupManager = (() => {
         </button>
         <div class="bp-hint">${t('bp.web_hint')}</div>
 
-        <button class="bp-settings-link" data-act="open-settings">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>${escapeHtml(t('more.section.settings') || 'Settings')}</span>
-        </button>
+        ${settingsBlockHtml()}
       `;
       if (headerBtn && headerLabel) {
         headerBtn.classList.remove('backup-ok', 'backup-warn');
         headerLabel.textContent = '';
       }
     }
+
+    // Theme buttons inside the popover — bind clicks each render since
+    // innerHTML was just replaced. setTheme/applyTheme will toggle the
+    // .active class on every .theme-toggle-btn in the page (including
+    // the ones inside the popover) so visual state stays in sync.
+    pop.querySelectorAll('.theme-toggle-btn[data-theme-set]').forEach(b => {
+      b.addEventListener('click', e => {
+        e.stopPropagation();
+        if (typeof setTheme === 'function') setTheme(b.dataset.themeSet);
+      });
+    });
 
     pop.querySelectorAll('[data-act]').forEach(el => {
       el.addEventListener('click', async e => {
@@ -2589,15 +2619,8 @@ const BackupManager = (() => {
         } else if (act === 'restore') {
           const ok = await tryRestore();
           if (!ok) alert(t('bp.no_backup_found'));
-        } else if (act === 'open-settings') {
-          // Close the popover, then jump to the Settings section. Done
-          // synchronously so the click's user-gesture context is preserved
-          // in case anything inside Settings later needs it.
-          const pop = document.getElementById('backup-popover');
-          const bd  = document.getElementById('backup-backdrop');
-          pop?.classList.remove('open');
-          bd?.classList.remove('open');
-          if (typeof activateSection === 'function') activateSection('settings');
+        } else if (act === 'export-ics') {
+          if (typeof downloadIcs === 'function') downloadIcs();
         } else if (act === 'rename') {
           const next = prompt(t('bp.rename_prompt'), filename);
           if (!next || !next.trim() || next.trim() === filename) return;
