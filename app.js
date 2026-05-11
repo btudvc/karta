@@ -4868,7 +4868,7 @@ const TOPBAR_TITLES = {
   robots: 'My Work',
   home: 'Home',
   inbox: 'Inbox',
-  'all-tasks': 'Today',
+  'all-tasks': 'All Tasks',
   calendar: 'Calendar',
   meetings: 'Meetings',
   'field-visits': 'Visits',
