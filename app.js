@@ -5367,27 +5367,64 @@ function openShareSpaceModal(spaceId) {
   renderShareSpaceBody();
   if (typeof openModal === 'function') openModal('modal-share-space');
 
-  // Auto-push the latest local content when the owner opens the share
-  // modal. Catches the case where the Drive file was created with the
-  // old (metadata-only) payload — that's why early collaborators saw
-  // empty "List" entries. Best-effort: silent on success, the existing
-  // error UI surfaces failures.
-  if (sp.shared && sp.driveFileId && (sp.myRole === 'owner' || sp.myRole === 'writer') && DriveAPI && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
+  // Role-aware auto-sync on modal open. Critical: never auto-PUSH from
+  // a non-owner — a writer who just imported the empty legacy file
+  // would silently overwrite the owner's data with empty content.
+  //
+  //   Owner   → auto-push the latest local snapshot (upgrades legacy
+  //             metadata-only files to the self-contained payload).
+  //   Writer/Reader → auto-pull so they see whatever the owner last
+  //             wrote, instead of stale imported data.
+  if (sp.shared && sp.driveFileId && DriveAPI && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
     setTimeout(async () => {
       try {
-        const r = await DriveAPI.pushSpaceFile(sp.driveFileId, sp, sp.lastSyncedRevision);
-        sp.lastSyncedRevision = r.revisionId;
-        sp.lastSyncedAt       = Date.now();
-        save();
-        // Re-render only if the share modal is still showing this space
-        if (_shareTargetSpaceId === sp.id && document.getElementById('modal-share-space')?.classList.contains('open')) {
-          renderShareSpaceBody({ status: 'Synced to Drive.' });
+        if (sp.myRole === 'owner') {
+          const r = await DriveAPI.pushSpaceFile(sp.driveFileId, sp, sp.lastSyncedRevision);
+          sp.lastSyncedRevision = r.revisionId;
+          sp.lastSyncedAt       = Date.now();
+          save();
+          if (_shareTargetSpaceId === sp.id && document.getElementById('modal-share-space')?.classList.contains('open')) {
+            renderShareSpaceBody({ status: 'Pushed local snapshot to Drive (' + payloadCounts(sp) + ').' });
+          }
+        } else {
+          const r = await DriveAPI.pullSpaceFile(sp.driveFileId);
+          if (r && r.payload && r.payload.space) {
+            const savedCollabs = sp.collaborators || [];
+            mergeImportedSpacePayload(r);
+            const updated = findSpace(sp.id);
+            if (updated) updated.collaborators = savedCollabs;
+            save();
+            if (typeof renderHome === 'function') renderHome();
+            if (typeof renderSidebar === 'function') renderSidebar();
+            if (typeof renderRobotList === 'function') renderRobotList();
+            if (typeof renderRobotDetail === 'function') renderRobotDetail();
+            if (_shareTargetSpaceId === sp.id && document.getElementById('modal-share-space')?.classList.contains('open')) {
+              renderShareSpaceBody({ status: 'Pulled latest from Drive (' + payloadCountsFromPayload(r.payload) + ').' });
+            }
+          }
         }
       } catch {
         // Conflict or transient error — user can manually pull/push.
       }
     }, 250);
   }
+}
+
+// Diagnostic helpers — show what's in the payload so the user can
+// verify nothing was dropped on push/pull.
+function payloadCounts(space) {
+  if (!space) return '0 lists';
+  const refs = new Set((space.items || []).filter(i => i.type === 'list').map(i => i.refId));
+  const lists  = (state.robots      || []).filter(r => refs.has(r.id)).length;
+  const mRefs  = new Set((space.items || []).filter(i => i.type === 'meeting').map(i => i.refId));
+  const meets  = (state.meetings    || []).filter(m => mRefs.has(m.id)).length;
+  const vRefs  = new Set((space.items || []).filter(i => i.type === 'visit').map(i => i.refId));
+  const vis    = (state.fieldVisits || []).filter(v => vRefs.has(v.id)).length;
+  return `${lists} lists, ${meets} meetings, ${vis} visits`;
+}
+function payloadCountsFromPayload(p) {
+  if (!p) return '0 lists';
+  return `${(p.robots||[]).length} lists, ${(p.meetings||[]).length} meetings, ${(p.visits||[]).length} visits`;
 }
 
 function renderShareSpaceBody(extra) {
@@ -5612,7 +5649,7 @@ async function pullCurrentSharedSpace() {
     if (typeof renderSidebar === 'function') renderSidebar();
     if (typeof renderRobotList === 'function') renderRobotList();
     if (typeof renderRobotDetail === 'function') renderRobotDetail();
-    renderShareSpaceBody({ status: 'Pulled latest from Drive.' });
+    renderShareSpaceBody({ status: 'Pulled latest from Drive (' + payloadCountsFromPayload(r.payload) + ').' });
   } catch (e) {
     renderShareSpaceBody({ error: 'Pull failed: ' + (e && e.message || 'unknown error') });
   }
@@ -5628,7 +5665,7 @@ async function pushCurrentSharedSpace() {
     sp.lastSyncedRevision = r.revisionId;
     sp.lastSyncedAt       = Date.now();
     save();
-    renderShareSpaceBody({ status: 'Pushed current data to Drive.' });
+    renderShareSpaceBody({ status: 'Pushed current data to Drive (' + payloadCounts(sp) + ').' });
   } catch (e) {
     if (e && e.conflict) {
       renderShareSpaceBody({ error: 'Someone else has updated this Space on Drive. Pull first, then push again.' });
