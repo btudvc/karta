@@ -4842,19 +4842,9 @@ body { font-size: 13px; }
   color: var(--muted);
   cursor: pointer;
   flex-shrink: 0;
-  opacity: 0;
-  transition: background .12s var(--ease), color .12s var(--ease), opacity .12s var(--ease);
-}
-.home-space-head-row:hover .home-space-share-btn,
-.home-space-share-btn:focus,
-.home-space-share-btn:focus-visible {
-  opacity: 1;
+  transition: background .12s var(--ease), color .12s var(--ease);
 }
 .home-space-share-btn:hover { background: var(--surface-2); color: var(--text); }
-/* On touch devices (no hover) always show the share button so users can reach it */
-@media (hover: none) {
-  .home-space-share-btn { opacity: 1; }
-}
 
 /* Shared badge inline in the space name */
 .home-space-shared-badge {
