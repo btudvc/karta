@@ -4987,25 +4987,46 @@ body.is-readonly #robot-content .task-add,
 body.is-readonly #robot-content .add-task-row,
 body.is-readonly #robot-content .add-issue-row,
 body.is-readonly #robot-content .task-actions,
+body.is-readonly #robot-content .task-actions-row,
 body.is-readonly #robot-content .issue-actions,
 body.is-readonly #robot-content .notebook-add,
 body.is-readonly #robot-content .nb-add,
+body.is-readonly #robot-content .nb-add-row,
+body.is-readonly #robot-content .nb-add-btn,
+body.is-readonly #robot-content .nb-item-del,
+body.is-readonly #robot-content .nb-del,
+body.is-readonly #robot-content .nb-edit,
 body.is-readonly #robot-content .subtask-add,
+body.is-readonly #robot-content .sub-add-row,
+body.is-readonly #robot-content .sub-add-input,
+body.is-readonly #robot-content .sub-add-btn,
+body.is-readonly #robot-content .subtask-del,
 body.is-readonly #robot-content .tag-add,
 body.is-readonly #robot-content [data-add-task],
 body.is-readonly #robot-content [data-add-issue] {
+  display: none !important;
+}
+/* Catch-all: every button inside an expanded task body / notebook entry
+   mutates state. Hide them; the header click that expands/collapses the
+   task is on the task header itself, not inside .task-body. */
+body.is-readonly #robot-content .task-body button,
+body.is-readonly #robot-content .task-body .btn-sm,
+body.is-readonly #robot-content .nb-item button,
+body.is-readonly #robot-content .nb-actions button {
   display: none !important;
 }
 /* Disable inline interactions that mutate state */
 body.is-readonly #robot-content .task-checkbox,
 body.is-readonly #robot-content .task-status-btn,
 body.is-readonly #robot-content .task-priority-btn,
+body.is-readonly #robot-content .subtask-check,
+body.is-readonly #robot-content .subtask,
 body.is-readonly #robot-content [contenteditable="true"],
 body.is-readonly #robot-content input,
 body.is-readonly #robot-content textarea,
 body.is-readonly #robot-content select {
-  pointer-events: none;
-  opacity: .7;
+  pointer-events: none !important;
+  opacity: .85;
 }
 /* Hide the global quick-add FAB while a read-only space is open. */
 body.is-readonly #quick-fab { display: none !important; }
@@ -5015,6 +5036,7 @@ body.is-readonly #robot-content [draggable="true"] {
   cursor: default !important;
 }
 body.is-readonly #robot-content [draggable="true"] { -webkit-user-drag: none; }
+body.is-readonly #robot-content .nb-item { cursor: default !important; }
 
 /* ── Owner avatar / name in share modal + sidebar ──────── */
 .share-owner {
