@@ -4589,14 +4589,17 @@ body { font-size: 13px; }
   body { grid-template-columns: 300px 1fr; }
 }
 
-/* ── Drawer system nav (visible on every viewport) ──────── */
+/* ── Drawer system nav (desktop-only; mobile uses the bottom-nav pill) ── */
 .drawer-nav {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 1px;
   padding: 12px 8px 4px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 6px;
+}
+@media (min-width: 1000px) {
+  .drawer-nav { display: flex; }
 }
 .drawer-nav-btn {
   position: relative;
