@@ -5080,3 +5080,14 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   vertical-align: middle;
   border: 1px solid var(--border);
 }
+
+/* Version footer inside the avatar popover */
+.bp-version {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted-2);
+  letter-spacing: .5px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
