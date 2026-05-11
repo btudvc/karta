@@ -335,6 +335,65 @@ const I18N = {
   },
 };
 
+// Backfill English strings for keys that historically only existed on TR.
+// Without these, t() falls through to the TR value (the safety net in t())
+// and Turkish leaks into the English UI.
+Object.assign(I18N.en, {
+  'btn.save':        'Save',
+  'btn.today_star':  '★ Today',
+  'btn.add_to_today': '☆ Add to today',
+  'btn.start_today_title':  'Start today',
+  'btn.remove_today_title': 'Remove from today',
+  'aria.delete':     'Delete',
+  'aria.completed':  'Completed',
+  'ph.note_input':   'Write a note… (Ctrl+Enter to save)',
+  'due.today':       'today',
+  'due.tomorrow':    'tomorrow',
+  'due.yesterday':   'yesterday',
+  'due.days_from_now': 'in {n}d',
+  'due.days_ago':      '{n}d ago',
+  'months.short':    'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
+  'conf.delete_project': 'Delete this project and all its data?',
+  'conf.delete_list':    'Delete this list and all its data?',
+  'conf.delete_task':    'Delete this task?',
+  'conf.delete_release': 'Delete this release?',
+  'conf.delete_meeting': 'Delete this meeting?',
+  'conf.delete_visit':   'Delete this visit?',
+  'conf.delete_issue':   'Delete this issue?',
+  'count.tasks_zero':  'No active tasks',
+  'count.tasks_one':   '1 active task',
+  'count.tasks_other': '{n} active tasks',
+  'count.versions_one':   '1 version',
+  'count.versions_other': '{n} versions',
+  'count.open':           '{n} open',
+  'btn.done':          'Done',
+  'btn.reopen':        'Reopen',
+  'btn.pending':       'Pending',
+  'btn.activate':      'Activate',
+  'btn.investigating': 'Investigating',
+  'btn.resolved':      'Resolved',
+  'note.add':          '+ Add',
+  'note.empty':        'No notes yet.',
+  'days.future':       'in {n}d',
+  'days.past':         '{n}d ago',
+  'days.today':        'Today!',
+  'priority.normal':   'Normal',
+  'priority.high':     'High',
+  'priority.critical': 'Critical',
+  'priority.low':      'Low',
+  'priority.medium':   'Medium',
+  'status.active':        'Active',
+  'status.pending':       'Pending',
+  'status.done':          'Done',
+  'status.open':          'Open',
+  'status.investigating': 'Investigating',
+  'status.resolved':      'Resolved',
+  'status.testing':       'Testing',
+  'status.rc':            'RC',
+  'status.stable':        'Stable',
+  'status.deprecated':    'Deprecated',
+});
+
 Object.assign(I18N.tr, {
   'links.title':         'Linkler',
   'links.subtitle':      'Kaybolmasin istedigin linkler',
@@ -1676,7 +1735,8 @@ document.getElementById('save-task').addEventListener('click', () => {
 });
 
 // Tag picker — quick-pick chips for common categories
-const COMMON_TAGS = ['embedded', 'hardware', 'cabling', 'software', 'mechanical', 'electrical', 'firmware', 'test', 'docs'];
+// Tag picker preset chips removed — users add their own freeform tags.
+const COMMON_TAGS = [];
 function renderTagPicker(active) {
   const host = document.getElementById('task-tag-picker');
   if (!host) return;
