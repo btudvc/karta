@@ -1168,32 +1168,52 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .topbar-icon-btn:hover { background: var(--surface-2); }
 .topbar-icon-btn:active { transform: scale(.97); }
 
-/* Centered section title fills remaining space, with a tiny budgie gif
-   pinned to the left of the label. */
+/* Left-aligned section title; budgie is now a separate floating
+   sprite anchored to a corner of the viewport. */
 .topbar-title {
   flex: 1;
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
   font-weight: 600;
   font-size: 15px;
   color: var(--text);
+  padding-left: 4px;
 }
 .topbar-title #topbar-title-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Floating budgie sprite — bottom-right on desktop, bumped up on
+   mobile so it clears the bottom-nav bar (and roughly sits over the
+   "More" button area). image-rendering keeps the 64px sprite crisp
+   when scaled up. */
 .topbar-budgie {
-  width: 24px; height: 24px;
-  display: inline-block;
-  flex-shrink: 0;
-  image-rendering: pixelated; /* keep the 64px sprite crisp on retina */
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 56px; height: 56px;
+  display: block;
+  z-index: 70;
+  pointer-events: none;
+  image-rendering: pixelated;
   -ms-interpolation-mode: nearest-neighbor;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25));
 }
 .topbar-budgie:not([src]) { display: none; }
+
+/* Mobile: lift the budgie above the bottom-nav bar. The bar is 64px
+   tall + safe-area, plus 6px of breathing room. */
+@media (max-width: 999px) {
+  .topbar-budgie {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    right: 12px;
+    width: 48px; height: 48px;
+  }
+}
 
 /* Avatar button — picture when signed in, fallback user icon when not.
    No `overflow: hidden` on the button so the presence dot can sit
