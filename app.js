@@ -5377,6 +5377,26 @@ function migrateToSpaces() {
     if (sp.items.length !== before) removed = true;
   });
 
+  // Dedup: the same (type, refId) appearing in multiple spaces is a stale-data bug
+  // (a move/copy from an older build didn't remove the source). Keep the first
+  // occurrence — matches findSpaceOfRobot's "first space wins" lookup, so the
+  // edit dialog and the rendered row stay in sync.
+  // Journal entries are intentionally fanned out across spaces, so leave them alone.
+  {
+    const seen = new Set();
+    state.spaces.forEach(sp => {
+      const before = sp.items.length;
+      sp.items = sp.items.filter(it => {
+        if (it.type === 'journal') return true;
+        const key = it.type + ':' + it.refId;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (sp.items.length !== before) removed = true;
+    });
+  }
+
   if (firstTime || added || removed) {
     if (!state.currentSpaceId) state.currentSpaceId = work.id;
     state.collapsedSpaces = state.collapsedSpaces || {};
