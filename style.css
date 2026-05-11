@@ -1181,43 +1181,57 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   text-overflow: ellipsis;
 }
 
-/* Avatar button — picture when signed in, fallback user icon when not */
+/* Avatar button — picture when signed in, fallback user icon when not.
+   No `overflow: hidden` on the button so the presence dot can sit
+   outside the round edge; the <img> clips itself via its own
+   border-radius. Width/height locked with min/max so nothing in the
+   flex parent or rem-scaling can stretch it. */
 .topbar-avatar-btn {
   position: relative;
   width: 36px; height: 36px;
+  min-width: 36px; min-height: 36px;
+  max-width: 36px; max-height: 36px;
   padding: 0;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
-  overflow: hidden;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center; justify-content: center;
+  box-sizing: border-box;
   transition: border-color .12s var(--ease), transform .12s var(--ease);
 }
 .topbar-avatar-btn:hover  { border-color: var(--border-2); }
 .topbar-avatar-btn:active { transform: scale(.97); }
 .topbar-avatar-img {
-  width: 100%; height: 100%;
-  object-fit: cover;
+  width: 34px; height: 34px;
   display: block;
   border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-2);
 }
+.topbar-avatar-img[hidden] { display: none; }
 .topbar-avatar-fallback {
   display: inline-flex;
   align-items: center; justify-content: center;
   color: var(--muted);
 }
-/* Tiny green presence dot (signed-in indicator) */
+.topbar-avatar-fallback[hidden] { display: none; }
+/* Tiny green presence dot (signed-in indicator) — sits outside the
+   round avatar at the bottom right. Higher z-index so it paints
+   above the image. */
 .topbar-avatar-dot {
   position: absolute;
-  right: -1px; bottom: -1px;
+  right: -2px; bottom: -2px;
   width: 10px; height: 10px;
   border-radius: 50%;
   background: var(--green, #16a34a);
   border: 2px solid var(--bg);
+  z-index: 2;
+  box-sizing: border-box;
 }
+.topbar-avatar-dot[hidden] { display: none; }
 
 /* Inline search dropdown was removed — search opens via modal-search now. */
 
