@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.15.0';
+var APP_VERSION = '6.16.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -6844,7 +6844,8 @@ function loadHomeOpen() {
 function saveHomeOpen(set) {
   try { localStorage.setItem(HOME_SPACE_OPEN_KEY, JSON.stringify(Array.from(set))); } catch {}
 }
-const SPACE_COLORS = ['#4f8cff', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#f97316', '#14b8a6'];
+// Brand-led list colours — purple/pink first (logo gradient) then complements.
+const SPACE_COLORS = ['#a855f7', '#fb7185', '#7c3aed', '#06b6d4', '#10b981', '#f59e0b', '#4f8cff', '#14b8a6'];
 // Stable per-list colour: hash an item identifier into a SPACE_COLORS slot
 // so the same list always gets the same colour across reloads.
 function pickListColor(key) {

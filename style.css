@@ -21,11 +21,18 @@
   --muted:        #555c6b;
   --muted-2:      #8089a0;
 
-  --accent:       #4f46e5;
-  --accent-h:     #4338ca;
-  --accent-soft:  rgba(79, 70, 229, .10);
-  --accent-soft2: rgba(79, 70, 229, .22);
+  /* Brand accent — pulled from the new clipboard logo: a vivid purple
+     that sits between the gradient's top violet (#7c3aed) and middle
+     lavender (#c084fc). Reads well on white surfaces and pairs with
+     the navy clip detail. */
+  --accent:       #a855f7;
+  --accent-h:     #9333ea;
+  --accent-soft:  rgba(168, 85, 247, .12);
+  --accent-soft2: rgba(168, 85, 247, .26);
   --on-accent:    #ffffff;
+  /* Full brand gradient — use sparingly for focal points (avatar dot,
+     shared badge ring) where the brand identity should jump out. */
+  --brand-gradient: linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%);
 
   --green:        #16a34a;
   --orange:       #d97706;
@@ -62,10 +69,12 @@ input[type="date"] { color-scheme: light; }
   --muted:        #a4abb8;
   --muted-2:      #767e8d;
 
-  --accent:       #a4b6ff;
-  --accent-h:     #c0cfff;
-  --accent-soft:  rgba(164, 182, 255, .14);
-  --accent-soft2: rgba(164, 182, 255, .28);
+  /* Dim mode accent — lighter violet so it stays vivid on warm gray */
+  --accent:       #c084fc;
+  --accent-h:     #d8b4fe;
+  --accent-soft:  rgba(192, 132, 252, .16);
+  --accent-soft2: rgba(192, 132, 252, .30);
+  --brand-gradient: linear-gradient(180deg, #a855f7 0%, #c084fc 55%, #fb7185 100%);
   --on-accent:    #0a0c14;
 
   --green:        #4ade80;
@@ -100,11 +109,14 @@ input[type="date"] { color-scheme: light; }
   --muted:        #98a0b3;
   --muted-2:      #6b7185;
 
-  --accent:       #a4b6ff;
-  --accent-h:     #c0cfff;
-  --accent-soft:  rgba(164, 182, 255, .14);
-  --accent-soft2: rgba(164, 182, 255, .26);
+  /* Dark mode accent — same lavender as dim for consistency; reads
+     well on black and on the navy clip from the logo. */
+  --accent:       #c084fc;
+  --accent-h:     #d8b4fe;
+  --accent-soft:  rgba(192, 132, 252, .16);
+  --accent-soft2: rgba(192, 132, 252, .28);
   --on-accent:    #0a0c14;
+  --brand-gradient: linear-gradient(180deg, #a855f7 0%, #c084fc 55%, #fb7185 100%);
 
   --green:        #4ade80;
   --orange:       #fb923c;
@@ -4754,10 +4766,11 @@ body { font-size: 13px; }
   justify-content: center;
   width: 18px; height: 18px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--brand-gradient);
+  color: #fff;
   margin-left: 4px;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(168, 85, 247, .25);
 }
 .space-shared-badge svg { display: block; }
 
@@ -4910,16 +4923,18 @@ body { font-size: 13px; }
 }
 .home-space-share-btn:hover { background: var(--surface-2); color: var(--text); }
 
-/* Shared badge inline in the space name */
+/* Shared badge inline in the space name — uses the brand gradient so
+   the "shared" signal carries the app's identity at the right moment. */
 .home-space-shared-badge {
   display: inline-flex;
   align-items: center; justify-content: center;
   width: 16px; height: 16px;
   margin-left: 6px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--brand-gradient);
+  color: #fff;
   vertical-align: middle;
+  box-shadow: 0 1px 3px rgba(168, 85, 247, .25);
 }
 .home-space-shared-badge svg { display: block; }
 
