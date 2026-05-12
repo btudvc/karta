@@ -2713,16 +2713,22 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .modal-overlay.open .modal::before {
   content: '';
   position: absolute;
-  top: -52px;
-  left: 10px;
-  width: 56px;
-  height: 56px;
-  background: url('assets/budgies/64_b04.gif') no-repeat center / contain;
+  top: -58px;
+  left: 8px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background:
+    url('assets/budgies/64_b04.gif') no-repeat center / 78%,
+    var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%));
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   pointer-events: none;
   z-index: 2;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
+  box-shadow:
+    0 4px 14px rgba(124, 58, 237, .35),
+    0 2px 6px rgba(0, 0, 0, .18),
+    inset 0 0 0 2px rgba(255, 255, 255, .35);
 }
 .modal-overlay.open .modal::after {
   content: '';
@@ -2746,10 +2752,10 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 @media (max-width: 480px) {
   .modal-overlay.open .modal::before {
-    top: -44px;
-    left: 8px;
-    width: 48px;
-    height: 48px;
+    top: -50px;
+    left: 6px;
+    width: 52px;
+    height: 52px;
   }
   .modal-overlay.open .modal::after {
     top: -7px;
