@@ -1180,8 +1180,9 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .topbar-icon-btn:hover { background: var(--surface-2); }
 .topbar-icon-btn:active { transform: scale(.97); }
 
-/* Brand logo at the very top-left of the topbar. Compact on phones so
-   it doesn't dominate small viewports; a touch larger on desktop. */
+/* Brand logo in the topbar — mobile only. Desktop shows the logo at
+   the top of the persistent sidebar instead (true top-left of the
+   viewport, since the topbar starts after the sidebar column). */
 .topbar-logo {
   width: 22px;
   height: 22px;
@@ -1193,16 +1194,40 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   flex-shrink: 0;
   display: block;
   margin-right: 2px;
-  /* Subtle shadow so the gradient logo lifts off translucent toolbars */
   box-shadow: 0 1px 3px rgba(0, 0, 0, .10);
 }
 @media (min-width: 1000px) {
-  .topbar-logo {
-    width: 26px; height: 26px;
-    min-width: 26px; min-height: 26px;
-    max-width: 26px; max-height: 26px;
-    border-radius: 7px;
-  }
+  .topbar-logo { display: none; }
+}
+
+/* Brand block at the top of the persistent sidebar (desktop only). */
+.spaces-drawer-brand {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+@media (min-width: 1000px) {
+  .spaces-drawer-brand { display: flex; }
+}
+.spaces-drawer-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+.spaces-drawer-wordmark {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  background: var(--brand-gradient, linear-gradient(180deg, #7c3aed, #fb7185));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
 }
 
 /* Section title — centred within the remaining flex space (logo sits
