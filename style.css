@@ -2673,7 +2673,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: none;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 200;
@@ -2707,32 +2706,29 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 
 /* ─── BUDGIE SPEAKER ────────────────────────────────────
-   The white budgie sits just above the modal so each opened
-   dialog reads like the bird's speech bubble. Attached to
-   the OVERLAY (not the modal) so that the modal's own
-   overflow:auto doesn't clip the bird. The overlay is a
-   flex column with the bird as ::before — it naturally
-   stacks above .modal at the modal's top-left corner. */
-.modal-overlay.open::before {
+   The white budgie perches at the modal's top-left corner
+   so each opened dialog reads like the bird's speech bubble.
+   The modal uses overflow: visible so the bird isn't clipped. */
+.modal-overlay.open .modal::before {
   content: '';
-  width: 64px;
-  height: 64px;
+  position: absolute;
+  top: -52px;
+  left: 4px;
+  width: 60px;
+  height: 60px;
   background: url('assets/budgies/64_b04.gif') no-repeat center / contain;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   pointer-events: none;
-  position: relative;
   z-index: 2;
-  flex-shrink: 0;
-  align-self: center;
-  margin-bottom: -6px;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .35));
 }
 @media (max-width: 480px) {
-  .modal-overlay.open::before {
-    width: 56px;
-    height: 56px;
-    margin-bottom: -4px;
+  .modal-overlay.open .modal::before {
+    top: -46px;
+    left: 2px;
+    width: 52px;
+    height: 52px;
   }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -3103,19 +3099,13 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   .robot-detail-name { font-size: 20px; }
   .btn-group { margin-left: 0; }
 
-  /* Modals full-bleed bottom sheet (overlay is flex-column) */
+  /* Modals stay centered at every viewport size. The base .modal
+     already clamps width to calc(100vw - 40px) for small screens.
+     overflow: visible is kept so the budgie speaker isn't clipped;
+     if a form ever grows beyond the viewport, the page itself can
+     scroll. */
   .modal {
-    width: 100%;
-    max-width: 100vw;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    margin-bottom: 0;
-    align-self: stretch;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  .modal-overlay {
-    align-items: center;
-    justify-content: flex-end;
+    max-height: calc(100vh - 80px);
   }
 
   /* Backup popover full-width handled in main .backup-popover @media block above */
