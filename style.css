@@ -1180,18 +1180,28 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .topbar-icon-btn:hover { background: var(--surface-2); }
 .topbar-icon-btn:active { transform: scale(.97); }
 
-/* Left-aligned section title; budgie is now a separate floating
-   sprite anchored to a corner of the viewport. */
+/* Brand logo on the left, right after the hamburger */
+.topbar-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  display: block;
+  /* Subtle shadow so the gradient logo lifts off translucent toolbars */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .10);
+}
+
+/* Section title — centred within the remaining flex space (logo sits
+   to its left, search/avatar to its right). */
 .topbar-title {
   flex: 1;
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   font-weight: 600;
   font-size: 15px;
   color: var(--text);
-  padding-left: 4px;
 }
 .topbar-title #topbar-title-text {
   white-space: nowrap;
