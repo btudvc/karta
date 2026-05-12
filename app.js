@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.18.1';
+var APP_VERSION = '6.19.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -2141,13 +2141,33 @@ document.getElementById('save-task').addEventListener('click', () => {
     if (m) assignee = { email: m.email, name: m.name || null, picture: m.picture || null };
     else assignee = { email: assigneeEmail, name: null, picture: null };
   }
+  // Capture who did the assignment so collaborators can spot tasks
+  // that landed on their plate (Inbox surfaces these).
+  const meInfo = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const myEmail = (meInfo && meInfo.email) || null;
+  const assignedByEmail = (assignee && assignee.email && myEmail && assignee.email.toLowerCase() !== myEmail.toLowerCase())
+    ? myEmail
+    : null;
   if (editingTaskId) {
     const task = robot.tasks.find(t => t.id === editingTaskId);
     if (task) {
+      const prevAssigneeEmail = (task.assignee && task.assignee.email) || null;
       task.title = title; task.priority = priority; task.status = status;
       task.dueDate = dueDate || null; task.tags = tags;
       task.recurrence = recurrence;
       task.assignee = assignee;
+      // Only stamp assignedBy when the assignee actually changed AND the
+      // task got handed to someone else. Re-saving your own task without
+      // changing the assignee shouldn't keep marking it as "from X".
+      const newAssigneeEmail = (assignee && assignee.email) || null;
+      if (newAssigneeEmail && newAssigneeEmail !== prevAssigneeEmail && assignedByEmail) {
+        task.assignedBy = assignedByEmail;
+        task.assignedAt = Date.now();
+      } else if (!newAssigneeEmail) {
+        // Unassigned — drop the audit fields.
+        delete task.assignedBy;
+        delete task.assignedAt;
+      }
       stampTask(task);
     }
   } else {
@@ -2157,6 +2177,10 @@ document.getElementById('save-task').addEventListener('click', () => {
       notebook: [], expanded: false, createdAt: Date.now(),
       updatedAt: Date.now(),
     };
+    if (assignedByEmail) {
+      newTask.assignedBy = assignedByEmail;
+      newTask.assignedAt = Date.now();
+    }
     robot.tasks.push(newTask);
   }
   stampRobot(robot);
@@ -3550,10 +3574,40 @@ function renderAllTasks() {
   const list = document.getElementById('all-tasks-list');
   if (!list) return;
 
+  // "Only me" filter — remembered per-device. Surfaces only tasks the
+  // signed-in user is the assignee for. Hidden entirely when the user
+  // isn't signed into Drive (no email to match against).
+  const me = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const myEmail = (me && me.email) ? me.email.toLowerCase() : null;
+  const toggle = document.getElementById('at-only-me');
+  const toggleLabel = document.getElementById('at-only-me-label');
+  if (toggleLabel) toggleLabel.style.display = myEmail ? '' : 'none';
+  let onlyMe = false;
+  if (toggle && myEmail) {
+    try {
+      const stored = localStorage.getItem('b-less.at-only-me');
+      onlyMe = stored === '1';
+    } catch {}
+    toggle.checked = onlyMe;
+    if (!toggle.dataset.bound) {
+      toggle.dataset.bound = '1';
+      toggle.addEventListener('change', () => {
+        try { localStorage.setItem('b-less.at-only-me', toggle.checked ? '1' : '0'); } catch {}
+        renderAllTasks();
+      });
+    }
+  }
+
   // Collect tasks across all projects/lists
   const filtered = [];
   projectsByMode().forEach(p => {
-    (p.tasks || []).forEach(t => filtered.push({ task: t, project: p }));
+    (p.tasks || []).forEach(t => {
+      if (onlyMe && myEmail) {
+        const ae = (t.assignee && t.assignee.email) ? t.assignee.email.toLowerCase() : null;
+        if (ae !== myEmail) return;
+      }
+      filtered.push({ task: t, project: p });
+    });
   });
 
   // Group: active → pending → done
@@ -7348,18 +7402,49 @@ function homeNavigate(target) {
 }
 
 // Inbox = today/overdue tasks list (single source of "what's on me now")
+function getInboxSeen() {
+  try { return JSON.parse(localStorage.getItem('b-less.inbox-seen') || '{}') || {}; }
+  catch { return {}; }
+}
+function markInboxSeen(taskId) {
+  const seen = getInboxSeen();
+  seen[taskId] = Date.now();
+  try { localStorage.setItem('b-less.inbox-seen', JSON.stringify(seen)); } catch {}
+}
+
 function renderInbox() {
   const list = document.getElementById('inbox-list');
   if (!list) return;
   const today = new Date(); today.setHours(0,0,0,0);
-  const items = [];
+  const me = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const myEmail = (me && me.email) ? me.email.toLowerCase() : null;
+  const seen = getInboxSeen();
+  const overdue  = [];
+  const assigned = [];
+  const seenIds  = new Set();
   (state.robots || []).forEach(r => {
     (r.tasks || []).forEach(task => {
-      if (task.status === 'done' || !task.dueDate) return;
-      const d = new Date(task.dueDate + 'T00:00:00');
-      if (d < today) items.push({ task, project: r });
+      if (task.status === 'done') return;
+      // Assigned-to-me bucket: another user handed me this task and I
+      // haven't acknowledged it yet (acknowledged = clicked once from
+      // the inbox). Stored locally so it doesn't sync.
+      if (myEmail
+          && task.assignee && task.assignee.email
+          && task.assignee.email.toLowerCase() === myEmail
+          && task.assignedBy && task.assignedBy.toLowerCase() !== myEmail
+          && !seen[task.id]) {
+        assigned.push({ task, project: r });
+        seenIds.add(task.id);
+      }
+      // Overdue bucket: due date in the past. Skip if it's already in
+      // the assigned list so the same task doesn't appear twice.
+      if (task.dueDate) {
+        const d = new Date(task.dueDate + 'T00:00:00');
+        if (d < today && !seenIds.has(task.id)) overdue.push({ task, project: r });
+      }
     });
   });
+  const items = assigned.concat(overdue);
   // Update pill badge + drawer-nav badge
   const badge = document.getElementById('inbox-badge');
   if (badge) {
@@ -7372,23 +7457,48 @@ function renderInbox() {
     else { drawerBadge.hidden = true; }
   }
   if (!items.length) {
-    list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing past due.</div>';
+    list.innerHTML = '<div class="home-list-empty" style="padding: 32px 16px;">Inbox zero — nothing assigned to you or past due.</div>';
     return;
   }
-  list.innerHTML = items.map(it => `
-    <button class="home-list-item" data-pid="${escapeAttr(it.project.id)}" data-tid="${escapeAttr(it.task.id)}" type="button">
-      <span class="home-list-item-icon" style="--c: #ff6b6b;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
-      </span>
-      <span class="home-list-item-body">
-        <span class="home-list-item-title">${escapeHtml(it.task.title)}</span>
-        <span class="home-list-item-sub">${escapeHtml(it.project.name || 'List')} · ${escapeHtml(it.task.dueDate)}</span>
-      </span>
-    </button>
-  `).join('');
+  const sectionHtml = (heading, group, kind) => {
+    if (!group.length) return '';
+    const accent = kind === 'assigned' ? '#a855f7' : '#ff6b6b';
+    return `
+      <div class="inbox-section">
+        <div class="inbox-section-head">${escapeHtml(heading)}</div>
+        ${group.map(it => `
+          <button class="home-list-item" data-pid="${escapeAttr(it.project.id)}" data-tid="${escapeAttr(it.task.id)}" data-inbox-kind="${kind}" type="button">
+            <span class="home-list-item-icon" style="--c: ${accent};">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                ${kind === 'assigned'
+                  ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>'
+                  : '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>'}
+              </svg>
+            </span>
+            <span class="home-list-item-body">
+              <span class="home-list-item-title">${escapeHtml(it.task.title)}</span>
+              <span class="home-list-item-sub">${
+                kind === 'assigned'
+                  ? `${escapeHtml(it.project.name || 'List')} · from ${escapeHtml(it.task.assignedBy || '?')}`
+                  : `${escapeHtml(it.project.name || 'List')} · ${escapeHtml(it.task.dueDate || '')}`
+              }</span>
+            </span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  };
+  list.innerHTML =
+    sectionHtml('Assigned to you', assigned, 'assigned') +
+    sectionHtml('Overdue',         overdue,  'overdue');
+
   list.querySelectorAll('[data-pid]').forEach(el => {
     el.addEventListener('click', () => {
-      if (typeof goToTask === 'function') goToTask(el.dataset.pid, el.dataset.tid);
+      const tid = el.dataset.tid;
+      // Acknowledge: clicking an "assigned to you" inbox row marks it as
+      // seen so it doesn't keep nagging on every visit.
+      if (el.dataset.inboxKind === 'assigned' && tid) markInboxSeen(tid);
+      if (typeof goToTask === 'function') goToTask(el.dataset.pid, tid);
     });
   });
 }
@@ -7411,11 +7521,27 @@ function refreshInboxBadge() {
   const drawerBadge  = document.getElementById('drawer-inbox-badge');
   if (!badge && !drawerBadge) return;
   const today = new Date(); today.setHours(0,0,0,0);
+  const me = (typeof DriveAPI !== 'undefined' && DriveAPI.getUserInfo && DriveAPI.getUserInfo()) || null;
+  const myEmail = (me && me.email) ? me.email.toLowerCase() : null;
+  const seen = getInboxSeen();
   let count = 0;
+  const counted = new Set();
   (state.robots || []).forEach(r => (r.tasks || []).forEach(task => {
-    if (task.status === 'done' || !task.dueDate) return;
-    const d = new Date(task.dueDate + 'T00:00:00');
-    if (d < today) count++;
+    if (task.status === 'done') return;
+    let assigned = false;
+    if (myEmail
+        && task.assignee && task.assignee.email
+        && task.assignee.email.toLowerCase() === myEmail
+        && task.assignedBy && task.assignedBy.toLowerCase() !== myEmail
+        && !seen[task.id]) {
+      count++;
+      counted.add(task.id);
+      assigned = true;
+    }
+    if (!assigned && task.dueDate) {
+      const d = new Date(task.dueDate + 'T00:00:00');
+      if (d < today && !counted.has(task.id)) count++;
+    }
   }));
   if (badge) {
     if (count) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.add('has'); }

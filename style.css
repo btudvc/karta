@@ -2967,6 +2967,41 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .fv-subtitle { color: var(--muted); font-size: 13.5px; margin-top: 4px; }
 
+/* All-Tasks header filter row (Only-me toggle) */
+.at-filter-row { display: flex; align-items: center; gap: 12px; }
+.at-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s var(--ease), border-color .12s var(--ease);
+}
+.at-filter-toggle:hover { background: var(--surface-2); border-color: var(--border-2); }
+.at-filter-toggle input { accent-color: var(--accent); cursor: pointer; }
+.at-filter-toggle:has(input:checked) {
+  background: var(--accent-soft, rgba(168, 85, 247, .14));
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Inbox sections */
+.inbox-section + .inbox-section { margin-top: 18px; }
+.inbox-section-head {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0 4px 6px;
+}
+
 /* Visit row — same compact pattern as link-row / meeting list items
    so all feature lists share one design language. */
 .visit-row {
