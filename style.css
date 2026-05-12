@@ -1567,6 +1567,90 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .home-type-group.open .home-type-items { display: flex; }
 
+/* This-week mini calendar — 7-day strip with per-day dots + count */
+.home-week-mini {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin: 4px 0 10px;
+}
+.wm-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+  transition: background .12s var(--ease), border-color .12s var(--ease), transform .12s var(--ease);
+  min-width: 0;
+}
+.wm-cell:hover { background: var(--surface-2); border-color: var(--border-2); }
+.wm-cell:active { transform: scale(.97); }
+.wm-cell.wm-today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft, rgba(168, 85, 247, .12)) inset;
+}
+.wm-cell.wm-has { background: var(--accent-soft, rgba(168, 85, 247, .08)); }
+.wm-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+  line-height: 1;
+}
+.wm-cell.wm-today .wm-label { color: var(--accent); font-weight: 600; }
+.wm-day {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+.wm-cell.wm-today .wm-day { color: var(--accent); }
+.wm-dots {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+  align-items: center;
+  justify-content: center;
+}
+.wm-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  display: inline-block;
+}
+.wm-dot-task    { background: var(--accent); }
+.wm-dot-meeting { background: #f97316; }
+.wm-dot-visit   { background: #10b981; }
+.wm-count {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+}
+@media (max-width: 480px) {
+  .home-week-mini { gap: 4px; }
+  .wm-cell { padding: 6px 2px 8px; border-radius: 8px; }
+  .wm-label { font-size: 9.5px; }
+  .wm-day { font-size: 14px; }
+  .wm-count { top: 2px; right: 2px; min-width: 14px; height: 14px; line-height: 14px; font-size: 9px; }
+}
+
 .home-list { display: flex; flex-direction: column; gap: 2px; }
 .home-list-item {
   display: flex; align-items: center; gap: 12px;

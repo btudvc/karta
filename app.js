@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.17.6';
+var APP_VERSION = '6.18.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -6906,6 +6906,60 @@ function renderHome() {
         });
       });
     }
+  }
+
+  // This Week — 7-day mini strip. One cell per day with task/meeting/
+  // visit dots and a count badge. Clicking a day jumps to the calendar
+  // tab focused on that date.
+  const miniEl = document.getElementById('home-week-mini');
+  if (miniEl) {
+    const DAY_LABELS_TR = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz']; // Mon..Sun
+    const DAY_LABELS_EN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const lang = (typeof currentLang === 'string' && currentLang) ||
+                 (typeof state === 'object' && state && state.lang) || 'en';
+    const labels = lang.toLowerCase().startsWith('tr') ? DAY_LABELS_TR : DAY_LABELS_EN;
+    const byDay = {};
+    weekItems.forEach(it => {
+      if (!byDay[it.date]) byDay[it.date] = { task: 0, meeting: 0, visit: 0, total: 0 };
+      byDay[it.date][it.kind] = (byDay[it.date][it.kind] || 0) + 1;
+      byDay[it.date].total++;
+    });
+    const cells = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today); d.setDate(d.getDate() + i);
+      const iso = ymd(d);
+      const isToday = i === 0;
+      const jsDow = d.getDay(); // 0=Sun..6=Sat → map to Mon-first index
+      const labelIdx = (jsDow + 6) % 7;
+      const counts = byDay[iso] || { task: 0, meeting: 0, visit: 0, total: 0 };
+      const dots = [];
+      if (counts.task)    dots.push('<span class="wm-dot wm-dot-task"   title="Tasks"></span>');
+      if (counts.meeting) dots.push('<span class="wm-dot wm-dot-meeting" title="Meetings"></span>');
+      if (counts.visit)   dots.push('<span class="wm-dot wm-dot-visit"   title="Visits"></span>');
+      const countBadge = counts.total ? `<span class="wm-count">${counts.total}</span>` : '';
+      cells.push(`
+        <button class="wm-cell${isToday ? ' wm-today' : ''}${counts.total ? ' wm-has' : ''}" data-wm-date="${iso}" type="button" role="listitem" aria-label="${labels[labelIdx]} ${d.getDate()}">
+          <span class="wm-label">${labels[labelIdx]}</span>
+          <span class="wm-day">${d.getDate()}</span>
+          <span class="wm-dots">${dots.join('')}</span>
+          ${countBadge}
+        </button>
+      `);
+    }
+    miniEl.innerHTML = cells.join('');
+    miniEl.querySelectorAll('[data-wm-date]').forEach(el => {
+      el.addEventListener('click', () => {
+        const iso = el.dataset.wmDate;
+        // Set the calendar month/selection up front, then navigate.
+        // renderCalendar reads from the module-level calMonth/calSelected.
+        try {
+          const d = new Date(iso + 'T00:00:00');
+          calMonth = { y: d.getFullYear(), m: d.getMonth() };
+          calSelected = iso;
+        } catch (_) {}
+        if (typeof homeNavigate === 'function') homeNavigate('calendar');
+      });
+    });
   }
 
   // Today's Journal — preview if exists, otherwise prompt
