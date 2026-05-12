@@ -3497,6 +3497,14 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .cal-nav:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
 .cal-today-btn { padding: 6px 14px; font-size: 12.5px; }
+.cal-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+.cal-export-btn svg { flex-shrink: 0; }
 
 .cal-body {
   display: grid;

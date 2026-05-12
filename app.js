@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.17.4';
+var APP_VERSION = '6.17.5';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -3203,10 +3203,6 @@ const BackupManager = (() => {
           ${themeBtn('dim',   'Dim',   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" stroke-dasharray="2 2"/></svg>')}
           ${themeBtn('dark',  'Dark',  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>')}
         </div>
-        <button class="bp-settings-link" data-act="export-ics" type="button">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>
-          <span>Export calendar (.ics)</span>
-        </button>
         <div class="bp-version">v${escapeHtml(typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?')}</div>
       </div>
     `;
@@ -3333,8 +3329,6 @@ const BackupManager = (() => {
         } else if (act === 'restore') {
           const ok = await tryRestore();
           if (!ok) alertDialog({ message: t('bp.no_backup_found') });
-        } else if (act === 'export-ics') {
-          if (typeof downloadIcs === 'function') downloadIcs();
         } else if (act === 'rename') {
           const next = await (typeof promptInput === 'function'
             ? promptInput({
@@ -6794,6 +6788,7 @@ initJournal();
 BackupManager.initUI();
 BackupManager.init();
 document.getElementById('export-ics-btn')?.addEventListener('click', downloadIcs);
+document.getElementById('cal-export-ics')?.addEventListener('click', downloadIcs);
 
 // Home grid: pill button + the colorful card row each navigate somewhere.
 function setBnavActiveFor(id) {
