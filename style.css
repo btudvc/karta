@@ -2757,10 +2757,13 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: none;
-  align-items: center;
-  justify-content: center;
+  /* overflow-y: auto + margin:auto on the .modal child = the modal stays
+     centered when its content fits the viewport, and the overlay itself
+     becomes scrollable when the form is too tall (mobile, big forms). */
+  overflow-y: auto;
   z-index: 200;
   animation: fadeIn .15s var(--ease);
+  padding: 70px 16px 24px;
 }
 .modal-overlay.open { display: flex; }
 
@@ -2787,6 +2790,10 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   box-shadow: var(--shadow-lg);
   animation: scaleIn .18s var(--ease);
   overflow: visible;
+  /* margin:auto pairs with the overlay's overflow-y:auto — keeps the
+     modal vertically centered while it fits, then naturally yields to
+     scroll when the form is taller than the viewport. */
+  margin: auto;
 }
 
 /* ─── BUDGIE SPEAKER ────────────────────────────────────
@@ -3218,14 +3225,10 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   .robot-detail-name { font-size: 20px; }
   .btn-group { margin-left: 0; }
 
-  /* Modals stay centered at every viewport size. The base .modal
-     already clamps width to calc(100vw - 40px) for small screens.
-     overflow: visible is kept so the budgie speaker isn't clipped;
-     if a form ever grows beyond the viewport, the page itself can
-     scroll. */
-  .modal {
-    max-height: calc(100vh - 80px);
-  }
+  /* Modals stay centered at every viewport size; their height is left
+     uncapped on purpose so overflow visible can show the budgie at top.
+     When the form is taller than the viewport the overlay itself
+     scrolls (overflow-y: auto + margin:auto on the child). */
 
   /* Backup popover full-width handled in main .backup-popover @media block above */
 
