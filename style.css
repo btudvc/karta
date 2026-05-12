@@ -1297,9 +1297,9 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
    flex parent or rem-scaling can stretch it. */
 .topbar-avatar-btn {
   position: relative;
-  width: 36px; height: 36px;
-  min-width: 36px; min-height: 36px;
-  max-width: 36px; max-height: 36px;
+  width: 28px; height: 28px;
+  min-width: 28px; min-height: 28px;
+  max-width: 28px; max-height: 28px;
   padding: 0;
   background: transparent;
   border: 1px solid var(--border);
@@ -1314,7 +1314,7 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 .topbar-avatar-btn:hover  { border-color: var(--border-2); }
 .topbar-avatar-btn:active { transform: scale(.97); }
 .topbar-avatar-img {
-  width: 34px; height: 34px;
+  width: 26px; height: 26px;
   display: block;
   border-radius: 50%;
   object-fit: cover;
@@ -1327,13 +1327,11 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   color: var(--muted);
 }
 .topbar-avatar-fallback[hidden] { display: none; }
-/* Tiny green presence dot (signed-in indicator) — sits outside the
-   round avatar at the bottom right. Higher z-index so it paints
-   above the image. */
+/* Tiny green presence dot — scaled down to match the smaller avatar. */
 .topbar-avatar-dot {
   position: absolute;
   right: -2px; bottom: -2px;
-  width: 10px; height: 10px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--green, #16a34a);
   border: 2px solid var(--bg);
@@ -2692,6 +2690,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 
 .modal {
+  position: relative;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -2703,6 +2702,61 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   display: flex; flex-direction: column; gap: 10px;
   box-shadow: var(--shadow-lg);
   animation: scaleIn .18s var(--ease);
+  overflow: visible;
+}
+
+/* ─── BUDGIE SPEAKER ────────────────────────────────────
+   The white budgie sits just outside the modal's top-left
+   corner so each opened dialog reads like the bird's
+   speech bubble. A tiny "tail" notch on the modal's top
+   edge ties the bird visually to the bubble. */
+.modal-overlay.open .modal::before {
+  content: '';
+  position: absolute;
+  top: -52px;
+  left: 10px;
+  width: 56px;
+  height: 56px;
+  background: url('assets/budgies/64_b04.gif') no-repeat center / contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+.modal-overlay.open .modal::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 32px;
+  width: 14px;
+  height: 14px;
+  background: var(--glass-bg);
+  border-left: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-border);
+  transform: rotate(45deg);
+  pointer-events: none;
+  z-index: 1;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .modal-overlay.open .modal::after {
+    background: var(--surface);
+    border-color: var(--border-2);
+  }
+}
+@media (max-width: 480px) {
+  .modal-overlay.open .modal::before {
+    top: -44px;
+    left: 8px;
+    width: 48px;
+    height: 48px;
+  }
+  .modal-overlay.open .modal::after {
+    top: -7px;
+    left: 26px;
+    width: 12px;
+    height: 12px;
+  }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .modal { background: var(--surface); border-color: var(--border-2); }

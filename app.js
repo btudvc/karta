@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.16.3';
+var APP_VERSION = '6.17.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -5812,40 +5812,9 @@ function updateTopbarTitle(id) {
   if (flat) flat.textContent = TOPBAR_TITLES[id] || 'My Work';
 }
 
-// Random "Jump Budgie" gif in the topbar — new bird on every load.
-// Picks once per page lifetime; if you want a fresh one without a full
-// reload, just call this from devtools.
-const BUDGIE_GIFS = [
-  '64_b01.gif', '64_b02.gif', '64_b03.gif', '64_b04.gif',
-  '64_b05.gif', '64_b06.gif', '64_b07.gif',
-];
-function pickTopbarBudgie(forceDifferent) {
-  const img = document.getElementById('topbar-budgie');
-  if (!img || !BUDGIE_GIFS.length) return;
-  let file;
-  if (forceDifferent && BUDGIE_GIFS.length > 1) {
-    const current = (img.src || '').split('/').pop();
-    do {
-      file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
-    } while (file === current);
-  } else {
-    file = BUDGIE_GIFS[Math.floor(Math.random() * BUDGIE_GIFS.length)];
-  }
-  img.src = 'assets/budgies/' + file;
-}
-pickTopbarBudgie();
-
-// Click the budgie → jump animation + swap to a different gif
-document.getElementById('topbar-budgie')?.addEventListener('click', () => {
-  const img = document.getElementById('topbar-budgie');
-  if (!img) return;
-  // Retrigger the keyframe by removing + reflow + re-adding
-  img.classList.remove('jumping');
-  void img.offsetWidth;
-  img.classList.add('jumping');
-  pickTopbarBudgie(true);
-  setTimeout(() => img.classList.remove('jumping'), 700);
-});
+// The floating "Jump Budgie" was retired — the bird now appears on
+// modal headers via a CSS pseudo-element so it looks like the modal
+// is the bird's speech bubble. See .modal-overlay::before in style.css.
 
 // ── Add Item picker — spaces only carry lists now, so skip the picker
 // and open the new-list flow directly. Meetings / visits / journal /
