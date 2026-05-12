@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.18.0';
+var APP_VERSION = '6.18.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -2947,16 +2947,17 @@ const DriveAPI = (() => {
   }
 
   // Build a self-contained payload that includes every entity the Space
-  // refers to (robots/meetings/visits). The payload is what's written to
-  // the Drive file. Singletons (journal/finance/links/reviews) and items
-  // that point to non-existent refIds are excluded — they don't make
-  // sense as shared content.
+  // refers to. Spaces only carry LISTS now — meetings, visits, journal
+  // and finance are all global personal features and stay local. Any
+  // legacy meeting/visit refs still sitting in space.items from older
+  // versions are intentionally skipped here so they stop leaking onto
+  // collaborators.
   function buildSpacePayload(space, ownerEmail) {
-    const refs = { list: new Set(), meeting: new Set(), visit: new Set() };
+    const refs = { list: new Set() };
     (space.items || []).forEach(it => {
-      if (refs[it.type]) refs[it.type].add(it.refId);
+      if (it.type === 'list') refs.list.add(it.refId);
     });
-    const shareableItems = (space.items || []).filter(it => refs[it.type]);
+    const shareableItems = (space.items || []).filter(it => it.type === 'list' && refs.list.has(it.refId));
     // Strip per-device UI state from each robot's tasks. Without this,
     // expanding a task locally would push the expanded flag to Drive
     // and sync onto every collaborator's screen.
@@ -2971,10 +2972,10 @@ const DriveAPI = (() => {
     return {
       schema: 'b-less.space.v1',
       ownerEmail,
-      space:    { id: space.id, name: space.name, items: shareableItems },
-      robots:   (state.robots      || []).filter(r => refs.list.has(r.id)).map(stripTaskUI),
-      meetings: (state.meetings    || []).filter(m => refs.meeting.has(m.id)),
-      visits:   (state.fieldVisits || []).filter(v => refs.visit.has(v.id)),
+      space:  { id: space.id, name: space.name, items: shareableItems },
+      robots: (state.robots || []).filter(r => refs.list.has(r.id)).map(stripTaskUI),
+      // Meetings/visits intentionally omitted — they are personal,
+      // not space-scoped, and must not propagate through shared files.
       updatedAt: Date.now(),
       updatedBy: ownerEmail,
     };
@@ -5357,11 +5358,11 @@ function migrateToSpaces() {
     added = true;
   }
 
-  // Drop dead refs (robot/meeting/visit deleted from legacy but still in space.items)
+  // Spaces only carry lists + the personal-journal pointer now. Drop
+  // any legacy meeting/visit items left over from older versions —
+  // they should never have lived in a space and shouldn't sync.
   const liveIds = {
-    list:    new Set((state.robots      || []).map(r => r.id)),
-    meeting: new Set((state.meetings    || []).map(m => m.id)),
-    visit:   new Set((state.fieldVisits || []).map(v => v.id)),
+    list:    new Set((state.robots || []).map(r => r.id)),
     journal: new Set(['default']),
   };
   let removed = false;
@@ -6498,21 +6499,9 @@ function mergeImportedSpacePayload(pull) {
     state.robots[idx] = Object.assign({}, lr, head, { tasks, issues });
   });
 
-  // Meetings — by-id, newer wins on overlap.
-  (p.meetings || []).forEach(rm => {
-    const idx = state.meetings.findIndex(x => x.id === rm.id);
-    if (idx < 0) { state.meetings.push(rm); return; }
-    const lm = state.meetings[idx];
-    if ((rm.updatedAt || 0) >= (lm.updatedAt || 0)) state.meetings[idx] = rm;
-  });
-
-  // Visits — same.
-  (p.visits || []).forEach(rv => {
-    const idx = state.fieldVisits.findIndex(x => x.id === rv.id);
-    if (idx < 0) { state.fieldVisits.push(rv); return; }
-    const lv = state.fieldVisits[idx];
-    if ((rv.updatedAt || 0) >= (lv.updatedAt || 0)) state.fieldVisits[idx] = rv;
-  });
+  // Meetings & visits are personal/global — never imported from a
+  // shared space payload. (Older builds shipped them; we ignore those
+  // sections to avoid leaking another user's meetings onto this device.)
 
   // Space header + items list — items are merged as a union by item id
   // so both sides' additions stay; the Space's renameable fields take
