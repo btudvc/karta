@@ -2715,12 +2715,9 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
    stacks above .modal at the modal's top-left corner. */
 .modal-overlay.open::before {
   content: '';
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background:
-    url('assets/budgies/64_b04.gif') no-repeat center / 78%,
-    var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%));
+  width: 64px;
+  height: 64px;
+  background: url('assets/budgies/64_b04.gif') no-repeat center / contain;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   pointer-events: none;
@@ -2728,17 +2725,14 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   z-index: 2;
   flex-shrink: 0;
   align-self: center;
-  margin-bottom: -8px;
-  box-shadow:
-    0 4px 14px rgba(124, 58, 237, .35),
-    0 2px 6px rgba(0, 0, 0, .18),
-    inset 0 0 0 2px rgba(255, 255, 255, .35);
+  margin-bottom: -6px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .35));
 }
 @media (max-width: 480px) {
   .modal-overlay.open::before {
-    width: 52px;
-    height: 52px;
-    margin-bottom: -6px;
+    width: 56px;
+    height: 56px;
+    margin-bottom: -4px;
   }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
