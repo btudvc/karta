@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.22.0';
+var APP_VERSION = '6.22.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -8200,31 +8200,71 @@ async function renderPrivate() {
     // Locked
     const bioEnrolled = VaultStore.biometricEnrolled();
     const bioCanUse   = await VaultStore.biometricAvailable();
+    const bioPrimary = bioEnrolled && bioCanUse;
     body.innerHTML = `
       <div class="vault-card vault-card-locked">
         <div class="vault-lock-badge">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <h3>Vault is locked</h3>
-        <p class="vault-note">Enter your master password to unlock.</p>
-        ${bioEnrolled && bioCanUse ? `
+        <p class="vault-note">${bioPrimary
+          ? 'Use your device biometrics to unlock.'
+          : 'Enter your master password to unlock.'}</p>
+        ${bioPrimary ? `
           <button class="btn-primary vault-bio-btn" id="vault-bio-unlock-btn">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11v3a1 1 0 0 1-1 1"/><path d="M3 11a9 9 0 0 1 13.6-7.74"/><path d="M3 17.5a9 9 0 0 1-1-3"/><path d="M14 21.3a9.5 9.5 0 0 0 5-7.3"/><path d="M9 21.3A8.83 8.83 0 0 1 5 17"/><path d="M21 11a9 9 0 0 0-2.6-5.7"/><path d="M8.5 4.4A8.93 8.93 0 0 1 12 4a8.93 8.93 0 0 1 8 4.7"/><path d="M11 3.9a9 9 0 0 1 5.5 7.1"/></svg>
             <span>Unlock with biometrics</span>
           </button>
-          <div class="vault-or-divider"><span>or</span></div>
-        ` : ''}
-        <label>Master password</label>
-        <input type="password" id="vault-pw" autocomplete="current-password" />
+        ` : `
+          <label>Master password</label>
+          <input type="password" id="vault-pw" autocomplete="current-password" />
+        `}
         <div class="modal-actions">
-          <button class="btn-primary" id="vault-unlock-btn">Unlock</button>
-          ${bioEnrolled && bioCanUse
-            ? `<button class="btn-ghost" id="vault-forgot-btn" title="Reset master password with biometrics — keeps your entries">Forgot password?</button>`
-            : `<button class="btn-ghost" id="vault-destroy-btn" title="Wipe this vault and start over">Reset vault…</button>`}
+          ${bioPrimary
+            ? `<button class="btn-ghost"   id="vault-use-pw-btn">Use password instead</button>
+               <button class="btn-ghost"   id="vault-forgot-btn" title="Reset master password with biometrics — keeps your entries">Forgot password?</button>`
+            : `<button class="btn-primary" id="vault-unlock-btn">Unlock</button>
+               <button class="btn-ghost"   id="vault-destroy-btn" title="Wipe this vault and start over">Reset vault…</button>`}
         </div>
         <div class="vault-error" id="vault-err" hidden></div>
       </div>
     `;
+    // "Use password instead" — swap the biometric block for a password
+    // input + Unlock button without leaving the section. Only mounted
+    // when biometric is the primary path.
+    document.getElementById('vault-use-pw-btn')?.addEventListener('click', () => {
+      const card = body.querySelector('.vault-card-locked');
+      if (!card) return;
+      const bioBtn = document.getElementById('vault-bio-unlock-btn');
+      if (bioBtn) bioBtn.remove();
+      const note = card.querySelector('.vault-note');
+      if (note) note.textContent = 'Enter your master password to unlock.';
+      const actions = card.querySelector('.modal-actions');
+      if (actions) {
+        const labelEl = document.createElement('label');
+        labelEl.textContent = 'Master password';
+        const inputEl = document.createElement('input');
+        inputEl.type = 'password';
+        inputEl.id = 'vault-pw';
+        inputEl.autocomplete = 'current-password';
+        actions.before(labelEl, inputEl);
+        // Swap the "Use password instead" button for an Unlock button.
+        document.getElementById('vault-use-pw-btn').remove();
+        const ok = document.createElement('button');
+        ok.className = 'btn-primary';
+        ok.id = 'vault-unlock-btn';
+        ok.textContent = 'Unlock';
+        actions.prepend(ok);
+        inputEl.focus();
+        const doUnlock2 = async () => {
+          const err = document.getElementById('vault-err');
+          try { await VaultStore.unlock(inputEl.value); renderPrivate(); }
+          catch { err.textContent = 'Wrong password.'; err.hidden = false; inputEl.select(); }
+        };
+        ok.addEventListener('click', doUnlock2);
+        inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock2(); });
+      }
+    });
     if (bioEnrolled && bioCanUse) {
       document.getElementById('vault-bio-unlock-btn').addEventListener('click', async () => {
         const err = document.getElementById('vault-err');
@@ -8243,19 +8283,21 @@ async function renderPrivate() {
       }, 250);
     }
     const pwEl = document.getElementById('vault-pw');
-    const doUnlock = async () => {
-      const err = document.getElementById('vault-err');
-      try {
-        await VaultStore.unlock(pwEl.value);
-        renderPrivate();
-      } catch (e) {
-        err.textContent = 'Wrong password.';
-        err.hidden = false;
-        pwEl.select();
-      }
-    };
-    document.getElementById('vault-unlock-btn').addEventListener('click', doUnlock);
-    pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
+    if (pwEl) {
+      const doUnlock = async () => {
+        const err = document.getElementById('vault-err');
+        try {
+          await VaultStore.unlock(pwEl.value);
+          renderPrivate();
+        } catch (e) {
+          err.textContent = 'Wrong password.';
+          err.hidden = false;
+          pwEl.select();
+        }
+      };
+      document.getElementById('vault-unlock-btn')?.addEventListener('click', doUnlock);
+      pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
+    }
     document.getElementById('vault-destroy-btn')?.addEventListener('click', async () => {
       const ok = await (typeof confirmDialog === 'function'
         ? confirmDialog({ title: 'Reset vault', message: 'This permanently deletes every encrypted entry on this device. Continue?', okText: 'Delete vault' })
