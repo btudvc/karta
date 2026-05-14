@@ -6016,7 +6016,10 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
 .bnav-btn:hover { background: var(--glass-bg-2, var(--glass-bg)); }
 .bnav-btn.active {
   color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--accent), 0 0 16px var(--accent-soft, rgba(168,85,247,.18));
+  /* No halo on the bottom bar — keep it quiet. Colour + the existing
+     inset underline (from the base .bnav-btn.active rule above) is
+     plenty of signal. */
+  box-shadow: none;
 }
 
 /* Sidebar / drawer nav items */
