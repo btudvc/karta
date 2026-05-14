@@ -48,9 +48,11 @@
   /* Frosted-glass tokens — used by chrome surfaces (bottom-nav,
      top-bar, drawer, modals, sidebars). Solid fallback below
      via @supports for browsers without backdrop-filter. */
-  --glass-bg:     rgba(247, 248, 250, .72);
+  --glass-bg:     rgba(255, 255, 255, .55);
+  --glass-bg-2:   rgba(255, 255, 255, .35);
   --glass-border: rgba(15, 20, 30, .08);
   --glass-blur:   blur(22px) saturate(1.6);
+  --glow-accent:  0 0 0 1px rgba(168, 85, 247, .25), 0 0 14px rgba(168, 85, 247, .25);
   color-scheme: light;
 }
 input[type="date"] { color-scheme: light; }
@@ -88,9 +90,11 @@ input[type="date"] { color-scheme: light; }
   --shadow:       0 6px 18px rgba(0, 0, 0, .35);
   --shadow-lg:    0 14px 36px rgba(0, 0, 0, .45);
 
-  --glass-bg:     rgba(35, 39, 48, .60);
-  --glass-border: rgba(255, 255, 255, .06);
+  --glass-bg:     rgba(255, 255, 255, .07);
+  --glass-bg-2:   rgba(255, 255, 255, .04);
+  --glass-border: rgba(255, 255, 255, .10);
   --glass-blur:   blur(22px) saturate(1.5);
+  --glow-accent:  0 0 0 1px rgba(192, 132, 252, .35), 0 0 14px rgba(192, 132, 252, .28);
   color-scheme: dark;
 }
 :root[data-theme="dim"] input[type="date"] { color-scheme: dark; }
@@ -129,9 +133,11 @@ input[type="date"] { color-scheme: light; }
   --shadow:       0 6px 18px rgba(0, 0, 0, .55);
   --shadow-lg:    0 14px 36px rgba(0, 0, 0, .65);
 
-  --glass-bg:     rgba(20, 22, 28, .58);
-  --glass-border: rgba(255, 255, 255, .06);
+  --glass-bg:     rgba(255, 255, 255, .06);
+  --glass-bg-2:   rgba(255, 255, 255, .03);
+  --glass-border: rgba(255, 255, 255, .10);
   --glass-blur:   blur(24px) saturate(1.5);
+  --glow-accent:  0 0 0 1px rgba(192, 132, 252, .35), 0 0 14px rgba(192, 132, 252, .32);
   color-scheme: dark;
 }
 :root[data-theme="dark"] input[type="date"] { color-scheme: dark; }
@@ -5888,4 +5894,198 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   .share-row {
     background-color: var(--surface);
   }
+}
+
+/* ════════════════════════════════════════════════════════
+   FROSTED BUTTONS + SOFT GLOW
+   Every interactive control picks up the glass tokens so it
+   sits inside the frosted aesthetic. Hover adds a quiet
+   brand-tinted glow; active states pulse. The primary
+   (purple) variants keep their accent fill but gain the same
+   glow on hover for consistency.
+   ════════════════════════════════════════════════════════ */
+.btn-primary,
+.btn-ghost,
+.btn-sm,
+.btn-mini,
+.icon-btn,
+.cal-nav,
+.cal-today-btn,
+.cal-export-btn,
+.action-add-btn,
+.radio-btn,
+.task-action-btn,
+.cross-nav-btn,
+.lang-btn,
+.topbar-icon-btn,
+.modal-close,
+.md-back-btn,
+.bnav-btn,
+.bp-icon-btn,
+.bp-signout-btn,
+.vault-icon-btn,
+.tab,
+.home-section-icon-btn,
+.theme-toggle-btn,
+.drawer-nav-btn {
+  transition: background-color .15s var(--ease), border-color .15s var(--ease),
+              color .15s var(--ease), box-shadow .2s var(--ease),
+              transform .1s var(--ease), filter .15s var(--ease);
+}
+
+/* Ghost-style buttons → frosted */
+.btn-ghost,
+.btn-sm,
+.btn-mini,
+.cal-nav,
+.cal-today-btn,
+.cal-export-btn,
+.action-add-btn,
+.icon-btn,
+.topbar-icon-btn,
+.modal-close,
+.md-back-btn,
+.bp-icon-btn,
+.vault-icon-btn,
+.home-section-icon-btn,
+.lang-btn {
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+}
+.btn-ghost:hover,
+.btn-sm:hover,
+.btn-mini:hover,
+.cal-nav:hover,
+.cal-today-btn:hover,
+.cal-export-btn:hover,
+.action-add-btn:hover,
+.icon-btn:hover,
+.topbar-icon-btn:hover,
+.modal-close:hover,
+.md-back-btn:hover,
+.bp-icon-btn:hover,
+.vault-icon-btn:hover,
+.home-section-icon-btn:hover,
+.lang-btn:hover {
+  background-color: var(--glass-bg);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: var(--glow-accent);
+  filter: brightness(1.04);
+}
+
+/* Primary buttons keep their fill but gain the matching glow on hover.
+   Active state subtly pulses brighter. */
+.btn-primary {
+  position: relative;
+  box-shadow: 0 6px 18px rgba(168, 85, 247, .22);
+}
+.btn-primary:hover {
+  box-shadow: 0 6px 22px rgba(168, 85, 247, .40), 0 0 0 1px rgba(255, 255, 255, .15) inset;
+  filter: brightness(1.05);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 10px rgba(168, 85, 247, .30);
+}
+
+/* Radio-style chips (priority / status pickers) */
+.radio-btn {
+  background-color: var(--glass-bg-2, var(--glass-bg));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+}
+.radio-btn:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow-accent);
+  filter: brightness(1.04);
+}
+.radio-btn.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, .28);
+}
+
+/* Bottom-nav buttons — transparent fill so the bar's blur reads, the
+   active item gets the accent glow. */
+.bnav-btn { background: transparent; }
+.bnav-btn:hover { background: var(--glass-bg-2, var(--glass-bg)); }
+.bnav-btn.active {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent), 0 0 16px var(--accent-soft, rgba(168,85,247,.18));
+}
+
+/* Sidebar / drawer nav items */
+.drawer-nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+}
+.drawer-nav-btn:hover {
+  background: var(--glass-bg-2, var(--glass-bg));
+  border-color: var(--glass-border);
+}
+.drawer-nav-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--glass-border);
+  color: var(--accent);
+  box-shadow: var(--glow-accent);
+}
+
+/* Theme toggle group */
+.theme-toggle-btn {
+  background: var(--glass-bg-2, var(--glass-bg));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+}
+.theme-toggle-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--glow-accent);
+}
+
+/* Cross-nav (top-level swap) */
+.cross-nav-btn {
+  background: var(--glass-bg-2, var(--glass-bg));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+}
+.cross-nav-btn:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow-accent);
+}
+
+/* "Today" mini-strip cell — soft frosted white instead of a hot
+   gradient. Date number stays high-contrast; a thin gradient ring
+   on the border + a tiny accent dot below the number signal "today". */
+.wm-cell.wm-today {
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--glass-bg), var(--glass-bg)),
+    var(--brand-gradient);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  color: var(--text);
+  box-shadow: 0 0 18px var(--accent-soft, rgba(168, 85, 247, .20));
+}
+.wm-cell.wm-today:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 0 22px var(--accent-soft2, rgba(168, 85, 247, .32));
+}
+.wm-cell.wm-today .wm-label { color: var(--accent); font-weight: 700; opacity: 1; }
+.wm-cell.wm-today .wm-day   { color: var(--text); }
+.wm-cell.wm-today .wm-dot   { background: var(--accent); }
+.wm-cell.wm-today .wm-count {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 10px var(--accent-soft2, rgba(168, 85, 247, .35));
 }
