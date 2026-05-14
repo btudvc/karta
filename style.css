@@ -6356,3 +6356,99 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   color: var(--text) !important;
   filter: brightness(1.05);
 }
+
+/* ════════════════════════════════════════════════════════
+   ROUND 3 — popover theme toggle, search input, task-detail
+   inputs. Make every contained input/segmented control look
+   like it belongs to its frosted host, not stamped on top.
+   ════════════════════════════════════════════════════════ */
+
+/* Theme toggle in the avatar popover: one frosted shell with
+   inner buttons transparent. The active option gets a soft
+   accent-tinted fill + accent text, no per-button border or halo. */
+.bp-theme-toggle,
+.theme-toggle {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  padding: 4px !important;
+  border-radius: 999px !important;
+}
+.bp-theme-toggle .theme-toggle-btn,
+.theme-toggle .theme-toggle-btn {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  color: var(--muted) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+.bp-theme-toggle .theme-toggle-btn:hover,
+.theme-toggle .theme-toggle-btn:hover {
+  color: var(--text) !important;
+  background: var(--glass-bg-2, var(--glass-bg)) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.bp-theme-toggle .theme-toggle-btn.active,
+.theme-toggle .theme-toggle-btn.active {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Search inputs anywhere in content (Links search box, etc.) */
+.links-search,
+input.search-input,
+.search-bar input {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.links-search:focus,
+input.search-input:focus,
+.search-bar input:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* Task-detail inputs — fully transparent so they look like they live
+   inside the host frosted body, not as separate boxes. */
+.sub-add-row input[type="text"],
+.nb-add-row textarea,
+.nb-add-row input {
+  background: transparent !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text);
+}
+.sub-add-row input[type="text"]:focus,
+.nb-add-row textarea:focus,
+.nb-add-row input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+  outline: none;
+}
+
+/* Section labels inside the task body (SUBTASKS, NOTES, ATTACHMENTS,
+   ASSIGNED, etc.) — quiet text headers instead of bg-filled rows. */
+.task-section-label,
+.subtasks-label,
+.notebook-label,
+.att-section-label,
+.nb-empty {
+  background: transparent !important;
+  color: var(--muted) !important;
+}
+
+/* Search modal — results & bar match the frosted modal shell */
+.search-bar { border-bottom-color: var(--glass-border) !important; }
+.search-result:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--accent);
+  box-shadow: var(--glow-accent);
+}
