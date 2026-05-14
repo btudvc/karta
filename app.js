@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.21.1';
+var APP_VERSION = '6.21.2';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7881,8 +7881,33 @@ const VaultStore = (() => {
       },
     });
     if (!cred) throw new Error('Biometric setup cancelled.');
-    const ext = cred.getClientExtensionResults && cred.getClientExtensionResults();
-    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+    const ext = (cred.getClientExtensionResults && cred.getClientExtensionResults()) || {};
+    let prfOut = ext.prf && ext.prf.results && ext.prf.results.first;
+    // Many platform authenticators (notably Android) only surface the
+    // PRF output during an assertion, not during the registration. If
+    // create() didn't give us a value but enabled=true (or unknown),
+    // try a fresh get() with the new credential to fetch one.
+    if (!prfOut) {
+      const enabledHint = ext.prf && (ext.prf.enabled === true || ext.prf.enabled === undefined);
+      if (!enabledHint && ext.prf && ext.prf.enabled === false) {
+        throw new Error('PRF not supported by this authenticator/browser.');
+      }
+      try {
+        const probeChallenge = crypto.getRandomValues(new Uint8Array(32));
+        const probe = await navigator.credentials.get({
+          publicKey: {
+            rpId: window.location.hostname,
+            challenge: probeChallenge,
+            allowCredentials: [{ id: cred.rawId, type: 'public-key', transports: ['internal'] }],
+            userVerification: 'required',
+            extensions: { prf: { eval: { first: prfSalt } } },
+            timeout: 60000,
+          },
+        });
+        const ext2 = (probe && probe.getClientExtensionResults && probe.getClientExtensionResults()) || {};
+        prfOut = ext2.prf && ext2.prf.results && ext2.prf.results.first;
+      } catch (_) { /* fall through to the explicit error */ }
+    }
     if (!prfOut) throw new Error('PRF not supported by this authenticator/browser.');
     // Wrap the master password with an AES key derived from PRF output
     const wrapKey = await crypto.subtle.importKey(
