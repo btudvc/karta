@@ -6576,3 +6576,42 @@ input.search-input:focus,
   background: transparent !important;
   color: var(--muted) !important;
 }
+
+/* Sidebar nav (drawer-nav-btn) — these are NAV rows, not buttons.
+   Strip the accent border + glass fill at rest. Plain transparent
+   rows, subtle glass wash on hover, accent-soft fill + accent text
+   when active. */
+.drawer-nav-btn,
+.drawer-nav-btn:not(.active) {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+.drawer-nav-btn:hover {
+  background: var(--glass-bg-2, var(--glass-bg)) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: none !important;
+  color: var(--text);
+}
+.drawer-nav-btn.active {
+  background: var(--accent-soft) !important;
+  border-color: transparent !important;
+  color: var(--accent) !important;
+  box-shadow: none !important;
+}
+.drawer-nav-btn.active svg { color: var(--accent); }
+
+/* Spaces drawer items (tree-style) — same rule, no border at rest */
+.spaces-drawer-item,
+.home-type-group {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+.spaces-drawer-item:hover {
+  background: var(--glass-bg-2, var(--glass-bg)) !important;
+}
