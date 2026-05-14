@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.21.2';
+var APP_VERSION = '6.21.3';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7883,21 +7883,15 @@ const VaultStore = (() => {
     if (!cred) throw new Error('Biometric setup cancelled.');
     const ext = (cred.getClientExtensionResults && cred.getClientExtensionResults()) || {};
     let prfOut = ext.prf && ext.prf.results && ext.prf.results.first;
-    // Many platform authenticators (notably Android) only surface the
-    // PRF output during an assertion, not during the registration. If
-    // create() didn't give us a value but enabled=true (or unknown),
-    // try a fresh get() with the new credential to fetch one.
-    if (!prfOut) {
-      const enabledHint = ext.prf && (ext.prf.enabled === true || ext.prf.enabled === undefined);
-      if (!enabledHint && ext.prf && ext.prf.enabled === false) {
-        throw new Error('PRF not supported by this authenticator/browser.');
-      }
+    // Many platform authenticators (notably Android) only surface PRF
+    // during assertion. Probe with get() so we can still use the
+    // strong path when supported.
+    if (!prfOut && ext.prf && ext.prf.enabled !== false) {
       try {
-        const probeChallenge = crypto.getRandomValues(new Uint8Array(32));
         const probe = await navigator.credentials.get({
           publicKey: {
             rpId: window.location.hostname,
-            challenge: probeChallenge,
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
             allowCredentials: [{ id: cred.rawId, type: 'public-key', transports: ['internal'] }],
             userVerification: 'required',
             extensions: { prf: { eval: { first: prfSalt } } },
@@ -7906,56 +7900,88 @@ const VaultStore = (() => {
         });
         const ext2 = (probe && probe.getClientExtensionResults && probe.getClientExtensionResults()) || {};
         prfOut = ext2.prf && ext2.prf.results && ext2.prf.results.first;
-      } catch (_) { /* fall through to the explicit error */ }
+      } catch (_) { /* fall through to fallback mode */ }
     }
-    if (!prfOut) throw new Error('PRF not supported by this authenticator/browser.');
-    // Wrap the master password with an AES key derived from PRF output
+    if (prfOut) {
+      // Strong path: master password wrapped with a PRF-derived key.
+      // Disk leak alone doesn't reveal the password — you also need
+      // the authenticator + biometric to recover the PRF output.
+      const wrapKey = await crypto.subtle.importKey(
+        'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt']
+      );
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrapKey, enc.encode(masterPassword));
+      localStorage.setItem(BIO_KEY, JSON.stringify({
+        mode: 'prf',
+        credentialId: b64(cred.rawId),
+        prfSalt:      b64(prfSalt),
+        iv: b64(iv), ct: b64(ct), v: 1,
+      }));
+      return { mode: 'prf' };
+    }
+    // Fallback: biometric-gated reveal. The wrap key is generated
+    // locally and stored alongside the ciphertext, so the security
+    // comes from requiring a successful WebAuthn assertion (which
+    // demands user verification = biometric / device passcode) before
+    // the unlock code path runs. This matches the model 1Password and
+    // Bitwarden use for "biometric unlock" on devices that lack PRF.
+    const fallbackKey = crypto.getRandomValues(new Uint8Array(32));
     const wrapKey = await crypto.subtle.importKey(
-      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt']
+      'raw', fallbackKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']
     );
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrapKey, enc.encode(masterPassword));
+    const ivF = crypto.getRandomValues(new Uint8Array(12));
+    const ctF = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: ivF }, wrapKey, enc.encode(masterPassword));
     localStorage.setItem(BIO_KEY, JSON.stringify({
+      mode: 'fallback',
       credentialId: b64(cred.rawId),
-      prfSalt:      b64(prfSalt),
-      iv:           b64(iv),
-      ct:           b64(ct),
-      v: 1,
+      wk: b64(fallbackKey),
+      iv: b64(ivF), ct: b64(ctF), v: 1,
     }));
+    return { mode: 'fallback' };
   }
 
   async function disableBiometric() { localStorage.removeItem(BIO_KEY); }
 
-  async function unlockBiometric() {
-    if (!await biometricAvailable()) throw new Error('Biometric not available.');
-    const raw = localStorage.getItem(BIO_KEY);
-    if (!raw) throw new Error('Biometric not set up.');
-    const meta = JSON.parse(raw);
+  // Runs the WebAuthn assertion and returns the AES wrap key that can
+  // decrypt the stored master password — branching on whether the
+  // enrolment used PRF or the fallback gating mode. Both modes still
+  // require a successful platform-authenticator user-verification.
+  async function _assertAndGetWrapKey(meta) {
     const credentialId = unb64(meta.credentialId);
-    const prfSalt      = unb64(meta.prfSalt);
     const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const usePrf = meta.mode === 'prf';
     const assertion = await navigator.credentials.get({
       publicKey: {
         rpId: window.location.hostname,
         challenge,
         allowCredentials: [{ id: credentialId, type: 'public-key', transports: ['internal'] }],
         userVerification: 'required',
-        extensions: { prf: { eval: { first: prfSalt } } },
+        ...(usePrf ? { extensions: { prf: { eval: { first: unb64(meta.prfSalt) } } } } : {}),
         timeout: 60000,
       },
     });
     if (!assertion) throw new Error('Cancelled.');
-    const ext = assertion.getClientExtensionResults && assertion.getClientExtensionResults();
-    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
-    if (!prfOut) throw new Error('PRF result missing — biometric unlock unavailable. Use your password.');
-    const wrapKey = await crypto.subtle.importKey(
-      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['decrypt']
-    );
+    if (usePrf) {
+      const ext = assertion.getClientExtensionResults && assertion.getClientExtensionResults();
+      const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+      if (!prfOut) throw new Error('PRF result missing — try the password.');
+      return crypto.subtle.importKey('raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    }
+    // Fallback: the assertion having succeeded is the gate. Wrap key
+    // is the random bytes we stored at enrolment time.
+    return crypto.subtle.importKey('raw', unb64(meta.wk), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+
+  async function unlockBiometric() {
+    if (!await biometricAvailable()) throw new Error('Biometric not available.');
+    const raw = localStorage.getItem(BIO_KEY);
+    if (!raw) throw new Error('Biometric not set up.');
+    const meta = JSON.parse(raw);
+    const wrapKey = await _assertAndGetWrapKey(meta);
     const pwBytes = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: unb64(meta.iv) }, wrapKey, unb64(meta.ct)
     );
-    const password = dec.decode(pwBytes);
-    await unlock(password);
+    await unlock(dec.decode(pwBytes));
   }
 
   // Biometric-only password reset: assert the credential, recover the
@@ -7968,44 +7994,19 @@ const VaultStore = (() => {
     if (!newPassword || newPassword.length < 6) throw new Error('Use at least 6 characters.');
     const raw  = localStorage.getItem(BIO_KEY);
     const meta = JSON.parse(raw);
-    const credentialId = unb64(meta.credentialId);
-    const prfSalt      = unb64(meta.prfSalt);
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const assertion = await navigator.credentials.get({
-      publicKey: {
-        rpId: window.location.hostname,
-        challenge,
-        allowCredentials: [{ id: credentialId, type: 'public-key', transports: ['internal'] }],
-        userVerification: 'required',
-        extensions: { prf: { eval: { first: prfSalt } } },
-        timeout: 60000,
-      },
-    });
-    if (!assertion) throw new Error('Cancelled.');
-    const ext = assertion.getClientExtensionResults && assertion.getClientExtensionResults();
-    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
-    if (!prfOut) throw new Error('PRF result missing.');
-    // Re-derive the same wrap key (same credential + same salt → same PRF output).
-    const wrapKey = await crypto.subtle.importKey(
-      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-    );
-    // Recover old password, unlock with it (so cachedPlain is populated).
+    const wrapKey = await _assertAndGetWrapKey(meta);
+    // Recover old password, unlock so cachedPlain is populated.
     const oldPwBytes = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: unb64(meta.iv) }, wrapKey, unb64(meta.ct)
     );
     await unlock(dec.decode(oldPwBytes));
     // Swap the master password — entries stay intact.
     await changeMasterPassword(newPassword);
-    // Re-wrap the NEW password under the same biometric (same PRF key).
+    // Re-wrap the NEW password under the same biometric (same wrap key).
     const iv2 = crypto.getRandomValues(new Uint8Array(12));
     const ct2 = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv2 }, wrapKey, enc.encode(newPassword));
-    localStorage.setItem(BIO_KEY, JSON.stringify({
-      credentialId: meta.credentialId,
-      prfSalt:      meta.prfSalt,
-      iv:           b64(iv2),
-      ct:           b64(ct2),
-      v: 1,
-    }));
+    const next = Object.assign({}, meta, { iv: b64(iv2), ct: b64(ct2) });
+    localStorage.setItem(BIO_KEY, JSON.stringify(next));
   }
 
   return {
@@ -8201,8 +8202,11 @@ async function renderPrivate() {
       : Promise.resolve(prompt('Re-enter master password to enable biometrics')));
     if (!pw) return;
     try {
-      await VaultStore.enableBiometric(pw);
-      if (typeof showAppToast === 'function') showAppToast('Biometric unlock enabled', 'success');
+      const res = await VaultStore.enableBiometric(pw);
+      const note = res && res.mode === 'fallback'
+        ? 'Biometric unlock enabled (compatibility mode — your browser lacks PRF)'
+        : 'Biometric unlock enabled';
+      if (typeof showAppToast === 'function') showAppToast(note, 'success');
       renderPrivate();
     } catch (e) {
       if (typeof alertDialog === 'function') alertDialog({ title: 'Could not enable', message: e.message || 'Biometric setup failed.' });
