@@ -6452,3 +6452,127 @@ input.search-input:focus,
   border-color: var(--accent);
   box-shadow: var(--glow-accent);
 }
+
+/* ════════════════════════════════════════════════════════
+   ROUND 4 — REAL fixes after auditing the live markup.
+   ════════════════════════════════════════════════════════ */
+
+/* Meetings list — the rows are actually .robot-item nodes (shared
+   sidebar component re-used here). Make them frosted glass cards. */
+#meeting-list .robot-item,
+#meetings .robot-item {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  margin-bottom: 6px;
+  padding: 12px 14px;
+}
+#meeting-list .robot-item:hover,
+#meetings .robot-item:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+#meeting-list .robot-item.active,
+#meetings .robot-item.active {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+/* Avatar circle inside the meeting row */
+#meeting-list .robot-avatar,
+#meetings .robot-avatar {
+  background: var(--glass-bg-2, var(--glass-bg)) !important;
+  border: 1px solid var(--glass-border);
+}
+
+/* Calendar tasks/journal sidebar uses .robot-item too — make all the
+   sidebar list rows frosted so they don't read as solid grey. */
+.sidebar .robot-item:hover { background: var(--glass-bg) !important; }
+.sidebar .robot-item.active { background: var(--accent-soft) !important; }
+
+/* Buttons — soften the rest-state border so they read as WHITE
+   FROSTED instead of purple-bordered. Hover still saturates the
+   border + fires the halo. Matches the user's Edit/Delete sample. */
+.btn-ghost,
+.btn-sm,
+.btn-mini,
+.cal-nav,
+.cal-today-btn,
+.cal-export-btn,
+.action-add-btn,
+.icon-btn:not(.topbar-icon-btn),
+.modal-close,
+.md-back-btn,
+.bp-icon-btn,
+.vault-icon-btn,
+.home-section-icon-btn,
+.lang-btn,
+.task-action-btn,
+.cross-nav-btn {
+  border-color: rgba(255, 255, 255, .14) !important;
+  color: var(--text);
+}
+:root[data-theme="light"] .btn-ghost,
+:root[data-theme="light"] .btn-sm,
+:root[data-theme="light"] .btn-mini,
+:root[data-theme="light"] .cal-nav,
+:root[data-theme="light"] .cal-today-btn,
+:root[data-theme="light"] .cal-export-btn,
+:root[data-theme="light"] .icon-btn:not(.topbar-icon-btn),
+:root[data-theme="light"] .modal-close,
+:root[data-theme="light"] .md-back-btn,
+:root[data-theme="light"] .bp-icon-btn,
+:root[data-theme="light"] .vault-icon-btn,
+:root[data-theme="light"] .home-section-icon-btn,
+:root[data-theme="light"] .lang-btn,
+:root[data-theme="light"] .task-action-btn,
+:root[data-theme="light"] .cross-nav-btn,
+:root:not([data-theme]) .btn-ghost,
+:root:not([data-theme]) .btn-sm,
+:root:not([data-theme]) .btn-mini,
+:root:not([data-theme]) .cal-nav,
+:root:not([data-theme]) .cal-today-btn,
+:root:not([data-theme]) .cal-export-btn,
+:root:not([data-theme]) .icon-btn:not(.topbar-icon-btn),
+:root:not([data-theme]) .modal-close,
+:root:not([data-theme]) .md-back-btn,
+:root:not([data-theme]) .bp-icon-btn,
+:root:not([data-theme]) .vault-icon-btn,
+:root:not([data-theme]) .home-section-icon-btn,
+:root:not([data-theme]) .lang-btn,
+:root:not([data-theme]) .task-action-btn,
+:root:not([data-theme]) .cross-nav-btn {
+  border-color: rgba(15, 20, 30, .10) !important;
+}
+
+/* Task-detail container — was still picking up the
+   `background: var(--surface-2)` from older rules with higher
+   specificity. Force the whole task-body / nested grey hosts to
+   glass. */
+.task-body,
+.task-card,
+.notebook,
+.att-section {
+  background-color: var(--glass-bg) !important;
+  background-image: none !important;
+  border-color: var(--glass-border) !important;
+}
+/* Inner shells inside the task body MUST be transparent so the body
+   reads as one piece of glass. */
+.task-body .notebook,
+.task-body .att-section,
+.task-body .subtask-list,
+.task-body .task-actions-row,
+.task-body .task-section-label {
+  background-color: transparent !important;
+  border-color: var(--glass-border) !important;
+}
+
+/* Also the "No notes yet." empty pill */
+.notebook .nb-empty,
+.nb-empty {
+  background: transparent !important;
+  color: var(--muted) !important;
+}
