@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.21.4';
+var APP_VERSION = '6.22.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7670,7 +7670,12 @@ const VaultStore = (() => {
 
   let derivedKey = null; // CryptoKey while unlocked, else null
   let cachedPlain = null; // last decrypted { entries: [...] }
+  let cachedPassword = null; // string in memory only — needed to derive
+                             // keys from remote salts during sync. Never
+                             // persisted; wiped on lock().
   let lockTimer = null;
+  let syncing = false;
+  const DRIVE_FILE = 'b-less-vault.json';
 
   const enc = new TextEncoder();
   const dec = new TextDecoder();
@@ -7737,15 +7742,26 @@ const VaultStore = (() => {
   function lock() {
     derivedKey = null;
     cachedPlain = null;
+    cachedPassword = null;
     if (lockTimer) { clearTimeout(lockTimer); lockTimer = null; }
     if (typeof renderPrivate === 'function') renderPrivate();
   }
 
   // Wipe key on page hide / unload — defensive in case the user closes
   // the tab without locking.
-  window.addEventListener('pagehide', () => { derivedKey = null; cachedPlain = null; });
+  window.addEventListener('pagehide', () => { derivedKey = null; cachedPlain = null; cachedPassword = null; });
 
-  async function hasVault() { return !!readStore(); }
+  async function hasVault() {
+    if (readStore()) return true;
+    // If we're signed into Drive, treat an existing remote vault as
+    // "yes" so the UI shows the Unlock screen (not the first-run Create
+    // screen) on a fresh device. The actual blob is fetched on unlock.
+    if (typeof DriveAPI !== 'undefined' && DriveAPI.isSignedIn && DriveAPI.isSignedIn()) {
+      const remote = await tryFetchRemote();
+      if (remote) return true;
+    }
+    return false;
+  }
   function isUnlocked()    { return !!derivedKey; }
 
   async function create(masterPassword) {
@@ -7757,24 +7773,44 @@ const VaultStore = (() => {
     writeStore({ salt: b64(salt), iv: blob.iv, ct: blob.ct, iter: PBKDF2_ITER, v: 1 });
     derivedKey = key;
     cachedPlain = plain;
+    cachedPassword = masterPassword;
     scheduleAutoLock();
+    // Bring in any pre-existing remote vault (e.g. set up on phone).
+    syncWithDrive().catch(() => {});
   }
 
   async function unlock(masterPassword) {
-    const store = readStore();
-    if (!store) throw new Error('No vault');
+    let store = readStore();
+    // If there's nothing locally yet but we're signed into Drive, try
+    // to fetch the remote vault first — lets a fresh device unlock
+    // the same vault with the same master password.
+    if (!store) {
+      const remote = await tryFetchRemote().catch(() => null);
+      if (remote && remote.salt && remote.iv && remote.ct) {
+        store = remote;
+        writeStore(store);
+      } else {
+        throw new Error('No vault');
+      }
+    }
     const salt = unb64(store.salt);
     const key = await deriveKey(masterPassword, salt);
     // Try to decrypt — wrong password throws.
     const plain = await decryptObject({ iv: store.iv, ct: store.ct }, key);
     derivedKey = key;
     cachedPlain = plain;
+    cachedPassword = masterPassword;
     scheduleAutoLock();
+    // Pull-and-merge in the background once we're in.
+    syncWithDrive().catch(() => {});
   }
 
   async function persist() {
     if (!derivedKey || !cachedPlain) throw new Error('Locked');
     const store = readStore() || {};
+    // Stamp the plaintext with a "last touched" time so the sync
+    // layer has a tiebreaker when comparing local vs remote blobs.
+    cachedPlain.updatedAt = Date.now();
     const blob = await encryptObject(cachedPlain, derivedKey);
     writeStore({
       salt: store.salt,           // keep the original salt
@@ -7782,7 +7818,97 @@ const VaultStore = (() => {
       ct:   blob.ct,
       iter: PBKDF2_ITER,
       v:    1,
+      updatedAt: cachedPlain.updatedAt,
     });
+    pushToDrive().catch(() => {});
+  }
+
+  // ── Drive sync (zero-knowledge: only ciphertext leaves the device) ──
+  async function tryFetchRemote() {
+    if (typeof DriveAPI === 'undefined' || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return null;
+    try {
+      const text = await DriveAPI.readBackup(DRIVE_FILE);
+      if (!text) return null;
+      const obj = JSON.parse(text);
+      if (obj && obj.salt && obj.iv && obj.ct) return obj;
+      return null;
+    } catch { return null; }
+  }
+
+  async function pushToDrive() {
+    if (typeof DriveAPI === 'undefined' || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+    const store = readStore();
+    if (!store) return;
+    const payload = JSON.stringify({
+      schema: 'b-less.vault.v1',
+      salt: store.salt,
+      iv: store.iv,
+      ct: store.ct,
+      iter: store.iter,
+      updatedAt: store.updatedAt || Date.now(),
+    });
+    try { await DriveAPI.saveBackup(payload, DRIVE_FILE); } catch {}
+  }
+
+  // Pull remote, merge entries per-id, push back. No-op if locked or
+  // not signed in or the remote password doesn't match.
+  async function syncWithDrive() {
+    if (syncing) return;
+    if (!derivedKey || !cachedPlain || !cachedPassword) return;
+    if (typeof DriveAPI === 'undefined' || !DriveAPI.isSignedIn || !DriveAPI.isSignedIn()) return;
+    syncing = true;
+    try {
+      const remote = await tryFetchRemote();
+      if (!remote) {
+        // First time uploading from this device → just push.
+        await pushToDrive();
+        return;
+      }
+      // Derive a key for the REMOTE salt with the same master password,
+      // then try to decrypt the remote ciphertext. Mismatched passwords
+      // throw — we silently keep local and refuse to overwrite.
+      let remotePlain = null;
+      try {
+        const remoteKey = await deriveKey(cachedPassword, unb64(remote.salt));
+        remotePlain = await decryptObject({ iv: remote.iv, ct: remote.ct }, remoteKey);
+      } catch {
+        return; // different password on the remote — leave it alone
+      }
+      // Per-entry merge by id; newer updatedAt wins.
+      const byId = new Map();
+      (cachedPlain.entries || []).forEach(e => byId.set(e.id, e));
+      let changed = false;
+      (remotePlain.entries || []).forEach(re => {
+        const le = byId.get(re.id);
+        if (!le) { byId.set(re.id, re); changed = true; return; }
+        if ((re.updatedAt || 0) > (le.updatedAt || 0)) { byId.set(re.id, re); changed = true; }
+      });
+      // Entries only on local (we already have them) — keep.
+      const merged = Array.from(byId.values());
+      // If the remote merge brought in different content, re-encrypt
+      // locally + push. Otherwise just push (so the remote gets our
+      // local-only additions).
+      if (changed || merged.length !== (cachedPlain.entries || []).length) {
+        cachedPlain.entries = merged;
+        cachedPlain.updatedAt = Date.now();
+        // Re-encrypt with LOCAL salt so existing localStorage blob stays
+        // self-consistent on this device.
+        const store = readStore() || {};
+        const blob = await encryptObject(cachedPlain, derivedKey);
+        writeStore({
+          salt: store.salt,
+          iv: blob.iv,
+          ct: blob.ct,
+          iter: PBKDF2_ITER,
+          v: 1,
+          updatedAt: cachedPlain.updatedAt,
+        });
+        if (typeof renderPrivate === 'function') renderPrivate();
+      }
+      await pushToDrive();
+    } finally {
+      syncing = false;
+    }
   }
 
   function getEntries() {
@@ -7831,10 +7957,13 @@ const VaultStore = (() => {
     if (!newPassword || newPassword.length < 6) throw new Error('Use at least 6 characters.');
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const newKey = await deriveKey(newPassword, salt);
+    cachedPlain.updatedAt = Date.now();
     const blob = await encryptObject(cachedPlain, newKey);
-    writeStore({ salt: b64(salt), iv: blob.iv, ct: blob.ct, iter: PBKDF2_ITER, v: 1 });
+    writeStore({ salt: b64(salt), iv: blob.iv, ct: blob.ct, iter: PBKDF2_ITER, v: 1, updatedAt: cachedPlain.updatedAt });
     derivedKey = newKey;
+    cachedPassword = newPassword;
     scheduleAutoLock();
+    pushToDrive().catch(() => {});
   }
 
   // ── Biometric unlock (WebAuthn + PRF extension) ──────────────────
@@ -8013,6 +8142,7 @@ const VaultStore = (() => {
     hasVault, isUnlocked, create, unlock, lock, getEntries, upsert, remove, destroy, touchActivity,
     biometricAvailable, biometricEnrolled, enableBiometric, disableBiometric, unlockBiometric,
     changeMasterPassword, resetPasswordWithBiometric,
+    syncWithDrive,
   };
 })();
 
@@ -8180,8 +8310,8 @@ async function renderPrivate() {
         <div class="home-list-empty" style="padding: 28px 12px;">No entries yet. Tap + Add Entry.</div>
       `}
     </div>
-    ${bioCanUse ? `
-      <div class="vault-settings">
+    <div class="vault-settings">
+      ${bioCanUse ? `
         <div class="vault-settings-row">
           <div>
             <div class="vault-settings-title">Biometric unlock</div>
@@ -8193,9 +8323,25 @@ async function renderPrivate() {
             ? `<button class="btn-ghost btn-mini" id="vault-bio-disable-btn">Remove</button>`
             : `<button class="btn-primary btn-mini" id="vault-bio-enable-btn">Enable</button>`}
         </div>
+      ` : ''}
+      <div class="vault-settings-row">
+        <div>
+          <div class="vault-settings-title">Sync across devices</div>
+          <div class="vault-settings-sub">Encrypted blob stored on your Google Drive. Your password never leaves this device.</div>
+        </div>
+        <button class="btn-ghost btn-mini" id="vault-sync-btn">Sync now</button>
       </div>
-    ` : ''}
+    </div>
   `;
+  document.getElementById('vault-sync-btn')?.addEventListener('click', async () => {
+    try {
+      await VaultStore.syncWithDrive();
+      if (typeof showAppToast === 'function') showAppToast('Vault synced', 'success');
+      renderPrivate();
+    } catch (e) {
+      if (typeof showAppToast === 'function') showAppToast(e.message || 'Sync failed', 'error');
+    }
+  });
   document.getElementById('vault-bio-enable-btn')?.addEventListener('click', async () => {
     const pw = await (typeof promptInput === 'function'
       ? promptInput({ title: 'Confirm password', label: 'Master password', placeholder: 'Re-enter to enable biometrics', type: 'password' })
