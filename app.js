@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.19.1';
+var APP_VERSION = '6.20.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7394,6 +7394,7 @@ function homeNavigate(target) {
     (typeof renderJournalList === 'function') && renderJournalList();
   }
   else if (target === 'links')     { activateSection('links'); (typeof renderLinks === 'function') && renderLinks(); }
+  else if (target === 'private')   { activateSection('private'); (typeof renderPrivate === 'function') && renderPrivate(); }
   else if (target === 'reviews')   {
     activateSection('reviews');
     document.getElementById('reviews')?.removeAttribute('data-detail-open');
@@ -7650,3 +7651,400 @@ openHome();
 // First-run welcome modal
 maybeShowWelcome();
 maybeShowBrief();
+
+// ════════════════════════════════════════════════════════════════════
+// PRIVATE VAULT — encrypted credential storage (device-local only)
+// ────────────────────────────────────────────────────────────────────
+// AES-GCM 256, PBKDF2-SHA256 key derivation. The master password is
+// never stored — only the salt and ciphertext are kept in localStorage.
+// The derived key lives in this module's closure while the vault is
+// unlocked, and is wiped on lock / inactivity / page unload.
+// Nothing here is ever written to Drive — the vault never touches the
+// `state` object, so the sync layer can't see it.
+// ════════════════════════════════════════════════════════════════════
+const VaultStore = (() => {
+  const STORAGE_KEY = 'b-less.vault.v1';
+  const PBKDF2_ITER = 250000;
+  const AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes idle
+
+  let derivedKey = null; // CryptoKey while unlocked, else null
+  let cachedPlain = null; // last decrypted { entries: [...] }
+  let lockTimer = null;
+
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+
+  function b64(buf) {
+    const bytes = new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+  function unb64(s) {
+    const bin = atob(s);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function deriveKey(password, saltBytes) {
+    const base = await crypto.subtle.importKey(
+      'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: saltBytes, iterations: PBKDF2_ITER, hash: 'SHA-256' },
+      base,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  async function encryptObject(obj, key) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      enc.encode(JSON.stringify(obj))
+    );
+    return { iv: b64(iv), ct: b64(ct) };
+  }
+  async function decryptObject(payload, key) {
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: unb64(payload.iv) },
+      key,
+      unb64(payload.ct)
+    );
+    return JSON.parse(dec.decode(pt));
+  }
+
+  function readStore() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }
+    catch { return null; }
+  }
+  function writeStore(obj) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); return true; }
+    catch { return false; }
+  }
+
+  function scheduleAutoLock() {
+    if (lockTimer) clearTimeout(lockTimer);
+    lockTimer = setTimeout(() => lock(), AUTO_LOCK_MS);
+  }
+  function touchActivity() { if (derivedKey) scheduleAutoLock(); }
+
+  function lock() {
+    derivedKey = null;
+    cachedPlain = null;
+    if (lockTimer) { clearTimeout(lockTimer); lockTimer = null; }
+    if (typeof renderPrivate === 'function') renderPrivate();
+  }
+
+  // Wipe key on page hide / unload — defensive in case the user closes
+  // the tab without locking.
+  window.addEventListener('pagehide', () => { derivedKey = null; cachedPlain = null; });
+
+  async function hasVault() { return !!readStore(); }
+  function isUnlocked()    { return !!derivedKey; }
+
+  async function create(masterPassword) {
+    if (!masterPassword || masterPassword.length < 4) throw new Error('Password too short');
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKey(masterPassword, salt);
+    const plain = { entries: [] };
+    const blob = await encryptObject(plain, key);
+    writeStore({ salt: b64(salt), iv: blob.iv, ct: blob.ct, iter: PBKDF2_ITER, v: 1 });
+    derivedKey = key;
+    cachedPlain = plain;
+    scheduleAutoLock();
+  }
+
+  async function unlock(masterPassword) {
+    const store = readStore();
+    if (!store) throw new Error('No vault');
+    const salt = unb64(store.salt);
+    const key = await deriveKey(masterPassword, salt);
+    // Try to decrypt — wrong password throws.
+    const plain = await decryptObject({ iv: store.iv, ct: store.ct }, key);
+    derivedKey = key;
+    cachedPlain = plain;
+    scheduleAutoLock();
+  }
+
+  async function persist() {
+    if (!derivedKey || !cachedPlain) throw new Error('Locked');
+    const store = readStore() || {};
+    const blob = await encryptObject(cachedPlain, derivedKey);
+    writeStore({
+      salt: store.salt,           // keep the original salt
+      iv:   blob.iv,
+      ct:   blob.ct,
+      iter: PBKDF2_ITER,
+      v:    1,
+    });
+  }
+
+  function getEntries() {
+    if (!cachedPlain) return [];
+    return (cachedPlain.entries || []).slice().sort((a, b) =>
+      (a.title || '').localeCompare(b.title || '', undefined, { sensitivity: 'base' })
+    );
+  }
+
+  async function upsert(entry) {
+    if (!cachedPlain) throw new Error('Locked');
+    cachedPlain.entries = cachedPlain.entries || [];
+    if (entry.id) {
+      const i = cachedPlain.entries.findIndex(e => e.id === entry.id);
+      if (i >= 0) { cachedPlain.entries[i] = Object.assign({}, cachedPlain.entries[i], entry, { updatedAt: Date.now() }); }
+      else { cachedPlain.entries.push(Object.assign({}, entry, { createdAt: Date.now(), updatedAt: Date.now() })); }
+    } else {
+      cachedPlain.entries.push(Object.assign({}, entry, {
+        id: (typeof uid === 'function' ? uid() : Math.random().toString(36).slice(2)),
+        createdAt: Date.now(), updatedAt: Date.now(),
+      }));
+    }
+    await persist();
+    scheduleAutoLock();
+  }
+
+  async function remove(id) {
+    if (!cachedPlain) throw new Error('Locked');
+    cachedPlain.entries = (cachedPlain.entries || []).filter(e => e.id !== id);
+    await persist();
+    scheduleAutoLock();
+  }
+
+  async function destroy() {
+    localStorage.removeItem(STORAGE_KEY);
+    lock();
+  }
+
+  return { hasVault, isUnlocked, create, unlock, lock, getEntries, upsert, remove, destroy, touchActivity };
+})();
+
+async function renderPrivate() {
+  const body = document.getElementById('vault-body');
+  const addBtn  = document.getElementById('vault-add-btn');
+  const lockBtn = document.getElementById('vault-lock-btn');
+  if (!body) return;
+
+  const has = await VaultStore.hasVault();
+  const unlocked = VaultStore.isUnlocked();
+
+  if (addBtn)  addBtn.hidden  = !unlocked;
+  if (lockBtn) lockBtn.hidden = !unlocked;
+
+  if (!has) {
+    // Setup
+    body.innerHTML = `
+      <div class="vault-card">
+        <h3>Create your vault</h3>
+        <p class="vault-note">
+          Pick a master password. It encrypts every entry with AES-GCM 256.
+          <strong>Write it down somewhere safe</strong> — if you forget it,
+          there's no recovery and the data is gone forever.
+          The vault stays on this device only and is never synced.
+        </p>
+        <label>Master password</label>
+        <input type="password" id="vault-pw1" autocomplete="new-password" />
+        <label>Confirm</label>
+        <input type="password" id="vault-pw2" autocomplete="new-password" />
+        <div class="modal-actions">
+          <button class="btn-primary" id="vault-create-btn">Create vault</button>
+        </div>
+        <div class="vault-error" id="vault-err" hidden></div>
+      </div>
+    `;
+    document.getElementById('vault-create-btn').addEventListener('click', async () => {
+      const pw1 = document.getElementById('vault-pw1').value;
+      const pw2 = document.getElementById('vault-pw2').value;
+      const err = document.getElementById('vault-err');
+      if (pw1.length < 6) { err.textContent = 'Use at least 6 characters.'; err.hidden = false; return; }
+      if (pw1 !== pw2)    { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
+      try {
+        await VaultStore.create(pw1);
+        renderPrivate();
+      } catch (e) {
+        err.textContent = e.message || 'Could not create vault.';
+        err.hidden = false;
+      }
+    });
+    return;
+  }
+
+  if (!unlocked) {
+    // Locked
+    body.innerHTML = `
+      <div class="vault-card">
+        <h3>🔒 Vault is locked</h3>
+        <p class="vault-note">Enter your master password to unlock.</p>
+        <label>Master password</label>
+        <input type="password" id="vault-pw" autocomplete="current-password" />
+        <div class="modal-actions">
+          <button class="btn-primary" id="vault-unlock-btn">Unlock</button>
+          <button class="btn-ghost"   id="vault-destroy-btn" title="Wipe this vault and start over">Reset vault…</button>
+        </div>
+        <div class="vault-error" id="vault-err" hidden></div>
+      </div>
+    `;
+    const pwEl = document.getElementById('vault-pw');
+    const doUnlock = async () => {
+      const err = document.getElementById('vault-err');
+      try {
+        await VaultStore.unlock(pwEl.value);
+        renderPrivate();
+      } catch (e) {
+        err.textContent = 'Wrong password.';
+        err.hidden = false;
+        pwEl.select();
+      }
+    };
+    document.getElementById('vault-unlock-btn').addEventListener('click', doUnlock);
+    pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
+    document.getElementById('vault-destroy-btn').addEventListener('click', async () => {
+      const ok = await (typeof confirmDialog === 'function'
+        ? confirmDialog({ title: 'Reset vault', message: 'This permanently deletes every encrypted entry on this device. Continue?', okText: 'Delete vault' })
+        : Promise.resolve(confirm('Permanently delete vault?')));
+      if (!ok) return;
+      await VaultStore.destroy();
+      renderPrivate();
+    });
+    return;
+  }
+
+  // Unlocked — list + add/edit form
+  VaultStore.touchActivity();
+  const entries = VaultStore.getEntries();
+  body.innerHTML = `
+    <div class="vault-list" id="vault-list">
+      ${entries.length ? entries.map(e => renderVaultRow(e)).join('') : `
+        <div class="home-list-empty" style="padding: 28px 12px;">No entries yet. Tap + Add Entry.</div>
+      `}
+    </div>
+  `;
+  // Row interactions
+  body.querySelectorAll('.vault-row').forEach(row => {
+    const id = row.dataset.id;
+    row.querySelector('[data-act="toggle"]')?.addEventListener('click', () => {
+      const pw = row.querySelector('.vault-pw-text');
+      const hidden = pw.getAttribute('data-hidden') === '1';
+      if (hidden) { pw.textContent = pw.dataset.real || ''; pw.setAttribute('data-hidden', '0'); }
+      else        { pw.textContent = '•'.repeat(Math.max(8, (pw.dataset.real || '').length)); pw.setAttribute('data-hidden', '1'); }
+    });
+    row.querySelector('[data-act="copy-user"]')?.addEventListener('click', () => {
+      const u = row.dataset.user || '';
+      navigator.clipboard?.writeText(u).then(() => showAppToast && showAppToast('Username copied'));
+    });
+    row.querySelector('[data-act="copy-pass"]')?.addEventListener('click', () => {
+      const pw = row.querySelector('.vault-pw-text');
+      const real = pw.dataset.real || '';
+      navigator.clipboard?.writeText(real).then(() => showAppToast && showAppToast('Password copied'));
+    });
+    row.querySelector('[data-act="edit"]')?.addEventListener('click', () => openVaultEditor(id));
+    row.querySelector('[data-act="delete"]')?.addEventListener('click', async () => {
+      const ok = await (typeof confirmDialog === 'function'
+        ? confirmDialog({ title: 'Delete entry', message: 'This cannot be undone.', okText: 'Delete' })
+        : Promise.resolve(confirm('Delete this entry?')));
+      if (!ok) return;
+      await VaultStore.remove(id);
+      renderPrivate();
+    });
+  });
+}
+
+function renderVaultRow(e) {
+  const masked = '•'.repeat(Math.max(8, (e.password || '').length));
+  return `
+    <div class="vault-row" data-id="${escapeAttr(e.id)}" data-user="${escapeAttr(e.username || '')}">
+      <div class="vault-row-head">
+        <span class="vault-row-title">${escapeHtml(e.title || 'Untitled')}</span>
+        ${e.url ? `<a class="vault-row-url" href="${escapeAttr(e.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(e.url)}</a>` : ''}
+      </div>
+      ${e.username ? `
+        <div class="vault-row-field">
+          <span class="vault-row-label">User</span>
+          <span class="vault-row-value">${escapeHtml(e.username)}</span>
+          <button class="vault-icon-btn" data-act="copy-user" title="Copy username">⧉</button>
+        </div>` : ''}
+      <div class="vault-row-field">
+        <span class="vault-row-label">Pass</span>
+        <span class="vault-pw-text" data-real="${escapeAttr(e.password || '')}" data-hidden="1">${masked}</span>
+        <button class="vault-icon-btn" data-act="toggle"     title="Show/hide">👁</button>
+        <button class="vault-icon-btn" data-act="copy-pass"  title="Copy password">⧉</button>
+      </div>
+      ${e.notes ? `<div class="vault-row-notes">${escapeHtml(e.notes)}</div>` : ''}
+      <div class="vault-row-actions">
+        <button class="btn-ghost btn-mini" data-act="edit">Edit</button>
+        <button class="btn-ghost btn-mini vault-danger" data-act="delete">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+async function openVaultEditor(id) {
+  if (!VaultStore.isUnlocked()) return;
+  const existing = id ? VaultStore.getEntries().find(e => e.id === id) : null;
+  const e = existing || { title: '', username: '', password: '', url: '', notes: '' };
+  // Reuse the existing prompt modal infra via a quick custom DOM
+  const overlay = document.getElementById('vault-editor-overlay') || (() => {
+    const o = document.createElement('div');
+    o.id = 'vault-editor-overlay';
+    o.className = 'modal-overlay';
+    o.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="vault-editor-title">Entry</h3>
+          <button class="modal-close" data-vault-cancel aria-label="Close">✕</button>
+        </div>
+        <label>Title</label>
+        <input type="text" id="vault-f-title" />
+        <label>Username / Email</label>
+        <input type="text" id="vault-f-user" autocomplete="off" />
+        <label>Password</label>
+        <input type="password" id="vault-f-pass" autocomplete="new-password" />
+        <label>URL (optional)</label>
+        <input type="text" id="vault-f-url" autocomplete="off" />
+        <label>Notes</label>
+        <textarea id="vault-f-notes" rows="3"></textarea>
+        <div class="modal-actions">
+          <button class="btn-ghost"   data-vault-cancel>Cancel</button>
+          <button class="btn-primary" id="vault-f-save">Save</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(o);
+    return o;
+  })();
+  overlay.querySelector('#vault-editor-title').textContent = id ? 'Edit entry' : 'New entry';
+  overlay.querySelector('#vault-f-title').value = e.title || '';
+  overlay.querySelector('#vault-f-user').value  = e.username || '';
+  overlay.querySelector('#vault-f-pass').value  = e.password || '';
+  overlay.querySelector('#vault-f-url').value   = e.url || '';
+  overlay.querySelector('#vault-f-notes').value = e.notes || '';
+  overlay.classList.add('open');
+
+  const close = () => overlay.classList.remove('open');
+  overlay.querySelectorAll('[data-vault-cancel]').forEach(b => {
+    b.onclick = close;
+  });
+  overlay.querySelector('#vault-f-save').onclick = async () => {
+    const next = {
+      title:    overlay.querySelector('#vault-f-title').value.trim(),
+      username: overlay.querySelector('#vault-f-user').value,
+      password: overlay.querySelector('#vault-f-pass').value,
+      url:      overlay.querySelector('#vault-f-url').value.trim(),
+      notes:    overlay.querySelector('#vault-f-notes').value,
+    };
+    if (id) next.id = id;
+    if (!next.title) { overlay.querySelector('#vault-f-title').focus(); return; }
+    await VaultStore.upsert(next);
+    close();
+    renderPrivate();
+  };
+}
+
+document.getElementById('vault-add-btn')?.addEventListener('click', () => openVaultEditor(null));
+document.getElementById('vault-lock-btn')?.addEventListener('click', () => VaultStore.lock());
+// Activity heartbeat — any click inside the Private section resets auto-lock.
+document.getElementById('private')?.addEventListener('click', () => VaultStore.touchActivity());

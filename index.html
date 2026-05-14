@@ -257,6 +257,12 @@
             </span>
             <span class="home-card-label">Reviews</span>
           </button>
+          <button class="home-card" data-home-go="private" type="button">
+            <span class="home-card-icon" style="--c: #f43f5e;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span class="home-card-label">Private</span>
+          </button>
         </div>
 
       </div>
@@ -308,6 +314,23 @@
           <input type="text" id="links-search" class="links-search" placeholder="" />
         </div>
         <div id="links-list"></div>
+      </div>
+    </section>
+
+    <!-- PRIVATE VAULT — encrypted credentials, stays on this device only -->
+    <section id="private" class="section">
+      <div class="links-container">
+        <div class="fv-header">
+          <div>
+            <h2>Private</h2>
+            <p class="fv-subtitle">Encrypted credentials — this device only, never synced</p>
+          </div>
+          <div class="finance-header-actions" id="vault-header-actions">
+            <button class="btn-primary" id="vault-add-btn" hidden>+ Add Entry</button>
+            <button class="btn-ghost" id="vault-lock-btn" hidden>🔒 Lock</button>
+          </div>
+        </div>
+        <div id="vault-body"></div>
       </div>
     </section>
 
