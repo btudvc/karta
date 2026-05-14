@@ -6089,3 +6089,123 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   color: #fff;
   box-shadow: 0 0 10px var(--accent-soft2, rgba(168, 85, 247, .35));
 }
+
+/* ════════════════════════════════════════════════════════
+   THEME COHESION PASS — kill stray solid grey surfaces and
+   simplify the Today cell.
+   ════════════════════════════════════════════════════════ */
+
+/* "Today" mini-strip cell — slightly brighter frosted white than the
+   six neighbouring days; no colourful fill. A single accent dot below
+   the number quietly marks "today". */
+.wm-cell.wm-today {
+  background-color: rgba(255, 255, 255, .14);
+  background-image: none;
+  border: 1px solid rgba(255, 255, 255, .25);
+  box-shadow: 0 0 24px rgba(255, 255, 255, .08);
+}
+:root[data-theme="light"] .wm-cell.wm-today,
+:root:not([data-theme]) .wm-cell.wm-today {
+  background-color: rgba(255, 255, 255, .85);
+  border-color: rgba(168, 85, 247, .25);
+  box-shadow: 0 0 18px rgba(168, 85, 247, .12);
+}
+
+/* Topbar icons & avatar — frameless. Soft halo only on hover. */
+.topbar-icon-btn,
+.topbar-avatar-btn {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: transparent !important;
+  box-shadow: none;
+}
+.topbar-icon-btn:hover,
+.topbar-avatar-btn:hover {
+  background: var(--glass-bg-2, var(--glass-bg)) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* Task-detail panels — subtasks, notebook, attachments, action row
+   and the task body itself. Solid grey replaced with frosted glass. */
+.notebook,
+.att-section,
+.subtask-list,
+.task-actions-row,
+.task-body,
+.task-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.nb-entry,
+.subtask-row,
+.attachment-row {
+  background: transparent !important;
+  border-color: var(--glass-border) !important;
+}
+.sub-add-row input[type="text"],
+.nb-add-row textarea,
+.nb-add-row input {
+  background: var(--glass-bg-2, var(--glass-bg));
+  border-color: var(--glass-border);
+}
+
+/* Backup / avatar popover blocks */
+.bp-account,
+.bp-meta,
+.bp-settings-block,
+.bp-meta-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.bp-meta-row + .bp-meta-row { border-top: 1px solid var(--glass-border); }
+.bp-version { border-top-color: var(--glass-border) !important; }
+.bp-signout-btn {
+  background: transparent;
+  border: 1px solid transparent;
+}
+.bp-signout-btn:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* Journal layout */
+.jrn-sidebar,
+.jrn-area {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.jrn-sidebar { border-right: 1px solid var(--glass-border) !important; }
+
+/* Reviews list rows */
+.rev-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+
+/* Meeting / Visit rows — were rendering as flat grey cards */
+.meeting-row,
+.visit-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+
+/* Strip leftover solid surfaces on small grouped widgets */
+.streak-widget,
+.tab-strip,
+.tag-picker,
+.radio-group {
+  background: transparent !important;
+}
