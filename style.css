@@ -4283,11 +4283,33 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .bottom-nav { background: var(--surface); border-top-color: var(--border); }
 }
-/* Push scrolling content above the fixed bottom-nav. */
-.section.active { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
-/* On desktop the bottom-nav is hidden — no padding needed. */
+/* Push scrolling content past the topbar; leave the bottom flush so
+   content can scroll UNDER the fixed bottom-nav (that's what makes
+   the blur visible). Internal scroll containers add their own
+   bottom padding so the last item isn't permanently hidden. */
+.section.active { padding-bottom: 0; }
+.section.active > .content,
+.section.active > .home-container,
+.section.active > .fv-container,
+.section.active > .reviews-container,
+.section.active > .links-container,
+.section.active > .more-page,
+.section.active > .cal-container,
+.section.active > .jrn-container {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+/* On desktop the bottom-nav is hidden — drop the clearance. */
 @media (min-width: 1000px) {
-  .section.active { padding-bottom: 0; }
+  .section.active > .content,
+  .section.active > .home-container,
+  .section.active > .fv-container,
+  .section.active > .reviews-container,
+  .section.active > .links-container,
+  .section.active > .more-page,
+  .section.active > .cal-container,
+  .section.active > .jrn-container {
+    padding-bottom: 24px;
+  }
 }
 .bnav-btn {
   position: relative;
@@ -5134,12 +5156,19 @@ body { font-size: 13px; }
   .spaces-drawer-backdrop { display: none !important; }
   body.spaces-drawer-open .spaces-drawer-backdrop { display: none !important; }
 
-  /* Topbar in column 2 */
+  /* Topbar back in the grid row on desktop — the sidebar/grid layout
+     already lays things out cleanly; mobile-only fixed positioning
+     is what we needed for the blur effect. */
   .app-topbar {
+    position: static;
+    top: auto; left: auto; right: auto;
     grid-area: topbar;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
   }
+  /* The mobile section padding-top is for the fixed topbar; on desktop
+     the topbar takes its own grid row so sections start cleanly. */
+  .section.active { padding-top: 0; }
   /* Main fills the rest, max 1280px content width inside */
   main {
     grid-area: main;
