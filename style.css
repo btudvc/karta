@@ -1613,15 +1613,9 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .wm-cell:hover { background: var(--surface-2); border-color: var(--border-2); }
 .wm-cell:active { transform: scale(.97); }
-.wm-cell.wm-today {
-  background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%));
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, .28);
-}
-.wm-cell.wm-today:hover { filter: brightness(1.05); background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%)); }
-.wm-cell.wm-has { background: var(--accent-soft, rgba(168, 85, 247, .08)); }
-.wm-cell.wm-today.wm-has { background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%)); }
+/* Today / has-items styling is defined in the theme-cohesion pass at
+   the end of this file. The original gradient rules used to live here
+   but were overpowering once frosted glass took over. */
 .wm-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -1629,20 +1623,14 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   color: var(--muted);
   line-height: 1;
 }
-.wm-cell.wm-today .wm-label { color: #fff; font-weight: 700; opacity: .85; }
+/* Today text colours overridden in the theme-cohesion pass. */
 .wm-day {
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
   line-height: 1;
 }
-.wm-cell.wm-today .wm-day { color: #fff; }
-.wm-cell.wm-today .wm-dot { background: rgba(255, 255, 255, .85); }
-.wm-cell.wm-today .wm-count {
-  background: #fff;
-  color: var(--accent-h, #9333ea);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
-}
+/* Today inner colours overridden in the theme-cohesion pass. */
 .wm-dots {
   display: flex;
   gap: 3px;
@@ -5877,12 +5865,7 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   filter: brightness(1.06);
 }
 
-/* Today cell keeps its filled gradient — overrides the glass rule. */
-.wm-cell.wm-today {
-  background-color: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
+/* Today cell handled in the theme-cohesion pass at end of file. */
 
 /* Browsers without backdrop-filter — fall back to a slightly more
    opaque surface so text stays crisp. */
@@ -6130,17 +6113,24 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   box-shadow: var(--glow-accent);
 }
 
-/* Task-detail panels — subtasks, notebook, attachments, action row
-   and the task body itself. Solid grey replaced with frosted glass. */
-.notebook,
-.att-section,
-.subtask-list,
-.task-actions-row,
+/* Task-detail panel — ONE frosted card (.task-body) hosts everything.
+   The sub-sections inside (action row, subtasks, notebook,
+   attachments) are transparent so the whole panel reads as a single
+   piece of glass instead of stacked nested cards. */
 .task-body,
 .task-card {
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.notebook,
+.att-section,
+.subtask-list,
+.task-actions-row {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-color: var(--glass-border) !important;
 }
 .nb-entry,
@@ -6156,18 +6146,25 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   border-color: var(--glass-border);
 }
 
-/* Backup / avatar popover blocks */
+/* Backup / avatar popover — the outer .backup-popover provides the
+   single frosted surface. Inner sub-blocks are transparent so the
+   popover reads as one unified piece of glass, with just thin
+   dividers between sections. */
 .bp-account,
 .bp-meta,
 .bp-settings-block,
 .bp-meta-row {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-color: var(--glass-border) !important;
 }
+.bp-account { border-bottom: 1px solid var(--glass-border) !important; padding-bottom: 12px; }
+.bp-meta { padding-top: 0 !important; }
+.bp-meta-row { padding: 8px 0; border-bottom: 1px solid transparent; }
 .bp-meta-row + .bp-meta-row { border-top: 1px solid var(--glass-border); }
-.bp-version { border-top-color: var(--glass-border) !important; }
+.bp-settings-block { padding-top: 12px; border-top: 1px solid var(--glass-border) !important; }
+.bp-version { border-top: none !important; padding-top: 10px; color: var(--muted-2); }
 .bp-signout-btn {
   background: transparent;
   border: 1px solid transparent;
