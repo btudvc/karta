@@ -327,7 +327,10 @@
           </div>
           <div class="finance-header-actions" id="vault-header-actions">
             <button class="btn-primary" id="vault-add-btn" hidden>+ Add Entry</button>
-            <button class="btn-ghost" id="vault-lock-btn" hidden>🔒 Lock</button>
+            <button class="btn-ghost vault-lock-action" id="vault-lock-btn" hidden>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Lock</span>
+            </button>
           </div>
         </div>
         <div id="vault-body"></div>
@@ -425,6 +428,10 @@
       <button class="drawer-nav-btn" data-drawer-go="links" type="button">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         <span>Links</span>
+      </button>
+      <button class="drawer-nav-btn" data-drawer-go="private" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Private</span>
       </button>
     </nav>
 

@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.20.0';
+var APP_VERSION = '6.20.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -5845,6 +5845,7 @@ const TOPBAR_TITLES = {
   journal: 'Journal',
   reviews: 'Reviews',
   links: 'Links',
+  private: 'Private',
   more: 'Settings',
   settings: 'Settings',
 };
@@ -7876,8 +7877,11 @@ async function renderPrivate() {
   if (!unlocked) {
     // Locked
     body.innerHTML = `
-      <div class="vault-card">
-        <h3>🔒 Vault is locked</h3>
+      <div class="vault-card vault-card-locked">
+        <div class="vault-lock-badge">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Vault is locked</h3>
         <p class="vault-note">Enter your master password to unlock.</p>
         <label>Master password</label>
         <input type="password" id="vault-pw" autocomplete="current-password" />
@@ -7965,13 +7969,19 @@ function renderVaultRow(e) {
         <div class="vault-row-field">
           <span class="vault-row-label">User</span>
           <span class="vault-row-value">${escapeHtml(e.username)}</span>
-          <button class="vault-icon-btn" data-act="copy-user" title="Copy username">⧉</button>
+          <button class="vault-icon-btn" data-act="copy-user" title="Copy username" aria-label="Copy username">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
         </div>` : ''}
       <div class="vault-row-field">
         <span class="vault-row-label">Pass</span>
         <span class="vault-pw-text" data-real="${escapeAttr(e.password || '')}" data-hidden="1">${masked}</span>
-        <button class="vault-icon-btn" data-act="toggle"     title="Show/hide">👁</button>
-        <button class="vault-icon-btn" data-act="copy-pass"  title="Copy password">⧉</button>
+        <button class="vault-icon-btn" data-act="toggle" title="Show/hide" aria-label="Show or hide password">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="vault-icon-btn" data-act="copy-pass" title="Copy password" aria-label="Copy password">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
       </div>
       ${e.notes ? `<div class="vault-row-notes">${escapeHtml(e.notes)}</div>` : ''}
       <div class="vault-row-actions">

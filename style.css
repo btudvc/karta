@@ -2985,6 +2985,26 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   display: flex; flex-direction: column; gap: 10px;
 }
 .vault-card h3 { margin: 0; font-size: 18px; }
+.vault-card-locked { align-items: center; text-align: center; }
+.vault-card-locked label,
+.vault-card-locked input { width: 100%; text-align: left; }
+.vault-lock-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft, rgba(168, 85, 247, .14));
+  color: var(--accent);
+  margin: 4px auto 6px;
+}
+.vault-lock-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.vault-icon-btn svg { display: block; }
 .vault-note {
   font-size: 13px;
   color: var(--muted);
