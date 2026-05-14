@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.22.2';
+var APP_VERSION = '6.23.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -6922,25 +6922,66 @@ function renderHome() {
   if (weekListEl) {
     if (weekCountEl) weekCountEl.textContent = weekItems.length || '';
     if (!weekItems.length) {
-      weekListEl.innerHTML = '<div class="home-list-empty">Nothing scheduled this week.</div>';
+      weekListEl.innerHTML = '<div class="home-list-empty">This week is clear ✨</div>';
     } else {
+      // Item-type icons. Tasks reuse the project's brand colour (set
+      // per-row); meetings and visits use a fixed accent so they read
+      // as a different "kind" at a glance.
       const ICO_T = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>';
       const ICO_M = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
       const ICO_V = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>';
-      const COLORS = { task: 'var(--accent)', meeting: '#f97316', visit: '#10b981' };
-      const ICONS  = { task: ICO_T, meeting: ICO_M, visit: ICO_V };
-      weekListEl.innerHTML = weekItems.map(it => {
-        const sub = [formatDueShort(it.date), it.sub].filter(Boolean).join(' · ');
+      const ICONS = { task: ICO_T, meeting: ICO_M, visit: ICO_V };
+      const KIND_COLORS = { meeting: '#f97316', visit: '#10b981' };
+
+      // Group by ISO date so headings mirror the strip above.
+      const byDay = {};
+      weekItems.forEach(it => { (byDay[it.date] = byDay[it.date] || []).push(it); });
+      const dayKeys = Object.keys(byDay).sort();
+      // Localised day labels — match the mini strip.
+      const TR_DAYS = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+      const EN_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const langA = (typeof currentLang === 'string' && currentLang) ||
+                    (typeof state === 'object' && state && state.lang) || 'en';
+      const dayNames = langA.toLowerCase().startsWith('tr') ? TR_DAYS : EN_DAYS;
+      const todayKey = ymd(today);
+      const tomorrowKey = (() => { const d = new Date(today); d.setDate(d.getDate() + 1); return ymd(d); })();
+      function headingFor(iso) {
+        if (iso === todayKey)    return langA.toLowerCase().startsWith('tr') ? 'Bugün' : 'Today';
+        if (iso === tomorrowKey) return langA.toLowerCase().startsWith('tr') ? 'Yarın' : 'Tomorrow';
+        const d = new Date(iso + 'T00:00:00');
+        return `${dayNames[d.getDay()]} ${d.getDate()}`;
+      }
+
+      weekListEl.innerHTML = dayKeys.map(iso => {
+        const items = byDay[iso];
+        const rows = items.map(it => {
+          // Task rows inherit the parent project's stable colour so the
+          // user can spot "all Oildiver tasks" at a glance. Meetings /
+          // visits keep their kind colour.
+          const c = it.kind === 'task' && it.projectId
+            ? pickListColor(it.projectId)
+            : (KIND_COLORS[it.kind] || 'var(--accent)');
+          return `
+            <button class="home-list-item home-list-item-tinted" data-week-kind="${it.kind}" data-week-id="${escapeAttr(it.id)}" data-week-pid="${escapeAttr(it.projectId || '')}" style="--row-c: ${c};" type="button">
+              <span class="home-list-item-icon" style="--c: ${c};">${ICONS[it.kind]}</span>
+              <span class="home-list-item-body">
+                <span class="home-list-item-title">${escapeHtml(it.title)}</span>
+                <span class="home-list-item-sub">${escapeHtml(it.sub || '')}</span>
+              </span>
+            </button>
+          `;
+        }).join('');
         return `
-          <button class="home-list-item" data-week-kind="${it.kind}" data-week-id="${escapeAttr(it.id)}" data-week-pid="${escapeAttr(it.projectId || '')}" type="button">
-            <span class="home-list-item-icon" style="--c: ${COLORS[it.kind]};">${ICONS[it.kind]}</span>
-            <span class="home-list-item-body">
-              <span class="home-list-item-title">${escapeHtml(it.title)}</span>
-              <span class="home-list-item-sub">${escapeHtml(sub)}</span>
-            </span>
-          </button>
+          <div class="home-day-group" data-day="${iso}">
+            <div class="home-day-head">
+              <span class="home-day-name">${escapeHtml(headingFor(iso))}</span>
+              <span class="home-day-count">${items.length}</span>
+            </div>
+            ${rows}
+          </div>
         `;
       }).join('');
+
       weekListEl.querySelectorAll('[data-week-kind]').forEach(el => {
         el.addEventListener('click', () => {
           const k = el.dataset.weekKind, id = el.dataset.weekId, pid = el.dataset.weekPid;
@@ -6994,8 +7035,18 @@ function renderHome() {
     miniEl.querySelectorAll('[data-wm-date]').forEach(el => {
       el.addEventListener('click', () => {
         const iso = el.dataset.wmDate;
-        // Set the calendar month/selection up front, then navigate.
-        // renderCalendar reads from the module-level calMonth/calSelected.
+        // If we have items for that day below, just scroll the list to
+        // that group — feels more like a filter than a navigation
+        // jump. If the day is empty, open the Calendar view focused on
+        // that date so the user lands somewhere useful.
+        const group = document.querySelector(`.home-day-group[data-day="${iso}"]`);
+        if (group) {
+          group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Briefly flash the heading so the eye finds it.
+          group.classList.add('home-day-flash');
+          setTimeout(() => group.classList.remove('home-day-flash'), 1200);
+          return;
+        }
         try {
           const d = new Date(iso + 'T00:00:00');
           calMonth = { y: d.getFullYear(), m: d.getMonth() };

@@ -1595,10 +1595,14 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 .wm-cell:hover { background: var(--surface-2); border-color: var(--border-2); }
 .wm-cell:active { transform: scale(.97); }
 .wm-cell.wm-today {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent-soft, rgba(168, 85, 247, .12)) inset;
+  background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, .28);
 }
+.wm-cell.wm-today:hover { filter: brightness(1.05); background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%)); }
 .wm-cell.wm-has { background: var(--accent-soft, rgba(168, 85, 247, .08)); }
+.wm-cell.wm-today.wm-has { background: var(--brand-gradient, linear-gradient(180deg, #7c3aed 0%, #c084fc 55%, #fb7185 100%)); }
 .wm-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -1606,14 +1610,20 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   color: var(--muted);
   line-height: 1;
 }
-.wm-cell.wm-today .wm-label { color: var(--accent); font-weight: 600; }
+.wm-cell.wm-today .wm-label { color: #fff; font-weight: 700; opacity: .85; }
 .wm-day {
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
   line-height: 1;
 }
-.wm-cell.wm-today .wm-day { color: var(--accent); }
+.wm-cell.wm-today .wm-day { color: #fff; }
+.wm-cell.wm-today .wm-dot { background: rgba(255, 255, 255, .85); }
+.wm-cell.wm-today .wm-count {
+  background: #fff;
+  color: var(--accent-h, #9333ea);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+}
 .wm-dots {
   display: flex;
   gap: 3px;
@@ -1654,6 +1664,68 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   .wm-label { font-size: 10px; }
   .wm-day { font-size: 16px; }
   .wm-count { top: 3px; right: 3px; min-width: 15px; height: 15px; line-height: 15px; font-size: 9.5px; }
+}
+
+/* Day-grouped list (This Week, organised by day) */
+.home-day-group + .home-day-group { margin-top: 14px; }
+.home-day-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 8px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+.home-day-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text);
+}
+.home-day-count {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.home-day-group::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+  margin: 8px 4px 0;
+}
+.home-day-flash > .home-day-head .home-day-name {
+  color: var(--accent);
+  transition: color .25s var(--ease);
+}
+.home-day-flash > .home-day-head .home-day-count {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tinted rows — each task picks up its parent project's stable colour
+   via inline --row-c so users can scan by project at a glance. */
+.home-list-item-tinted {
+  position: relative;
+  padding-left: 14px;
+}
+.home-list-item-tinted::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--row-c, var(--accent));
+  opacity: .9;
 }
 
 .home-list { display: flex; flex-direction: column; gap: 2px; }
