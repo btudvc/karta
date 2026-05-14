@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.21.0';
+var APP_VERSION = '6.21.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7822,6 +7822,21 @@ const VaultStore = (() => {
     lock();
   }
 
+  // Change the master password while keeping every entry intact.
+  // Requires the vault to be unlocked (so we have plaintext to
+  // re-encrypt). Generates a fresh salt + IV so the new ciphertext
+  // doesn't share any bits with the old one.
+  async function changeMasterPassword(newPassword) {
+    if (!derivedKey || !cachedPlain) throw new Error('Vault is locked.');
+    if (!newPassword || newPassword.length < 6) throw new Error('Use at least 6 characters.');
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const newKey = await deriveKey(newPassword, salt);
+    const blob = await encryptObject(cachedPlain, newKey);
+    writeStore({ salt: b64(salt), iv: blob.iv, ct: blob.ct, iter: PBKDF2_ITER, v: 1 });
+    derivedKey = newKey;
+    scheduleAutoLock();
+  }
+
   // ── Biometric unlock (WebAuthn + PRF extension) ──────────────────
   // Uses a platform authenticator (Touch ID / Face ID / Android
   // fingerprint / Windows Hello) to derive a stable secret via the
@@ -7918,9 +7933,60 @@ const VaultStore = (() => {
     await unlock(password);
   }
 
+  // Biometric-only password reset: assert the credential, recover the
+  // old password via PRF, unlock the vault, set a new master password
+  // (entries stay put), then re-wrap the new password under the same
+  // biometric credential. Never wipes user data.
+  async function resetPasswordWithBiometric(newPassword) {
+    if (!await biometricAvailable()) throw new Error('Biometric not available.');
+    if (!biometricEnrolled())        throw new Error('Biometric not set up — there is no recovery path.');
+    if (!newPassword || newPassword.length < 6) throw new Error('Use at least 6 characters.');
+    const raw  = localStorage.getItem(BIO_KEY);
+    const meta = JSON.parse(raw);
+    const credentialId = unb64(meta.credentialId);
+    const prfSalt      = unb64(meta.prfSalt);
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        rpId: window.location.hostname,
+        challenge,
+        allowCredentials: [{ id: credentialId, type: 'public-key', transports: ['internal'] }],
+        userVerification: 'required',
+        extensions: { prf: { eval: { first: prfSalt } } },
+        timeout: 60000,
+      },
+    });
+    if (!assertion) throw new Error('Cancelled.');
+    const ext = assertion.getClientExtensionResults && assertion.getClientExtensionResults();
+    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+    if (!prfOut) throw new Error('PRF result missing.');
+    // Re-derive the same wrap key (same credential + same salt → same PRF output).
+    const wrapKey = await crypto.subtle.importKey(
+      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    );
+    // Recover old password, unlock with it (so cachedPlain is populated).
+    const oldPwBytes = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: unb64(meta.iv) }, wrapKey, unb64(meta.ct)
+    );
+    await unlock(dec.decode(oldPwBytes));
+    // Swap the master password — entries stay intact.
+    await changeMasterPassword(newPassword);
+    // Re-wrap the NEW password under the same biometric (same PRF key).
+    const iv2 = crypto.getRandomValues(new Uint8Array(12));
+    const ct2 = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv2 }, wrapKey, enc.encode(newPassword));
+    localStorage.setItem(BIO_KEY, JSON.stringify({
+      credentialId: meta.credentialId,
+      prfSalt:      meta.prfSalt,
+      iv:           b64(iv2),
+      ct:           b64(ct2),
+      v: 1,
+    }));
+  }
+
   return {
     hasVault, isUnlocked, create, unlock, lock, getEntries, upsert, remove, destroy, touchActivity,
     biometricAvailable, biometricEnrolled, enableBiometric, disableBiometric, unlockBiometric,
+    changeMasterPassword, resetPasswordWithBiometric,
   };
 })();
 
@@ -7996,7 +8062,9 @@ async function renderPrivate() {
         <input type="password" id="vault-pw" autocomplete="current-password" />
         <div class="modal-actions">
           <button class="btn-primary" id="vault-unlock-btn">Unlock</button>
-          <button class="btn-ghost"   id="vault-destroy-btn" title="Wipe this vault and start over">Reset vault…</button>
+          ${bioEnrolled && bioCanUse
+            ? `<button class="btn-ghost" id="vault-forgot-btn" title="Reset master password with biometrics — keeps your entries">Forgot password?</button>`
+            : `<button class="btn-ghost" id="vault-destroy-btn" title="Wipe this vault and start over">Reset vault…</button>`}
         </div>
         <div class="vault-error" id="vault-err" hidden></div>
       </div>
@@ -8032,13 +8100,45 @@ async function renderPrivate() {
     };
     document.getElementById('vault-unlock-btn').addEventListener('click', doUnlock);
     pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
-    document.getElementById('vault-destroy-btn').addEventListener('click', async () => {
+    document.getElementById('vault-destroy-btn')?.addEventListener('click', async () => {
       const ok = await (typeof confirmDialog === 'function'
         ? confirmDialog({ title: 'Reset vault', message: 'This permanently deletes every encrypted entry on this device. Continue?', okText: 'Delete vault' })
         : Promise.resolve(confirm('Permanently delete vault?')));
       if (!ok) return;
       await VaultStore.destroy();
       renderPrivate();
+    });
+    document.getElementById('vault-forgot-btn')?.addEventListener('click', async () => {
+      const err = document.getElementById('vault-err');
+      err.hidden = true;
+      // 1) New password — ask twice. Entries stay encrypted with the
+      //    old key until biometric auth succeeds, so a wrong/cancelled
+      //    biometric prompt leaves the vault untouched.
+      const pw1 = await (typeof promptInput === 'function'
+        ? promptInput({ title: 'Reset password', label: 'New master password', placeholder: 'At least 6 characters', type: 'password', okText: 'Next' })
+        : Promise.resolve(prompt('New master password')));
+      if (!pw1) return;
+      if (pw1.length < 6) {
+        err.textContent = 'Use at least 6 characters.';
+        err.hidden = false; return;
+      }
+      const pw2 = await (typeof promptInput === 'function'
+        ? promptInput({ title: 'Reset password', label: 'Confirm new password', type: 'password', okText: 'Confirm' })
+        : Promise.resolve(prompt('Confirm new password')));
+      if (pw2 == null) return;
+      if (pw1 !== pw2) {
+        err.textContent = 'Passwords do not match.';
+        err.hidden = false; return;
+      }
+      // 2) Biometric assertion → recover old password → swap to new one.
+      try {
+        await VaultStore.resetPasswordWithBiometric(pw1);
+        if (typeof showAppToast === 'function') showAppToast('Master password updated', 'success');
+        renderPrivate();
+      } catch (e) {
+        err.textContent = e.message || 'Could not reset password.';
+        err.hidden = false;
+      }
     });
     return;
   }
