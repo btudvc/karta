@@ -1156,8 +1156,10 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
 /* Persistent across every section. Lives above <main> in the DOM and is
    pinned to the top so it stays visible while content scrolls. */
 .app-topbar {
-  position: sticky;
-  top: 0;
+  /* Fixed so scrolling sections slide UNDER the bar, giving the
+     backdrop-filter real content to blur. */
+  position: fixed;
+  top: 0; left: 0; right: 0;
   z-index: 60;
   display: flex;
   align-items: center;
@@ -1167,8 +1169,11 @@ main { flex: 1; overflow: hidden; display: flex; padding-bottom: 0; }
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--glass-border);
-  flex-shrink: 0;
 }
+/* Make room below the fixed topbar so content isn't hidden behind it.
+   Approx topbar height: 56px + safe-area-inset-top. Applies on every
+   viewport since the topbar shows on both mobile and desktop. */
+.section.active { padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .app-topbar { background: var(--bg); border-bottom-color: var(--border); }
 }
@@ -4259,18 +4264,30 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 
 /* ─── BOTTOM NAV (docked bar + side FAB) ─── */
 .bottom-nav {
+  /* Fixed at the viewport floor so the scrolling content slides UNDER
+     the bar — that's what gives backdrop-filter something to blur and
+     makes the glass effect actually visible. Sections add matching
+     bottom padding so nothing sits permanently hidden. */
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
   display: flex;
   align-items: stretch;
-  flex-shrink: 0;
   height: calc(64px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-top: 1px solid var(--glass-border);
+  z-index: 90;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .bottom-nav { background: var(--surface); border-top-color: var(--border); }
+}
+/* Push scrolling content above the fixed bottom-nav. */
+.section.active { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+/* On desktop the bottom-nav is hidden — no padding needed. */
+@media (min-width: 1000px) {
+  .section.active { padding-bottom: 0; }
 }
 .bnav-btn {
   position: relative;
