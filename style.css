@@ -6209,3 +6209,150 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
 .radio-group {
   background: transparent !important;
 }
+
+/* ════════════════════════════════════════════════════════
+   ROUND 2 — calendar grid, meetings/visits surface, reviews
+   toggle, and a unified "frosted accent" button look.
+   ════════════════════════════════════════════════════════ */
+
+/* Calendar day cells — frosted, not solid grey */
+.cal-day {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.cal-day:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--accent) !important;
+  filter: brightness(1.06);
+}
+.cal-day.selected {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+.cal-day.today { border-color: var(--accent) !important; }
+.cal-day.other-mo { background: transparent !important; }
+
+/* Meetings + Visits list rows — match the rest of the frost */
+.meeting-row,
+.visit-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.meeting-row:hover,
+.visit-row:hover {
+  background: var(--glass-bg) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* Reviews period toggle (Weekly | Monthly pill) */
+.reviews-period-toggle {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.rev-period-btn.active {
+  background: var(--accent) !important;
+  color: var(--on-accent) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* ── Unified "frosted accent" button look ──
+   Every secondary control wears:
+   - a tinted accent border at rest (not invisible)
+   - frosted fill
+   - subtle accent halo that pulses brighter on hover
+   - high-contrast --text colour
+   Matches the Edit-button screenshot the user referenced. */
+.btn-ghost,
+.btn-sm,
+.btn-mini,
+.cal-nav,
+.cal-today-btn,
+.cal-export-btn,
+.action-add-btn,
+.icon-btn:not(.topbar-icon-btn),
+.modal-close,
+.md-back-btn,
+.bp-icon-btn,
+.vault-icon-btn,
+.home-section-icon-btn,
+.lang-btn,
+.task-action-btn,
+.radio-btn,
+.theme-toggle-btn,
+.cross-nav-btn,
+.drawer-nav-btn:not(.active) {
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(168, 85, 247, .25);
+  color: var(--text);
+  box-shadow: 0 0 0 0 transparent;
+}
+/* Dim/dark theme bumps the accent-tint slightly so it's visible on
+   nearly-black surroundings */
+:root[data-theme="dim"] .btn-ghost,
+:root[data-theme="dim"] .btn-sm,
+:root[data-theme="dim"] .btn-mini,
+:root[data-theme="dim"] .cal-nav,
+:root[data-theme="dim"] .cal-today-btn,
+:root[data-theme="dim"] .cal-export-btn,
+:root[data-theme="dim"] .icon-btn:not(.topbar-icon-btn),
+:root[data-theme="dim"] .modal-close,
+:root[data-theme="dim"] .md-back-btn,
+:root[data-theme="dim"] .bp-icon-btn,
+:root[data-theme="dim"] .vault-icon-btn,
+:root[data-theme="dim"] .lang-btn,
+:root[data-theme="dim"] .task-action-btn,
+:root[data-theme="dim"] .radio-btn,
+:root[data-theme="dim"] .theme-toggle-btn,
+:root[data-theme="dim"] .cross-nav-btn,
+:root[data-theme="dark"] .btn-ghost,
+:root[data-theme="dark"] .btn-sm,
+:root[data-theme="dark"] .btn-mini,
+:root[data-theme="dark"] .cal-nav,
+:root[data-theme="dark"] .cal-today-btn,
+:root[data-theme="dark"] .cal-export-btn,
+:root[data-theme="dark"] .icon-btn:not(.topbar-icon-btn),
+:root[data-theme="dark"] .modal-close,
+:root[data-theme="dark"] .md-back-btn,
+:root[data-theme="dark"] .bp-icon-btn,
+:root[data-theme="dark"] .vault-icon-btn,
+:root[data-theme="dark"] .lang-btn,
+:root[data-theme="dark"] .task-action-btn,
+:root[data-theme="dark"] .radio-btn,
+:root[data-theme="dark"] .theme-toggle-btn,
+:root[data-theme="dark"] .cross-nav-btn {
+  border-color: rgba(192, 132, 252, .32);
+}
+
+.btn-ghost:hover,
+.btn-sm:hover,
+.btn-mini:hover,
+.cal-nav:hover,
+.cal-today-btn:hover,
+.cal-export-btn:hover,
+.action-add-btn:hover,
+.icon-btn:not(.topbar-icon-btn):hover,
+.modal-close:hover,
+.md-back-btn:hover,
+.bp-icon-btn:hover,
+.vault-icon-btn:hover,
+.home-section-icon-btn:hover,
+.lang-btn:hover,
+.task-action-btn:hover,
+.radio-btn:hover,
+.theme-toggle-btn:hover,
+.cross-nav-btn:hover {
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+  color: var(--text) !important;
+  filter: brightness(1.05);
+}
