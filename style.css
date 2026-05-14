@@ -3005,6 +3005,57 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   gap: 6px;
 }
 .vault-icon-btn svg { display: block; }
+
+.vault-bio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 10px 16px;
+  width: 100%;
+}
+.vault-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 10px 0 0;
+}
+.vault-or-divider::before,
+.vault-or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.vault-settings {
+  max-width: 720px;
+  margin: 24px auto 0;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+}
+.vault-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 4px;
+}
+.vault-settings-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.vault-settings-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 .vault-note {
   font-size: 13px;
   color: var(--muted);

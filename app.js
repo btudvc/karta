@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.20.1';
+var APP_VERSION = '6.21.0';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -7818,10 +7818,110 @@ const VaultStore = (() => {
 
   async function destroy() {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(BIO_KEY);
     lock();
   }
 
-  return { hasVault, isUnlocked, create, unlock, lock, getEntries, upsert, remove, destroy, touchActivity };
+  // ── Biometric unlock (WebAuthn + PRF extension) ──────────────────
+  // Uses a platform authenticator (Touch ID / Face ID / Android
+  // fingerprint / Windows Hello) to derive a stable secret via the
+  // PRF extension. That secret wraps the master password so it can
+  // be recovered after a biometric prompt. Falls back gracefully when
+  // the platform doesn't support PRF (currently most mobile Chrome /
+  // Safari 17+ does; older Firefox / iOS < 17 may not).
+  const BIO_KEY = 'b-less.vault.bio.v1';
+
+  async function biometricAvailable() {
+    if (!window.PublicKeyCredential || !navigator.credentials) return false;
+    try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }
+    catch { return false; }
+  }
+  function biometricEnrolled() { return !!localStorage.getItem(BIO_KEY); }
+
+  async function enableBiometric(masterPassword) {
+    if (!await biometricAvailable()) throw new Error('Biometric not available on this device.');
+    // Confirm the master password works against the stored ciphertext
+    // BEFORE we attempt the WebAuthn dance — keeps us from saving a
+    // wrapped key that doesn't actually match the vault.
+    await unlock(masterPassword); // throws on wrong password
+    const prfSalt = crypto.getRandomValues(new Uint8Array(32));
+    const userId  = crypto.getRandomValues(new Uint8Array(16));
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        rp: { name: 'B-Less Planner', id: window.location.hostname },
+        user: { id: userId, name: 'vault@b-less', displayName: 'Vault' },
+        challenge,
+        pubKeyCredParams: [
+          { type: 'public-key', alg: -7 },    // ES256
+          { type: 'public-key', alg: -257 },  // RS256
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          requireResidentKey: false,
+        },
+        extensions: { prf: { eval: { first: prfSalt } } },
+        timeout: 60000,
+      },
+    });
+    if (!cred) throw new Error('Biometric setup cancelled.');
+    const ext = cred.getClientExtensionResults && cred.getClientExtensionResults();
+    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+    if (!prfOut) throw new Error('PRF not supported by this authenticator/browser.');
+    // Wrap the master password with an AES key derived from PRF output
+    const wrapKey = await crypto.subtle.importKey(
+      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['encrypt']
+    );
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrapKey, enc.encode(masterPassword));
+    localStorage.setItem(BIO_KEY, JSON.stringify({
+      credentialId: b64(cred.rawId),
+      prfSalt:      b64(prfSalt),
+      iv:           b64(iv),
+      ct:           b64(ct),
+      v: 1,
+    }));
+  }
+
+  async function disableBiometric() { localStorage.removeItem(BIO_KEY); }
+
+  async function unlockBiometric() {
+    if (!await biometricAvailable()) throw new Error('Biometric not available.');
+    const raw = localStorage.getItem(BIO_KEY);
+    if (!raw) throw new Error('Biometric not set up.');
+    const meta = JSON.parse(raw);
+    const credentialId = unb64(meta.credentialId);
+    const prfSalt      = unb64(meta.prfSalt);
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        rpId: window.location.hostname,
+        challenge,
+        allowCredentials: [{ id: credentialId, type: 'public-key', transports: ['internal'] }],
+        userVerification: 'required',
+        extensions: { prf: { eval: { first: prfSalt } } },
+        timeout: 60000,
+      },
+    });
+    if (!assertion) throw new Error('Cancelled.');
+    const ext = assertion.getClientExtensionResults && assertion.getClientExtensionResults();
+    const prfOut = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+    if (!prfOut) throw new Error('PRF result missing — biometric unlock unavailable. Use your password.');
+    const wrapKey = await crypto.subtle.importKey(
+      'raw', new Uint8Array(prfOut), { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+    );
+    const pwBytes = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: unb64(meta.iv) }, wrapKey, unb64(meta.ct)
+    );
+    const password = dec.decode(pwBytes);
+    await unlock(password);
+  }
+
+  return {
+    hasVault, isUnlocked, create, unlock, lock, getEntries, upsert, remove, destroy, touchActivity,
+    biometricAvailable, biometricEnrolled, enableBiometric, disableBiometric, unlockBiometric,
+  };
 })();
 
 async function renderPrivate() {
@@ -7876,6 +7976,8 @@ async function renderPrivate() {
 
   if (!unlocked) {
     // Locked
+    const bioEnrolled = VaultStore.biometricEnrolled();
+    const bioCanUse   = await VaultStore.biometricAvailable();
     body.innerHTML = `
       <div class="vault-card vault-card-locked">
         <div class="vault-lock-badge">
@@ -7883,6 +7985,13 @@ async function renderPrivate() {
         </div>
         <h3>Vault is locked</h3>
         <p class="vault-note">Enter your master password to unlock.</p>
+        ${bioEnrolled && bioCanUse ? `
+          <button class="btn-primary vault-bio-btn" id="vault-bio-unlock-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11v3a1 1 0 0 1-1 1"/><path d="M3 11a9 9 0 0 1 13.6-7.74"/><path d="M3 17.5a9 9 0 0 1-1-3"/><path d="M14 21.3a9.5 9.5 0 0 0 5-7.3"/><path d="M9 21.3A8.83 8.83 0 0 1 5 17"/><path d="M21 11a9 9 0 0 0-2.6-5.7"/><path d="M8.5 4.4A8.93 8.93 0 0 1 12 4a8.93 8.93 0 0 1 8 4.7"/><path d="M11 3.9a9 9 0 0 1 5.5 7.1"/></svg>
+            <span>Unlock with biometrics</span>
+          </button>
+          <div class="vault-or-divider"><span>or</span></div>
+        ` : ''}
         <label>Master password</label>
         <input type="password" id="vault-pw" autocomplete="current-password" />
         <div class="modal-actions">
@@ -7892,6 +8001,23 @@ async function renderPrivate() {
         <div class="vault-error" id="vault-err" hidden></div>
       </div>
     `;
+    if (bioEnrolled && bioCanUse) {
+      document.getElementById('vault-bio-unlock-btn').addEventListener('click', async () => {
+        const err = document.getElementById('vault-err');
+        err.hidden = true;
+        try {
+          await VaultStore.unlockBiometric();
+          renderPrivate();
+        } catch (e) {
+          err.textContent = e.message || 'Biometric unlock failed.';
+          err.hidden = false;
+        }
+      });
+      // Auto-prompt biometric on view open — feels native on mobile.
+      setTimeout(() => {
+        document.getElementById('vault-bio-unlock-btn')?.click();
+      }, 250);
+    }
     const pwEl = document.getElementById('vault-pw');
     const doUnlock = async () => {
       const err = document.getElementById('vault-err');
@@ -7920,13 +8046,49 @@ async function renderPrivate() {
   // Unlocked — list + add/edit form
   VaultStore.touchActivity();
   const entries = VaultStore.getEntries();
+  const bioCanUse   = await VaultStore.biometricAvailable();
+  const bioEnrolled = VaultStore.biometricEnrolled();
   body.innerHTML = `
     <div class="vault-list" id="vault-list">
       ${entries.length ? entries.map(e => renderVaultRow(e)).join('') : `
         <div class="home-list-empty" style="padding: 28px 12px;">No entries yet. Tap + Add Entry.</div>
       `}
     </div>
+    ${bioCanUse ? `
+      <div class="vault-settings">
+        <div class="vault-settings-row">
+          <div>
+            <div class="vault-settings-title">Biometric unlock</div>
+            <div class="vault-settings-sub">${bioEnrolled
+              ? 'Enabled on this device — unlock with fingerprint / face.'
+              : 'Use your device biometrics instead of typing the master password.'}</div>
+          </div>
+          ${bioEnrolled
+            ? `<button class="btn-ghost btn-mini" id="vault-bio-disable-btn">Remove</button>`
+            : `<button class="btn-primary btn-mini" id="vault-bio-enable-btn">Enable</button>`}
+        </div>
+      </div>
+    ` : ''}
   `;
+  document.getElementById('vault-bio-enable-btn')?.addEventListener('click', async () => {
+    const pw = await (typeof promptInput === 'function'
+      ? promptInput({ title: 'Confirm password', label: 'Master password', placeholder: 'Re-enter to enable biometrics', type: 'password' })
+      : Promise.resolve(prompt('Re-enter master password to enable biometrics')));
+    if (!pw) return;
+    try {
+      await VaultStore.enableBiometric(pw);
+      if (typeof showAppToast === 'function') showAppToast('Biometric unlock enabled', 'success');
+      renderPrivate();
+    } catch (e) {
+      if (typeof alertDialog === 'function') alertDialog({ title: 'Could not enable', message: e.message || 'Biometric setup failed.' });
+      else alert(e.message || 'Biometric setup failed.');
+    }
+  });
+  document.getElementById('vault-bio-disable-btn')?.addEventListener('click', async () => {
+    await VaultStore.disableBiometric();
+    if (typeof showAppToast === 'function') showAppToast('Biometric unlock removed', 'success');
+    renderPrivate();
+  });
   // Row interactions
   body.querySelectorAll('.vault-row').forEach(row => {
     const id = row.dataset.id;
