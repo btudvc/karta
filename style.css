@@ -160,7 +160,15 @@ html {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
+  /* Soft brand-tinted backdrop. The frosted glass surfaces above pick
+     up colour from these radial blooms when their backdrop-filter
+     fires, giving the whole app a subtle living quality. */
+  background:
+    radial-gradient(1200px 800px at 10% -10%, var(--accent-soft, rgba(168, 85, 247, .12)) 0%, transparent 55%),
+    radial-gradient(1000px 700px at 90% 20%, rgba(251, 113, 133, .08) 0%, transparent 60%),
+    radial-gradient(900px 600px at 50% 110%, rgba(124, 58, 237, .07) 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   /* Use dynamic viewport height so iOS Safari's URL bar doesn't push content
      below the visible area. Falls back to 100vh on older browsers. */
@@ -5763,3 +5771,78 @@ body.is-readonly #robot-content .nb-item { cursor: default !important; }
   color: #fff;
 }
 .modal-confirm .btn-primary.danger:hover { filter: brightness(.92); }
+
+/* ════════════════════════════════════════════════════════
+   FROSTED-GLASS SURFACES
+   Apply the glass tokens to every prominent content card so
+   the brand-tinted body backdrop bleeds through. backdrop-
+   filter is graceful — browsers without support just see the
+   semi-transparent fill (still readable thanks to the soft
+   body backdrop). Hover/active states keep the glass and
+   nudge brightness instead of swapping a solid colour.
+   ════════════════════════════════════════════════════════ */
+.home-list-item,
+.wm-cell,
+.home-journal-card,
+.home-card,
+.vault-row,
+.vault-card,
+.vault-lock-badge,
+.at-task,
+.streak-widget,
+.link-row,
+.visit-row,
+.meeting-row,
+.rev-row,
+.jrn-list-item,
+.cal-day,
+.cal-day-panel,
+.bp-account,
+.bp-meta,
+.bp-settings-block,
+.share-row,
+.task-card,
+.task-body,
+.notebook-entry,
+.inbox-section .home-list-item,
+.spaces-drawer-section,
+.spaces-drawer-item,
+.home-type-group {
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+}
+
+/* Tint the hover/active states without losing the frost. */
+.home-list-item:hover,
+.wm-cell:hover,
+.home-card:hover,
+.at-task:hover,
+.link-row:hover,
+.visit-row:hover,
+.meeting-row:hover,
+.jrn-list-item:hover,
+.cal-day:hover {
+  background-color: var(--glass-bg);
+  filter: brightness(1.06);
+}
+
+/* Today cell keeps its filled gradient — overrides the glass rule. */
+.wm-cell.wm-today {
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Browsers without backdrop-filter — fall back to a slightly more
+   opaque surface so text stays crisp. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .home-list-item, .wm-cell, .home-journal-card, .home-card,
+  .vault-row, .vault-card, .at-task, .streak-widget, .link-row,
+  .visit-row, .meeting-row, .rev-row, .jrn-list-item, .cal-day,
+  .cal-day-panel, .bp-account, .bp-meta, .bp-settings-block,
+  .share-row {
+    background-color: var(--surface);
+  }
+}
