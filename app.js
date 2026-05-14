@@ -531,7 +531,7 @@ let linksFilter = '';        // free-text search
 // footer and #more-version stay in step. `var` (not const) so functions
 // that fire during boot via applyI18n can reference it before script
 // execution reaches the assignment.
-var APP_VERSION = '6.23.0';
+var APP_VERSION = '6.23.1';
 
 const STORAGE_KEY = 'b-less';
 // Two layers of legacy: 'karta' was the previous app name, 'ais-planner' the one before.
@@ -6922,7 +6922,15 @@ function renderHome() {
   if (weekListEl) {
     if (weekCountEl) weekCountEl.textContent = weekItems.length || '';
     if (!weekItems.length) {
-      weekListEl.innerHTML = '<div class="home-list-empty">This week is clear ✨</div>';
+      weekListEl.innerHTML = `
+        <div class="home-list-empty home-empty-week">
+          <svg class="home-empty-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2l1.8 4.5L18 8.4l-4.2 1.9L12 14.8l-1.8-4.5L6 8.4l4.2-1.9L12 2z"/>
+            <path d="M19 14l.9 2.2L22 17l-2.1.8L19 20l-.9-2.2L16 17l2.1-.8L19 14z"/>
+          </svg>
+          <span>This week is clear</span>
+        </div>
+      `;
     } else {
       // Item-type icons. Tasks reuse the project's brand colour (set
       // per-row); meetings and visits use a fixed accent so they read
