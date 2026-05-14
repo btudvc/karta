@@ -2977,7 +2977,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 /* ── Private vault (encrypted credentials) ─────────────── */
 .vault-card {
   max-width: 480px;
-  margin: 32px auto;
+  margin: 8px 0 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -3034,8 +3034,7 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 
 .vault-settings {
-  max-width: 720px;
-  margin: 24px auto 0;
+  margin: 24px 0 0;
   padding-top: 18px;
   border-top: 1px dashed var(--border);
 }
@@ -3093,8 +3092,6 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 720px;
-  margin: 0 auto;
 }
 .vault-row {
   background: var(--surface);
