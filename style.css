@@ -50,6 +50,9 @@
      via @supports for browsers without backdrop-filter. */
   --glass-bg:     rgba(255, 255, 255, .55);
   --glass-bg-2:   rgba(255, 255, 255, .35);
+  /* For solid-looking cards (meeting/journal/review rows, task body)
+     that should read as visibly WHITE-frosted, not nearly-transparent. */
+  --glass-bg-card: rgba(255, 255, 255, .80);
   --glass-border: rgba(15, 20, 30, .08);
   --glass-blur:   blur(22px) saturate(1.6);
   --glow-accent:  0 0 0 1px rgba(168, 85, 247, .25), 0 0 14px rgba(168, 85, 247, .25);
@@ -92,6 +95,7 @@ input[type="date"] { color-scheme: light; }
 
   --glass-bg:     rgba(255, 255, 255, .07);
   --glass-bg-2:   rgba(255, 255, 255, .04);
+  --glass-bg-card: rgba(255, 255, 255, .14);
   --glass-border: rgba(255, 255, 255, .10);
   --glass-blur:   blur(22px) saturate(1.5);
   --glow-accent:  0 0 0 1px rgba(192, 132, 252, .35), 0 0 14px rgba(192, 132, 252, .28);
@@ -135,6 +139,7 @@ input[type="date"] { color-scheme: light; }
 
   --glass-bg:     rgba(255, 255, 255, .06);
   --glass-bg-2:   rgba(255, 255, 255, .03);
+  --glass-bg-card: rgba(255, 255, 255, .13);
   --glass-border: rgba(255, 255, 255, .10);
   --glass-blur:   blur(24px) saturate(1.5);
   --glow-accent:  0 0 0 1px rgba(192, 132, 252, .35), 0 0 14px rgba(192, 132, 252, .32);
@@ -6614,4 +6619,72 @@ input.search-input:focus,
 }
 .spaces-drawer-item:hover {
   background: var(--glass-bg-2, var(--glass-bg)) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   ROUND 5 — "whitish frost" for solid-looking cards.
+   These elements are intentionally NOT transparent (they
+   need to read as discrete cards on the body backdrop),
+   but they should be visibly WHITE-frosted, not the grey
+   surface tone the older styles still leak through.
+   ════════════════════════════════════════════════════════ */
+
+/* Meeting / visit list rows (the shared .robot-item component
+   re-used in those sections) */
+#meeting-list .robot-item,
+#meetings .robot-item,
+#field-visits .visit-row,
+.visit-row {
+  background: var(--glass-bg-card) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Journal entries in the sidebar list */
+.jrn-entry {
+  background: var(--glass-bg-card) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  padding: 11px 12px !important;
+  margin-bottom: 6px !important;
+  border-radius: 10px;
+}
+.jrn-entry:hover  { border-color: var(--accent) !important; box-shadow: var(--glow-accent); background: var(--glass-bg-card) !important; }
+.jrn-entry.active { border-color: var(--accent) !important; background: var(--accent-soft) !important; }
+
+/* Reviews list rows */
+.rev-row {
+  background: var(--glass-bg-card) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Reviews textarea was using var(--bg) — read as a solid black box */
+.reviews-textarea {
+  background: var(--glass-bg-card) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border) !important;
+}
+.reviews-textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: var(--glow-accent);
+}
+
+/* Task body — make it visibly white-frosted, not the dim
+   semi-transparent it was. Inner sub-sections stay transparent
+   so the whole panel still reads as one piece of glass. */
+.task-body,
+.task-card {
+  background: var(--glass-bg-card) !important;
+}
+
+/* Spaces drawer header / brand area */
+.spaces-drawer-section {
+  background: var(--glass-bg-card) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
