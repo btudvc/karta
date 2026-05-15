@@ -1595,9 +1595,15 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
 }
 .wm-cell:hover { background: var(--surface-2); border-color: var(--border-2); }
 .wm-cell:active { transform: scale(.97); }
-/* Today / has-items styling is defined in the theme-cohesion pass at
-   the end of this file. The original gradient rules used to live here
-   but were overpowering once frosted glass took over. */
+/* Cell with items in it — subtle accent wash so busy days pop. */
+.wm-cell.wm-has { background: var(--accent-soft); }
+/* Today — accent border + accent day number + label.
+   Stays a normal solid card; only the colour cues mark it as today. */
+.wm-cell.wm-today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.wm-cell.wm-today.wm-has { background: var(--accent-soft); }
 .wm-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -1605,14 +1611,14 @@ body.spaces-drawer-open .spaces-drawer { transform: translateX(0); }
   color: var(--muted);
   line-height: 1;
 }
-/* Today text colours overridden in the theme-cohesion pass. */
+.wm-cell.wm-today .wm-label { color: var(--accent); font-weight: 700; }
 .wm-day {
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
   line-height: 1;
 }
-/* Today inner colours overridden in the theme-cohesion pass. */
+.wm-cell.wm-today .wm-day { color: var(--accent); }
 .wm-dots {
   display: flex;
   gap: 3px;
